@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Retroid Pocket 5 — Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --bg-1: #0a0e1a;
+    --bg-2: #131829;
+    --bg-3: #1c2238;
+    --accent: #ff4655;
+    --accent-2: #00d4ff;
+    --gold: #ffb347;
+    --text: #e8eaf0;
+    --muted: #8c93a8;
+    --border: #2a3149;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-1);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Glow orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 { width: 400px; height: 400px; background: var(--accent); top: -100px; left: -100px; }
+  .orb-2 { width: 350px; height: 350px; background: var(--accent-2); bottom: -80px; right: -80px; }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 860px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  .logo-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, var(--accent), #ff6b35);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 0 24px rgba(255,70,85,0.4);
+  }
+
+  h1 {
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  h1 span {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Cards grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    width: 100%;
+  }
+
+  .card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--card-color, var(--accent)) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-radius: inherit;
+  }
+
+  .card:hover {
+    border-color: var(--card-color, var(--accent));
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--card-color, var(--accent));
+  }
+
+  .card:hover::before { opacity: 0.06; }
+
+  .card-icon {
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .card-badge {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--card-color, var(--accent));
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .card-badge::after {
+    content: '→';
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 22px;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .stat-num {
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border);
+  }
+
+  /* RP5 badge */
+  .device-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(90deg, rgba(255,70,85,0.1), rgba(0,212,255,0.1));
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 12px;
+    color: var(--accent-2);
+    font-weight: 600;
+  }
+
+  footer {
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+    .divider { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="container">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🎮</div>
+      <h1>Retroid Pocket 5 <span>Hub</span></h1>
+    </div>
+    <div class="device-badge">⚡ Furkan's Elite Gaming Library</div>
+    <p class="subtitle" style="margin-top:10px">Tüm araçlar, bir arada.</p>
+  </header>
+
+  <!-- Stats -->
+  <div class="status-bar">
+    <div class="stat">
+      <span class="stat-num">95+</span>
+      <span class="stat-label">Oyun</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-num">19</span>
+      <span class="stat-label">Co-op</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-num">10</span>
+      <span class="stat-label">Seri</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-num">17</span>
+      <span class="stat-label">Sistem</span>
+    </div>
+    <div class="divider"></div>
+    <div class="stat">
+      <span class="stat-num">12</span>
+      <span class="stat-label">Terim</span>
+    </div>
+  </div>
+
+  <!-- Nav cards -->
+  <div class="grid">
+
+    <a class="card" href="Retroid_Library_Dashboard.html" style="--card-color: #ff4655;">
+      <div class="card-icon">📚</div>
+      <div class="card-title">Ana Kütüphane</div>
+      <div class="card-desc">95+ oyun, boxart, filtre, arama ve oynanma durumu takibi.</div>
+      <div class="card-badge">Aç</div>
+    </a>
+
+    <a class="card" href="Retroid_Coop_Dashboard.html" style="--card-color: #ff6b6b;">
+      <div class="card-icon">👫</div>
+      <div class="card-title">Co-op Seçici</div>
+      <div class="card-desc">Eşinle bu akşam ne oynayacaksın? 19 oyun, rastgele öneri.</div>
+      <div class="card-badge">Aç</div>
+    </a>
+
+    <a class="card" href="Retroid_Series_Roadmap.html" style="--card-color: #f39c12;">
+      <div class="card-icon">🗺️</div>
+      <div class="card-title">Seri Roadmap</div>
+      <div class="card-desc">10 efsane serinin baştan sona yol haritası. Zelda, Mario, GoW ve daha fazlası.</div>
+      <div class="card-badge">Aç</div>
+    </a>
+
+    <a class="card" href="Retroid_Emulator_Matrix.html" style="--card-color: #00d4ff;">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">Emülatör Matrisi</div>
+      <div class="card-desc">17 sistem için en iyi emülatör. JIT, Vulkan, core vs standalone detayları.</div>
+      <div class="card-badge">Aç</div>
+    </a>
+
+    <a class="card" href="Retroid_Glossary.html" style="--card-color: #a855f7;">
+      <div class="card-icon">📖</div>
+      <div class="card-title">Teknik Sözlük</div>
+      <div class="card-desc">ROM, BIOS, JIT, Scraping... 12 terim, yazılımcı mantığıyla detaylı açıklamalar.</div>
+      <div class="card-badge">Aç</div>
+    </a>
+
+    <a class="card" href="ROM_Folder_Guide.md" style="--card-color: #2ecc71;">
+      <div class="card-icon">📁</div>
+      <div class="card-title">ROM Klasör Rehberi</div>
+      <div class="card-desc">Hangi oyun hangi klasöre, hangi emülatörle açılır. Format ve BIOS notları.</div>
+      <div class="card-badge">Aç</div>
+    </a>
+
+  </div>
+
+  <footer>
+    Son güncelleme: Mayıs 2026 &nbsp;·&nbsp; Retroid Pocket 5 &nbsp;·&nbsp; Snapdragon 865
+  </footer>
+
+</div>
+
+</body>
+</html>
