@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Retroid Co-op Hub — Eşinle Oturum</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --bg-1: #0a0e1a;
+    --bg-2: #131829;
+    --bg-3: #1c2238;
+    --accent: #2ecc71;
+    --accent-2: #ff4655;
+    --gold: #ffb347;
+    --text: #e8eaf0;
+    --muted: #8c93a8;
+    --border: #2a3149;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 36px 20px;
+    background: linear-gradient(135deg, rgba(46,204,113,0.15), rgba(255,179,71,0.1));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: 2.6rem;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+  }
+  .subtitle { color: var(--muted); font-size: 1rem; }
+  .back-link {
+    display: inline-block;
+    margin-top: 16px;
+    color: var(--accent-2);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+
+  /* TONIGHTS PICK */
+  .tonights-pick {
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    border: 2px solid var(--accent);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(46,204,113,0.2);
+  }
+  .tonights-pick::before {
+    content: 'BU AKŞAM ÖNERİSİ';
+    position: absolute;
+    top: 12px; right: 16px;
+    color: var(--accent);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+  .pick-content {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+  .pick-art {
+    width: 180px; height: 240px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    object-fit: cover;
+  }
+  .pick-info h2 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .pick-info .pick-meta {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .pick-info p {
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .reroll-btn {
+    background: var(--accent);
+    color: var(--bg-1);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: transform 0.2s;
+  }
+  .reroll-btn:hover { transform: scale(1.05); }
+
+  /* CATEGORIES */
+  .category {
+    margin-bottom: 30px;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  .category-header h3 {
+    font-size: 1.4rem;
+    color: var(--text);
+  }
+  .category-header .icon { font-size: 1.6rem; }
+  .category-header .count {
+    background: var(--bg-3);
+    color: var(--muted);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-left: auto;
+  }
+
+  /* GRID */
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  .game-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.25s;
+    cursor: pointer;
+    position: relative;
+  }
+  .game-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 20px rgba(46,204,113,0.2);
+  }
+  .boxart-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 140%;
+    background: linear-gradient(135deg, var(--bg-3), var(--bg-1));
+    overflow: hidden;
+  }
+  .boxart {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .boxart-fallback {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--bg-3), var(--bg-1));
+  }
+  .boxart-fallback .fb-system {
+    font-size: 1.6rem;
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+  .boxart-fallback .fb-title {
+    font-size: 0.8rem;
+    color: var(--text);
+    margin-top: 6px;
+  }
+  .iconic-corner {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: var(--gold);
+    color: var(--bg-1);
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    z-index: 2;
+  }
+  .card-body { padding: 10px 12px; }
+  .card-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.4em;
+  }
+  .card-system {
+    font-size: 0.7rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-system { background: var(--bg-3); color: var(--accent); border: 1px solid var(--border); }
+  .badge-genre { background: rgba(255,70,85,0.2); color: var(--accent-2); border: 1px solid rgba(255,70,85,0.3); }
+  .badge-year { background: var(--bg-3); color: var(--muted); border: 1px solid var(--border); }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎮 CO-OP HUB</h1>
+  <p class="subtitle">Eşinle oynayabileceğin tüm oyunlar — split-screen, party, versus</p>
+  <a href="Retroid_Library_Dashboard.html" class="back-link">← Ana kütüphaneye dön</a>
+</header>
+
+<div class="tonights-pick" id="tonights-pick"></div>
+
+<div id="categories"></div>
+
+<footer>
+  <p>Boxart: <a style="color:var(--accent-2);" href="https://github.com/libretro-thumbnails" target="_blank">libretro-thumbnails</a></p>
+</footer>
+
+<script>
+const T = (system, title) =>
+  `https://raw.githubusercontent.com/libretro-thumbnails/${system}/master/Named_Boxarts/${encodeURIComponent(title)}.png`;
+
+const coopGames = [
+  // Co-op Adventure / RPG
+  { title: "New Super Mario Bros. Wii", system: "Wii", genre: "Platformer", year: 2009, iconic: true, players: "2-4P", category: "platform", img: T("Nintendo_-_Wii", "New Super Mario Bros. Wii (USA)"), info: "TOP TIER co-op. Eşinle aynı ekranda zıplayarak ilerlersin. Birbirini almak/atmak çok eğlenceli. Klasik Mario formülü, modern co-op." },
+  { title: "The Legend of Zelda: Four Swords Adventures", system: "GameCube", genre: "Adventure", year: 2004, iconic: false, players: "2-4P", category: "adventure", img: T("Nintendo_-_GameCube", "Legend of Zelda, The - Four Swords Adventures (USA)"), info: "Co-op Zelda — nadir bir Zelda formülü. Birlikte bulmaca çözer, savaşırsınız." },
+  { title: "Pikmin 2", system: "GameCube", genre: "Strategy", year: 2004, iconic: true, players: "2P", category: "strategy", img: T("Nintendo_-_GameCube", "Pikmin 2 (USA)"), info: "Olimar ve Louie — iki başkahraman, daha derin mekanikler. Co-op mode ekstra eğlenceli." },
+
+  // Racing
+  { title: "Mario Kart: Double Dash!!", system: "GameCube", genre: "Racing", year: 2003, iconic: true, players: "2P kart", category: "racing", img: T("Nintendo_-_GameCube", "Mario Kart - Double Dash!! (USA)"), info: "Tek karta iki karakter — biri sürer, biri item atar. EŞSİZ co-op deneyimi, başka hiçbir MK'da yok." },
+  { title: "Mario Kart Wii", system: "Wii", genre: "Racing", year: 2008, iconic: true, players: "2P split", category: "racing", img: T("Nintendo_-_Wii", "Mario Kart Wii (USA)"), info: "Bisiklet/motor, 12 yarışçı. Split-screen 2P çok smooth." },
+  { title: "Mario Kart 64", system: "N64", genre: "Racing", year: 1996, iconic: true, players: "2P split", category: "racing", img: T("Nintendo_-_Nintendo_64", "Mario Kart 64 (USA)"), info: "Klasik MK. Battle Mode efsane." },
+  { title: "Mario Kart DS", system: "DS", genre: "Racing", year: 2005, iconic: false, players: "2P wireless", category: "racing", img: T("Nintendo_-_Nintendo_DS", "Mario Kart DS (USA)"), info: "DS'in lokal multiplayer'ı RP5'te emulation tek cihazda kısıtlı, ama bazı emülatörler destekler." },
+  { title: "Crash Team Racing", system: "PS1", genre: "Racing", year: 1999, iconic: true, players: "2P split", category: "racing", img: T("Sony_-_PlayStation", "Crash Team Racing (USA)"), info: "PS1'in en iyi kart yarışı — Mario Kart'ı zorlayan tek seri. Eşinle ZORUNLU." },
+
+  // Fighting
+  { title: "Tekken 3", system: "PS1", genre: "Fighting", year: 1998, iconic: true, players: "2P versus", category: "fighting", img: T("Sony_-_PlayStation", "Tekken 3 (USA)"), info: "Tüm zamanların en iyi dövüşü. PS1'in zirvesi." },
+  { title: "Tekken 5", system: "PS2", genre: "Fighting", year: 2005, iconic: true, players: "2P versus", category: "fighting", img: T("Sony_-_PlayStation_2", "Tekken 5 (USA)"), info: "PS2 Tekken'in zirvesi, RP5'te smooth." },
+  { title: "Tekken: Dark Resurrection", system: "PSP", genre: "Fighting", year: 2006, iconic: true, players: "2P versus", category: "fighting", img: T("Sony_-_PlayStation_Portable", "Tekken - Dark Resurrection (USA)"), info: "PSP dövüşünün şampiyonu." },
+  { title: "Smash Bros Melee", system: "GameCube", genre: "Fighting", year: 2001, iconic: true, players: "2-4P", category: "fighting", img: T("Nintendo_-_GameCube", "Super Smash Bros. Melee (USA) (En,Ja)"), info: "Smash'in altın standardı. 4P local — eşinle bayağı eğlenir." },
+  { title: "Soulcalibur II", system: "GameCube", genre: "Fighting", year: 2003, iconic: true, players: "2P versus", category: "fighting", img: T("Nintendo_-_GameCube", "SoulCalibur II (USA)"), info: "GameCube'da Link karakteri var. Silahlı dövüşün zirvesi." },
+
+  // Party
+  { title: "Mario Party 7", system: "GameCube", genre: "Party", year: 2005, iconic: false, players: "2-8P", category: "party", img: T("Nintendo_-_GameCube", "Mario Party 7 (USA)"), info: "8 player'a kadar. Mini-game cenneti. Eşinle takım modu var." },
+  { title: "Mario Party 4", system: "GameCube", genre: "Party", year: 2002, iconic: false, players: "2-4P", category: "party", img: T("Nintendo_-_GameCube", "Mario Party 4 (USA)"), info: "İlk GameCube Mario Party. Klasik, sade." },
+  { title: "42 All-Time Classics", system: "DS", genre: "Party", year: 2005, iconic: true, players: "2-8P wireless", category: "party", img: T("Nintendo_-_Nintendo_DS", "42 All-Time Classics (Europe) (En,Fr,De,Es,It)"), info: "Satranç, Mahjong, Bowling — 42 oyun. Eşinle her tip oyun." },
+
+  // FPS / Sports
+  { title: "TimeSplitters 2", system: "PS2", genre: "FPS", year: 2002, iconic: true, players: "2-4P split", category: "fps", img: T("Sony_-_PlayStation_2", "TimeSplitters 2 (USA)"), info: "Split-screen FPS multiplayer'ın en iyilerinden. Bot ekleyebilirsin." },
+  { title: "Tony Hawk's Pro Skater 3", system: "PS2", genre: "Sports", year: 2001, iconic: true, players: "2P split", category: "sports", img: T("Sony_-_PlayStation_2", "Tony Hawk's Pro Skater 3 (USA)"), info: "Soundtrack efsane. HORSE modu rekabetli, eğlenceli." },
+
+  // Sonic Battle
+  { title: "Sonic Adventure 2: Battle", system: "GameCube", genre: "Platformer", year: 2001, iconic: true, players: "2P", category: "platform", img: T("Nintendo_-_GameCube", "Sonic Adventure 2 Battle (USA)"), info: "Battle modu özel — kartopu, yarış, dövüş mini-oyunları + Chao Garden." },
+  { title: "Sonic the Hedgehog 2", system: "Genesis", genre: "Platformer", year: 1992, iconic: true, players: "2P co-op/versus", category: "platform", img: T("Sega_-_Mega_Drive_-_Genesis", "Sonic The Hedgehog 2 (World) (Rev A)"), info: "Sonic + Tails co-op, ya da split-screen versus yarış." },
+];
+
+// Categories
+const categories = [
+  { id: 'racing', icon: '🏎️', name: 'Yarış (Racing)' },
+  { id: 'fighting', icon: '🥊', name: 'Dövüş (Fighting)' },
+  { id: 'platform', icon: '🍄', name: 'Platformer' },
+  { id: 'party', icon: '🎉', name: 'Parti (Party Games)' },
+  { id: 'adventure', icon: '⚔️', name: 'Macera (Adventure)' },
+  { id: 'strategy', icon: '🧠', name: 'Strateji' },
+  { id: 'fps', icon: '🎯', name: 'FPS' },
+  { id: 'sports', icon: '⚽', name: 'Spor' },
+];
+
+// Tonight's Pick (random from iconic co-op)
+function pickTonight() {
+  const candidates = coopGames.filter(g => g.iconic);
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  document.getElementById('tonights-pick').innerHTML = `
+    <div class="pick-content">
+      <img class="pick-art" src="${pick.img}" alt="${pick.title}" onerror="this.style.opacity='0.2'">
+      <div class="pick-info">
+        <h2>🎲 ${pick.title}</h2>
+        <div class="pick-meta">
+          <span class="badge badge-system">${pick.system}</span>
+          <span class="badge badge-genre">${pick.genre}</span>
+          <span class="badge badge-year">${pick.year}</span>
+          <span class="badge" style="background:var(--accent);color:var(--bg-1);">${pick.players}</span>
+        </div>
+        <p>${pick.info}</p>
+        <button class="reroll-btn" onclick="pickTonight()">🎲 Başka bir öneri</button>
+      </div>
+    </div>
+  `;
+}
+
+// Render categories
+function renderCategories() {
+  document.getElementById('categories').innerHTML = categories.map(cat => {
+    const games = coopGames.filter(g => g.category === cat.id);
+    if (games.length === 0) return '';
+    return `
+      <div class="category">
+        <div class="category-header">
+          <span class="icon">${cat.icon}</span>
+          <h3>${cat.name}</h3>
+          <span class="count">${games.length} oyun</span>
+        </div>
+        <div class="game-grid">
+          ${games.map(g => `
+            <div class="game-card" title="${g.info.replace(/"/g, '&quot;')}">
+              <div class="boxart-wrapper">
+                <img class="boxart" src="${g.img}" alt="${g.title}" loading="lazy"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="boxart-fallback">
+                  <div class="fb-system">${g.system}</div>
+                  <div class="fb-title">${g.title}</div>
+                </div>
+                ${g.iconic ? '<div class="iconic-corner">★</div>' : ''}
+              </div>
+              <div class="card-body">
+                <div class="card-title">${g.title}</div>
+                <div class="card-system">${g.system} · ${g.players}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+pickTonight();
+renderCategories();
+</script>
+</body>
+</html>

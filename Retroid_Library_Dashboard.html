@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Retroid Pocket 5 — Elite Library</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --bg-1: #0a0e1a;
+    --bg-2: #131829;
+    --bg-3: #1c2238;
+    --accent: #ff4655;
+    --accent-2: #00d4ff;
+    --gold: #ffb347;
+    --good: #2ecc71;
+    --warn: #f39c12;
+    --bad: #e74c3c;
+    --text: #e8eaf0;
+    --muted: #8c93a8;
+    --border: #2a3149;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 30px 20px;
+    background: linear-gradient(135deg, rgba(255,70,85,0.1), rgba(0,212,255,0.1));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,70,85,0.05) 0%, transparent 60%);
+    animation: pulse 8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+  h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+    position: relative;
+    letter-spacing: -1px;
+  }
+  .subtitle { color: var(--muted); font-size: 1rem; position: relative; }
+
+  /* QUICK LINKS */
+  .quick-links {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 16px 0 0;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .quick-links a {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    color: var(--accent-2);
+    padding: 8px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .quick-links a:hover { border-color: var(--accent-2); transform: translateY(-1px); }
+
+  /* STATS */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .stat-card .num {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-2);
+    display: block;
+  }
+  .stat-card .label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: var(--bg-2);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  .search-box:focus { outline: none; border-color: var(--accent-2); }
+  .filter-btn {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .filter-btn:hover { border-color: var(--accent-2); }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  select.filter-btn {
+    appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e8eaf0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  /* GRID */
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .game-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .game-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-2);
+    box-shadow: 0 12px 28px rgba(0,212,255,0.2);
+  }
+
+  /* BOX ART */
+  .boxart-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 140%; /* 5:7 aspect ratio for boxart */
+    background: linear-gradient(135deg, var(--bg-3), var(--bg-1));
+    overflow: hidden;
+  }
+  .boxart {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .game-card:hover .boxart { transform: scale(1.05); }
+
+  .boxart-fallback {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--bg-3), var(--bg-1));
+    color: var(--muted);
+  }
+  .boxart-fallback .fb-system {
+    font-size: 2rem;
+    color: var(--accent-2);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .boxart-fallback .fb-title {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .iconic-corner {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: linear-gradient(135deg, var(--gold), #ff8c00);
+    color: var(--bg-1);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255,179,71,0.4);
+    z-index: 2;
+  }
+  .coop-corner {
+    position: absolute;
+    top: 8px; left: 8px;
+    background: var(--good);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(46,204,113,0.4);
+    z-index: 2;
+  }
+  .perf-overlay {
+    position: absolute;
+    bottom: 8px; right: 8px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    z-index: 2;
+    backdrop-filter: blur(4px);
+  }
+  .perf-overlay.good { background: rgba(46,204,113,0.85); color: white; }
+  .perf-overlay.warn { background: rgba(243,156,18,0.85); color: white; }
+  .perf-overlay.bad { background: rgba(231,76,60,0.85); color: white; }
+
+  /* CARD BODY */
+  .card-body {
+    padding: 12px 14px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
+  }
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-system { background: var(--bg-3); color: var(--accent-2); border: 1px solid var(--border); }
+  .badge-genre { background: rgba(255,70,85,0.15); color: var(--accent); border: 1px solid rgba(255,70,85,0.3); }
+  .badge-year { background: var(--bg-3); color: var(--muted); border: 1px solid var(--border); }
+
+  .card-status {
+    display: flex;
+    gap: 4px;
+    margin-top: auto;
+    padding-top: 8px;
+  }
+  .status-btn {
+    flex: 1;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 5px 2px;
+    font-size: 0.6rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .status-btn:hover { color: var(--text); }
+  .status-btn.active.unplayed { background: var(--muted); color: white; border-color: var(--muted); }
+  .status-btn.active.playing { background: var(--warn); color: white; border-color: var(--warn); }
+  .status-btn.active.done { background: var(--good); color: white; border-color: var(--good); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-hero {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    background: linear-gradient(135deg, var(--bg-3), var(--bg-1));
+    overflow: hidden;
+  }
+  .modal-hero img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: blur(20px) brightness(0.4);
+  }
+  .modal-hero-art {
+    position: absolute;
+    top: 50%; left: 30px;
+    transform: translateY(-50%);
+    width: 130px;
+    height: 180px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    object-fit: cover;
+    z-index: 2;
+  }
+  .modal-hero-info {
+    position: absolute;
+    left: 180px; top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    color: white;
+  }
+  .modal-hero-info h2 {
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px; right: 16px;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    cursor: pointer;
+    z-index: 3;
+  }
+  .modal-body { padding: 24px 30px 30px; }
+  .modal-section { margin-top: 16px; }
+  .modal-section h4 {
+    color: var(--accent-2);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .modal-section p { color: var(--text); line-height: 1.6; }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    grid-column: 1 / -1;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  footer a { color: var(--accent-2); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .modal-hero-art { width: 90px; height: 130px; left: 16px; }
+    .modal-hero-info { left: 120px; }
+    .modal-hero-info h2 { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>RETROID POCKET 5</h1>
+  <p class="subtitle">Elite Game Library — Curated by Furkan</p>
+  <div class="quick-links">
+    <a href="Retroid_Glossary.html">📚 Teknik Terimler</a>
+    <a href="Retroid_Coop_Dashboard.html">🎮 Co-op Hub (Eşle)</a>
+    <a href="Retroid_Series_Roadmap.html">🗺️ Seri Yol Haritaları</a>
+    <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatör Eşleştirme</a>
+  </div>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="controls">
+  <input type="text" class="search-box" id="search" placeholder="🔍 Oyun, sistem veya tür ara...">
+  <select class="filter-btn" id="filter-system">
+    <option value="">Tüm Sistemler</option>
+  </select>
+  <select class="filter-btn" id="filter-genre">
+    <option value="">Tüm Türler</option>
+  </select>
+  <button class="filter-btn" id="filter-coop">🎮 Co-op</button>
+  <button class="filter-btn" id="filter-iconic">⭐ Sadece Kült</button>
+  <button class="filter-btn" id="reset">↻ Sıfırla</button>
+</div>
+
+<div class="game-grid" id="grid"></div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<footer>
+  <p>Retroid Pocket 5 · Elite Library Tracker · Status verileri tarayıcında <code>localStorage</code>'da saklanır</p>
+  <p style="margin-top:8px;">Boxart: <a href="https://github.com/libretro-thumbnails" target="_blank">libretro-thumbnails</a></p>
+</footer>
+
+<script>
+// Helper: build libretro-thumbnails URL
+// Format: https://raw.githubusercontent.com/libretro-thumbnails/{System}/master/Named_Boxarts/{Title}.png
+const T = (system, title) =>
+  `https://raw.githubusercontent.com/libretro-thumbnails/${system}/master/Named_Boxarts/${encodeURIComponent(title)}.png`;
+
+const games = [
+  // ===== GTA =====
+  { title: "GTA: San Andreas", system: "PS2", genre: "Action", year: 2004, iconic: true, coop: false, perf: "good", info: "Serinin zirvesi. Açık dünya, RPG mekaniği, geniş harita. PS2 versiyonu RP5'te çok iyi çalışır. Portmaster native port da mevcut — daha akıcı.", img: T("Sony_-_PlayStation_2", "Grand Theft Auto - San Andreas (USA) (v3.00)") },
+  { title: "GTA: Vice City", system: "PS2", genre: "Action", year: 2002, iconic: true, coop: false, perf: "good", info: "80'lerin Miami atmosferi, ikonik soundtrack. Portmaster native port önerilir.", img: T("Sony_-_PlayStation_2", "Grand Theft Auto - Vice City (USA) (v3.00)") },
+  { title: "GTA III", system: "PS2", genre: "Action", year: 2001, iconic: true, coop: false, perf: "good", info: "3D GTA'yı yaratan oyun. Portmaster portu da mükemmel.", img: T("Sony_-_PlayStation_2", "Grand Theft Auto III (USA) (v3.00)") },
+  { title: "GTA: Liberty City Stories", system: "PSP", genre: "Action", year: 2005, iconic: false, coop: false, perf: "good", info: "GTA III'ün PSP prequel'i. PPSSPP'de tertemiz çalışır.", img: T("Sony_-_PlayStation_Portable", "Grand Theft Auto - Liberty City Stories (USA)") },
+  { title: "GTA: Vice City Stories", system: "PSP", genre: "Action", year: 2006, iconic: false, coop: false, perf: "good", info: "Vice City evreninin PSP genişlemesi.", img: T("Sony_-_PlayStation_Portable", "Grand Theft Auto - Vice City Stories (USA)") },
+  { title: "GTA: Chinatown Wars", system: "DS", genre: "Action", year: 2009, iconic: false, coop: false, perf: "good", info: "Top-down GTA, DS'in en iyi 3rd party oyunlarından.", img: T("Nintendo_-_Nintendo_DS", "Grand Theft Auto - Chinatown Wars (USA) (En,Fr,De,Es,It)") },
+
+  // ===== God of War =====
+  { title: "God of War: Chains of Olympus", system: "PSP", genre: "Action", year: 2008, iconic: true, coop: false, perf: "good", info: "PSP'nin en iyi 3D aksiyon oyunlarından biri. Tertemiz çalışır, AMOLED'de muhteşem görünür.", img: T("Sony_-_PlayStation_Portable", "God of War - Chains of Olympus (USA)") },
+  { title: "God of War: Ghost of Sparta", system: "PSP", genre: "Action", year: 2010, iconic: true, coop: false, perf: "good", info: "PSP'nin teknik şaheseri. Chains of Olympus'tan sonra oyna.", img: T("Sony_-_PlayStation_Portable", "God of War - Ghost of Sparta (USA)") },
+  { title: "God of War", system: "PS2", genre: "Action", year: 2005, iconic: true, coop: false, perf: "warn", info: "Demanding bir PS2 başlığı, ama RP5'te 55+ FPS sabit kalır. Vapor chamber cooling devreye girer.", img: T("Sony_-_PlayStation_2", "God of War (USA)") },
+  { title: "God of War II", system: "PS2", genre: "Action", year: 2007, iconic: true, coop: false, perf: "warn", info: "PS2'nin teknik tavanını zorlayan oyun. Ayarları doğru yaparsan akıcı.", img: T("Sony_-_PlayStation_2", "God of War II (USA)") },
+
+  // ===== Pokemon =====
+  { title: "Pokemon FireRed", system: "GBA", genre: "RPG", year: 2004, iconic: true, coop: false, perf: "good", info: "Klasik Kanto bölgesi remake. GBA'nın en sevilen Pokemon oyunu.", img: T("Nintendo_-_Game_Boy_Advance", "Pokemon - Fire Red Version (USA, Europe)") },
+  { title: "Pokemon LeafGreen", system: "GBA", genre: "RPG", year: 2004, iconic: true, coop: false, perf: "good", info: "FireRed'in eşi. İkisi de mükemmel bir başlangıç noktası.", img: T("Nintendo_-_Game_Boy_Advance", "Pokemon - Leaf Green Version (USA, Europe)") },
+  { title: "Pokemon Emerald", system: "GBA", genre: "RPG", year: 2005, iconic: true, coop: false, perf: "good", info: "Hoenn üçlemesinin definitive sürümü. Battle Frontier var.", img: T("Nintendo_-_Game_Boy_Advance", "Pokemon - Emerald Version (USA, Europe)") },
+  { title: "Pokemon HeartGold", system: "DS", genre: "RPG", year: 2009, iconic: true, coop: false, perf: "good", info: "Johto + Kanto, iki bölge. Pokémon'un altın çağı.", img: T("Nintendo_-_Nintendo_DS", "Pokemon HeartGold Version (USA)") },
+  { title: "Pokemon SoulSilver", system: "DS", genre: "RPG", year: 2009, iconic: true, coop: false, perf: "good", info: "HeartGold'un eşi. İkisi de seri zirvesinde.", img: T("Nintendo_-_Nintendo_DS", "Pokemon SoulSilver Version (USA)") },
+  { title: "Pokemon Platinum", system: "DS", genre: "RPG", year: 2008, iconic: true, coop: false, perf: "good", info: "Sinnoh definitive sürümü. Distortion World epik.", img: T("Nintendo_-_Nintendo_DS", "Pokemon - Platinum Version (USA)") },
+  { title: "Pokemon Black", system: "DS", genre: "RPG", year: 2010, iconic: true, coop: false, perf: "good", info: "Hikaye odaklı, en iyi Pokemon hikayesi diyenler var.", img: T("Nintendo_-_Nintendo_DS", "Pokemon - Black Version (USA, Europe)") },
+  { title: "Pokemon White", system: "DS", genre: "RPG", year: 2010, iconic: true, coop: false, perf: "good", info: "Black'in eşi. Unova bölgesi.", img: T("Nintendo_-_Nintendo_DS", "Pokemon - White Version (USA, Europe)") },
+  { title: "Pokemon Black 2", system: "DS", genre: "RPG", year: 2012, iconic: false, coop: false, perf: "good", info: "Doğrudan sequel — nadir bir Pokemon devamı.", img: T("Nintendo_-_Nintendo_DS", "Pokemon - Black Version 2 (USA, Europe)") },
+  { title: "Pokemon X", system: "3DS", genre: "RPG", year: 2013, iconic: false, coop: false, perf: "warn", info: "Serinin ilk gerçek 3D oyunu. Mega Evolution. 3DS emulation Citra/Lime ile çalışır.", img: T("Nintendo_-_Nintendo_3DS", "Pokemon X (USA)") },
+  { title: "Pokemon Sun", system: "3DS", genre: "RPG", year: 2016, iconic: false, coop: false, perf: "warn", info: "Alola bölgesi. Hikaye odaklı yenilik.", img: T("Nintendo_-_Nintendo_3DS", "Pokemon Sun (USA)") },
+
+  // ===== Mario =====
+  { title: "Super Mario 64", system: "N64", genre: "Platformer", year: 1996, iconic: true, coop: false, perf: "good", info: "3D platformerın doğuşu. Hâlâ oynanması zevkli.", img: T("Nintendo_-_Nintendo_64", "Super Mario 64 (USA)") },
+  { title: "Super Mario Sunshine", system: "GameCube", genre: "Platformer", year: 2002, iconic: true, coop: false, perf: "good", info: "FLUDD ile yenilikçi bir Mario. RP5'te tertemiz.", img: T("Nintendo_-_GameCube", "Super Mario Sunshine (USA)") },
+  { title: "Super Mario Galaxy", system: "Wii", genre: "Platformer", year: 2007, iconic: true, coop: false, perf: "good", info: "Yerçekimi bulmacaları, orkestra soundtrack. Şaheser.", img: T("Nintendo_-_Wii", "Super Mario Galaxy (USA)") },
+  { title: "Super Mario Galaxy 2", system: "Wii", genre: "Platformer", year: 2010, iconic: true, coop: false, perf: "good", info: "Galaxy'nin daha rafine versiyonu. Yoshi var.", img: T("Nintendo_-_Wii", "Super Mario Galaxy 2 (USA)") },
+  { title: "Mario Kart: Double Dash!!", system: "GameCube", genre: "Racing", year: 2003, iconic: true, coop: true, perf: "good", info: "İki karakterli kart yarışı. Co-op kart kullanımı eşinle eğlenceli — biri sürer, biri item atar.", img: T("Nintendo_-_GameCube", "Mario Kart - Double Dash!! (USA)") },
+  { title: "Mario Kart Wii", system: "Wii", genre: "Racing", year: 2008, iconic: true, coop: true, perf: "good", info: "Bisiklet ve motor + 12 kişilik yarışlar. Split-screen 2 player.", img: T("Nintendo_-_Wii", "Mario Kart Wii (USA)") },
+  { title: "Mario Kart 64", system: "N64", genre: "Racing", year: 1996, iconic: true, coop: true, perf: "good", info: "Klasik MK. 2P split-screen mükemmel.", img: T("Nintendo_-_Nintendo_64", "Mario Kart 64 (USA)") },
+  { title: "Mario Kart DS", system: "DS", genre: "Racing", year: 2005, iconic: false, coop: true, perf: "good", info: "İlk taşınabilir online Mario Kart. Local multiplayer var.", img: T("Nintendo_-_Nintendo_DS", "Mario Kart DS (USA)") },
+  { title: "New Super Mario Bros. Wii", system: "Wii", genre: "Platformer", year: 2009, iconic: true, coop: true, perf: "good", info: "4 kişiye kadar local co-op. Eşinle oynamak için TOP TIER seçim.", img: T("Nintendo_-_Wii", "New Super Mario Bros. Wii (USA)") },
+  { title: "New Super Mario Bros.", system: "DS", genre: "Platformer", year: 2006, iconic: false, coop: false, perf: "good", info: "DS'in en sevilen platformerı.", img: T("Nintendo_-_Nintendo_DS", "New Super Mario Bros. (USA, Australia)") },
+  { title: "Paper Mario: Thousand-Year Door", system: "GameCube", genre: "RPG", year: 2004, iconic: true, coop: false, perf: "good", info: "RPG meraklıları için Paper Mario'nun doruğu.", img: T("Nintendo_-_GameCube", "Paper Mario - The Thousand-Year Door (USA)") },
+  { title: "Paper Mario", system: "N64", genre: "RPG", year: 2001, iconic: true, coop: false, perf: "good", info: "İlk Paper Mario, charm dolu.", img: T("Nintendo_-_Nintendo_64", "Paper Mario (USA)") },
+  { title: "Mario & Luigi: Superstar Saga", system: "GBA", genre: "RPG", year: 2003, iconic: true, coop: false, perf: "good", info: "Komik diyaloglar, seri RPG'nin başlangıcı.", img: T("Nintendo_-_Game_Boy_Advance", "Mario & Luigi - Superstar Saga (USA, Australia)") },
+  { title: "Super Mario World", system: "GBA", genre: "Platformer", year: 2002, iconic: true, coop: false, perf: "good", info: "SNES klasiğinin GBA portu — Yoshi'nin ilk macerası.", img: T("Nintendo_-_Game_Boy_Advance", "Super Mario Advance 2 - Super Mario World (USA)") },
+  { title: "Mario Party 7", system: "GameCube", genre: "Party", year: 2005, iconic: false, coop: true, perf: "good", info: "8 player'a kadar parti oyunu. Eşinle minigame turnuvası.", img: T("Nintendo_-_GameCube", "Mario Party 7 (USA)") },
+  { title: "Mario Party 4", system: "GameCube", genre: "Party", year: 2002, iconic: false, coop: true, perf: "good", info: "İlk GameCube Mario Party. Klasik, sade.", img: T("Nintendo_-_GameCube", "Mario Party 4 (USA)") },
+
+  // ===== Zelda =====
+  { title: "The Legend of Zelda: Ocarina of Time", system: "N64", genre: "Action-Adventure", year: 1998, iconic: true, coop: false, perf: "good", info: "Tüm zamanların en iyi oyunu sayılan başyapıt. 3D action-adventure'ın doğuşu. RP5'te tertemiz.", img: T("Nintendo_-_Nintendo_64", "Legend of Zelda, The - Ocarina of Time (USA)") },
+  { title: "The Legend of Zelda: Majora's Mask", system: "N64", genre: "Action-Adventure", year: 2000, iconic: true, coop: false, perf: "good", info: "Karanlık, atmosferik kült klasik. 3 günlük zaman döngüsü mekaniği. OoT'tan sonra mutlaka oyna.", img: T("Nintendo_-_Nintendo_64", "Legend of Zelda, The - Majora's Mask (USA)") },
+  { title: "The Legend of Zelda: The Wind Waker", system: "GameCube", genre: "Action-Adventure", year: 2003, iconic: true, coop: false, perf: "good", info: "Cel-shaded sanat tarzı, AMOLED'de büyüleyici. RP5'te full speed çalışır. Eskiden çocuksu diye eleştirilmişti, şimdi şaheser kabul edilir.", img: T("Nintendo_-_GameCube", "Legend of Zelda, The - The Wind Waker (USA)") },
+  { title: "The Legend of Zelda: Twilight Princess", system: "GameCube", genre: "Action-Adventure", year: 2006, iconic: true, coop: false, perf: "warn", info: "Karanlık ve epik. Snapdragon 865'te akıcı çalışır ama büyük alanlarda framedrop olabilir.", img: T("Nintendo_-_GameCube", "Legend of Zelda, The - Twilight Princess (USA)") },
+  { title: "The Legend of Zelda: A Link to the Past", system: "SNES", genre: "Action-Adventure", year: 1991, iconic: true, coop: false, perf: "good", info: "2D Zelda'nın tepe noktası. SNES/GBA portu RP5'te mükemmel.", img: T("Nintendo_-_Super_Nintendo_Entertainment_System", "Legend of Zelda, The - A Link to the Past (USA)") },
+  { title: "The Legend of Zelda: The Minish Cap", system: "GBA", genre: "Action-Adventure", year: 2004, iconic: true, coop: false, perf: "good", info: "GBA Zelda'nın güzel sanat stili ve mekaniği.", img: T("Nintendo_-_Game_Boy_Advance", "Legend of Zelda, The - The Minish Cap (USA)") },
+  { title: "The Legend of Zelda: Phantom Hourglass", system: "DS", genre: "Action-Adventure", year: 2007, iconic: false, coop: false, perf: "good", info: "Wind Waker direkt sequel'i. Touch-controlled DS macerası.", img: T("Nintendo_-_Nintendo_DS", "Legend of Zelda, The - Phantom Hourglass (USA)") },
+  { title: "The Legend of Zelda: Spirit Tracks", system: "DS", genre: "Action-Adventure", year: 2009, iconic: false, coop: false, perf: "good", info: "Tren temalı Zelda. Phantom Hourglass devamı.", img: T("Nintendo_-_Nintendo_DS", "Legend of Zelda, The - Spirit Tracks (USA)") },
+  { title: "The Legend of Zelda: A Link Between Worlds", system: "3DS", genre: "Action-Adventure", year: 2013, iconic: true, coop: false, perf: "warn", info: "A Link to the Past'in modern devamı. Citra/Lime3DS ile çalışır.", img: T("Nintendo_-_Nintendo_3DS", "Legend of Zelda, The - A Link Between Worlds (USA)") },
+  { title: "The Legend of Zelda: Four Swords Adventures", system: "GameCube", genre: "Action-Adventure", year: 2004, iconic: false, coop: true, perf: "good", info: "Co-op Zelda — eşinle oynamak için iyi seçim.", img: T("Nintendo_-_GameCube", "Legend of Zelda, The - Four Swords Adventures (USA)") },
+
+  // ===== Sonic =====
+  { title: "Sonic the Hedgehog 2", system: "Genesis", genre: "Platformer", year: 1992, iconic: true, coop: true, perf: "good", info: "2P split-screen yarışlar var. Klasik 2D Sonic.", img: T("Sega_-_Mega_Drive_-_Genesis", "Sonic The Hedgehog 2 (World) (Rev A)") },
+  { title: "Sonic the Hedgehog 3 & Knuckles", system: "Genesis", genre: "Platformer", year: 1994, iconic: true, coop: false, perf: "good", info: "Klasik Sonic'in zirvesi. 2P co-op (Tails ile) var.", img: T("Sega_-_Mega_Drive_-_Genesis", "Sonic The Hedgehog 3 (USA)") },
+  { title: "Sonic Adventure", system: "Dreamcast", genre: "Platformer", year: 1998, iconic: true, coop: false, perf: "good", info: "İlk 3D Sonic. RP5'te Redream / Flycast ile çalışır.", img: T("Sega_-_Dreamcast", "Sonic Adventure (USA)") },
+  { title: "Sonic Adventure 2: Battle", system: "GameCube", genre: "Platformer", year: 2001, iconic: true, coop: true, perf: "good", info: "Chao Garden, multiplayer battle modu. Eşinle Battle modu eğlenceli.", img: T("Nintendo_-_GameCube", "Sonic Adventure 2 Battle (USA)") },
+  { title: "Sonic Heroes", system: "GameCube", genre: "Platformer", year: 2003, iconic: false, coop: false, perf: "good", info: "Üçlü takım dinamikleri.", img: T("Nintendo_-_GameCube", "Sonic Heroes (USA)") },
+  { title: "Sonic Advance", system: "GBA", genre: "Platformer", year: 2001, iconic: false, coop: false, perf: "good", info: "GBA'nın en iyi 2D Sonic'i.", img: T("Nintendo_-_Game_Boy_Advance", "Sonic Advance (USA)") },
+
+  // ===== Crash =====
+  { title: "Crash Bandicoot", system: "PS1", genre: "Platformer", year: 1996, iconic: true, coop: false, perf: "good", info: "DuckStation ile 1080p upscaled mükemmel görünür.", img: T("Sony_-_PlayStation", "Crash Bandicoot (USA)") },
+  { title: "Crash Bandicoot 2", system: "PS1", genre: "Platformer", year: 1997, iconic: true, coop: false, perf: "good", info: "Serinin en iyisi diyenler var. Tertemiz.", img: T("Sony_-_PlayStation", "Crash Bandicoot 2 - Cortex Strikes Back (USA)") },
+  { title: "Crash Bandicoot 3: Warped", system: "PS1", genre: "Platformer", year: 1998, iconic: true, coop: false, perf: "good", info: "Zaman yolculuğu, çeşitli levellar. Klasik üçleme tepe.", img: T("Sony_-_PlayStation", "Crash Bandicoot 3 - Warped (USA)") },
+  { title: "Crash Team Racing", system: "PS1", genre: "Racing", year: 1999, iconic: true, coop: true, perf: "good", info: "PS1'in en iyi kart yarışı. 2P split-screen — eşinle ZORUNLU.", img: T("Sony_-_PlayStation", "Crash Team Racing (USA)") },
+  { title: "Crash Bandicoot: Wrath of Cortex", system: "PS2", genre: "Platformer", year: 2001, iconic: false, coop: false, perf: "good", info: "PS2 dönemi Crash. Eski üçlemenin formülünü sürdürür.", img: T("Sony_-_PlayStation_2", "Crash Bandicoot - The Wrath of Cortex (USA)") },
+
+  // ===== Tekken =====
+  { title: "Tekken 3", system: "PS1", genre: "Fighting", year: 1998, iconic: true, coop: true, perf: "good", info: "Tüm zamanların en iyi dövüş oyunlarından. 2P versus.", img: T("Sony_-_PlayStation", "Tekken 3 (USA)") },
+  { title: "Tekken 5", system: "PS2", genre: "Fighting", year: 2005, iconic: true, coop: true, perf: "good", info: "PS2 Tekken'in zirvesi. RP5'te çok smooth.", img: T("Sony_-_PlayStation_2", "Tekken 5 (USA)") },
+  { title: "Tekken: Dark Resurrection", system: "PSP", genre: "Fighting", year: 2006, iconic: true, coop: true, perf: "good", info: "PSP'nin gurur duyduğu dövüş oyunu. Tertemiz çalışır.", img: T("Sony_-_PlayStation_Portable", "Tekken - Dark Resurrection (USA)") },
+
+  // ===== Final Fantasy =====
+  { title: "Final Fantasy X", system: "PS2", genre: "RPG", year: 2001, iconic: true, coop: false, perf: "good", info: "Sphere Grid, dramatik hikaye. RP5'te playable confirmed.", img: T("Sony_-_PlayStation_2", "Final Fantasy X (USA)") },
+  { title: "Final Fantasy VII", system: "PS1", genre: "RPG", year: 1997, iconic: true, coop: false, perf: "good", info: "JRPG'lerin altın standartı. DuckStation'da upscaled mükemmel.", img: T("Sony_-_PlayStation", "Final Fantasy VII (USA) (Disc 1)") },
+  { title: "Final Fantasy IX", system: "PS1", genre: "RPG", year: 2000, iconic: true, coop: false, perf: "good", info: "Klasik fantasy temasına dönüş. Birçok kişiye göre serinin zirvesi.", img: T("Sony_-_PlayStation", "Final Fantasy IX (USA) (Disc 1)") },
+  { title: "Crisis Core: Final Fantasy VII", system: "PSP", genre: "RPG", year: 2007, iconic: true, coop: false, perf: "good", info: "FF7 prequel, action-RPG. PPSSPP'de tertemiz.", img: T("Sony_-_PlayStation_Portable", "Crisis Core - Final Fantasy VII (USA)") },
+  { title: "Final Fantasy Tactics: War of the Lions", system: "PSP", genre: "Strategy-RPG", year: 2007, iconic: true, coop: false, perf: "good", info: "Tactical RPG'nin definitive sürümü. Full speed çalışır.", img: T("Sony_-_PlayStation_Portable", "Final Fantasy Tactics - The War of the Lions (USA)") },
+  { title: "Final Fantasy VI", system: "SNES", genre: "RPG", year: 1994, iconic: true, coop: false, perf: "good", info: "JRPG'nin SNES zirvesi. GBA portu sade ve güzel.", img: T("Nintendo_-_Super_Nintendo_Entertainment_System", "Final Fantasy III (USA)") },
+
+  // ===== Resident Evil =====
+  { title: "Resident Evil 4", system: "GameCube", genre: "Survival Horror", year: 2005, iconic: true, coop: false, perf: "good", info: "Tüm zamanların en iyi action-horror oyunu. GameCube versiyonu RP5'te smooth.", img: T("Nintendo_-_GameCube", "Resident Evil 4 (USA) (Disc 1)") },
+  { title: "Resident Evil Code: Veronica X", system: "PS2", genre: "Survival Horror", year: 2001, iconic: true, coop: false, perf: "good", info: "Klasik RE. RP5'te baştan sona test edildi, sorunsuz çalışıyor.", img: T("Sony_-_PlayStation_2", "Resident Evil - Code Veronica X (USA)") },
+
+  // ===== Devil May Cry =====
+  { title: "Devil May Cry 3: Dante's Awakening", system: "PS2", genre: "Action", year: 2005, iconic: true, coop: false, perf: "warn", info: "Hack-and-slash zirvesi. RP5'te playable, occasional dips below 50 FPS.", img: T("Sony_-_PlayStation_2", "Devil May Cry 3 - Dante's Awakening - Special Edition (USA)") },
+
+  // ===== Metal Gear Solid =====
+  { title: "Metal Gear Solid 3: Snake Eater", system: "PS2", genre: "Stealth", year: 2004, iconic: true, coop: false, perf: "warn", info: "Serinin en sevilen oyunu. Demanding ama RP5'te tweaks ile playable.", img: T("Sony_-_PlayStation_2", "Metal Gear Solid 3 - Snake Eater (USA)") },
+  { title: "Metal Gear Solid", system: "PS1", genre: "Stealth", year: 1998, iconic: true, coop: false, perf: "good", info: "Stealth tarihinin başlangıcı. DuckStation'da tertemiz.", img: T("Sony_-_PlayStation", "Metal Gear Solid (USA) (Disc 1)") },
+
+  // ===== Kingdom Hearts =====
+  { title: "Kingdom Hearts", system: "PS2", genre: "Action-RPG", year: 2002, iconic: true, coop: false, perf: "good", info: "Disney + Final Fantasy crossover. RP5'te playable confirmed.", img: T("Sony_-_PlayStation_2", "Kingdom Hearts (USA)") },
+  { title: "Kingdom Hearts II", system: "PS2", genre: "Action-RPG", year: 2005, iconic: true, coop: false, perf: "good", info: "Aksiyon mekanikleri rafine. Final Mix patch ile mükemmel.", img: T("Sony_-_PlayStation_2", "Kingdom Hearts II (USA)") },
+  { title: "Kingdom Hearts: Birth by Sleep", system: "PSP", genre: "Action-RPG", year: 2010, iconic: true, coop: false, perf: "good", info: "PSP'nin en güzel görünen oyunlarından biri.", img: T("Sony_-_PlayStation_Portable", "Kingdom Hearts - Birth by Sleep (USA)") },
+
+  // ===== Jak / Ratchet / Sly =====
+  { title: "Jak and Daxter: The Precursor Legacy", system: "PS2", genre: "Platformer", year: 2001, iconic: true, coop: false, perf: "good", info: "PS2'nin en iyi 3D platformerlarından.", img: T("Sony_-_PlayStation_2", "Jak and Daxter - The Precursor Legacy (USA)") },
+  { title: "Ratchet & Clank", system: "PS2", genre: "Platformer", year: 2002, iconic: true, coop: false, perf: "good", info: "Silah çeşitliliği muhteşem. Ratchet serisi RP5'te 'MUST'.", img: T("Sony_-_PlayStation_2", "Ratchet & Clank (USA)") },
+  { title: "Sly Cooper and the Thievius Raccoonus", system: "PS2", genre: "Platformer", year: 2002, iconic: true, coop: false, perf: "good", info: "Stealth platformer, çizgi film stilinde.", img: T("Sony_-_PlayStation_2", "Sly Cooper and the Thievius Raccoonus (USA)") },
+  { title: "Sly 2: Band of Thieves", system: "PS2", genre: "Platformer", year: 2004, iconic: true, coop: false, perf: "good", info: "Sly serisinin zirvesi. Açık dünya hile mekanikleri.", img: T("Sony_-_PlayStation_2", "Sly 2 - Band of Thieves (USA)") },
+
+  // ===== Metroid =====
+  { title: "Metroid Prime", system: "GameCube", genre: "Action-Adventure", year: 2002, iconic: true, coop: false, perf: "warn", info: "First-person Metroid. PrimeHack (modified Dolphin) önerilir, dual analog desteği için.", img: T("Nintendo_-_GameCube", "Metroid Prime (USA)") },
+  { title: "Metroid Fusion", system: "GBA", genre: "Action-Adventure", year: 2002, iconic: true, coop: false, perf: "good", info: "GBA'nın en iyi metroidvania'sı.", img: T("Nintendo_-_Game_Boy_Advance", "Metroid Fusion (USA, Australia)") },
+  { title: "Metroid: Zero Mission", system: "GBA", genre: "Action-Adventure", year: 2004, iconic: true, coop: false, perf: "good", info: "İlk Metroid'in remake'i. mGBA'da mükemmel.", img: T("Nintendo_-_Game_Boy_Advance", "Metroid - Zero Mission (USA)") },
+
+  // ===== Diğer Kült =====
+  { title: "Shadow of the Colossus", system: "PS2", genre: "Action-Adventure", year: 2005, iconic: true, coop: false, perf: "warn", info: "Sanat eseri. Resolution ayarlarıyla iyi çalışır.", img: T("Sony_-_PlayStation_2", "Shadow of the Colossus (USA)") },
+  { title: "Okami", system: "PS2", genre: "Action-Adventure", year: 2006, iconic: true, coop: false, perf: "good", info: "Sumi-e (Japon mürekkep) sanat tarzı. AMOLED'de muhteşem.", img: T("Sony_-_PlayStation_2", "Okami (USA)") },
+  { title: "Castlevania: Symphony of the Night", system: "PS1", genre: "Metroidvania", year: 1997, iconic: true, coop: false, perf: "good", info: "Metroidvania janrına ilham veren başyapıt.", img: T("Sony_-_PlayStation", "Castlevania - Symphony of the Night (USA)") },
+  { title: "Castlevania: Aria of Sorrow", system: "GBA", genre: "Metroidvania", year: 2003, iconic: true, coop: false, perf: "good", info: "GBA Castlevania'sının en iyisi.", img: T("Nintendo_-_Game_Boy_Advance", "Castlevania - Aria of Sorrow (USA)") },
+  { title: "Tony Hawk's Pro Skater 3", system: "PS2", genre: "Sports", year: 2001, iconic: true, coop: true, perf: "good", info: "Soundtrack efsane. 2P split-screen var.", img: T("Sony_-_PlayStation_2", "Tony Hawk's Pro Skater 3 (USA)") },
+  { title: "Persona 4", system: "PS2", genre: "RPG", year: 2008, iconic: true, coop: false, perf: "good", info: "JRPG + sosyal sim. RP5'te playable confirmed.", img: T("Sony_-_PlayStation_2", "Shin Megami Tensei - Persona 4 (USA)") },
+  { title: "Persona 3 FES", system: "PS2", genre: "RPG", year: 2007, iconic: true, coop: false, perf: "good", info: "Persona serisinin doğuşu (modern formül).", img: T("Sony_-_PlayStation_2", "Shin Megami Tensei - Persona 3 FES (USA)") },
+  { title: "Pikmin", system: "GameCube", genre: "Strategy", year: 2001, iconic: false, coop: false, perf: "good", info: "Real-time strategy + bulmaca. Sevimli.", img: T("Nintendo_-_GameCube", "Pikmin (USA)") },
+  { title: "Pikmin 2", system: "GameCube", genre: "Strategy", year: 2004, iconic: true, coop: true, perf: "good", info: "İki başkahraman, daha derin mekanikler. Co-op modu var.", img: T("Nintendo_-_GameCube", "Pikmin 2 (USA)") },
+  { title: "Soulcalibur II", system: "GameCube", genre: "Fighting", year: 2003, iconic: true, coop: true, perf: "good", info: "GameCube exclusive Link karakteri ile. 2P versus.", img: T("Nintendo_-_GameCube", "SoulCalibur II (USA)") },
+  { title: "Smash Bros Melee", system: "GameCube", genre: "Fighting", year: 2001, iconic: true, coop: true, perf: "good", info: "Smash'in altın standardı. 4P local — eşinle mükemmel.", img: T("Nintendo_-_GameCube", "Super Smash Bros. Melee (USA) (En,Ja)") },
+  { title: "TimeSplitters 2", system: "PS2", genre: "FPS", year: 2002, iconic: true, coop: true, perf: "good", info: "Split-screen FPS multiplayer'ın en iyisi.", img: T("Sony_-_PlayStation_2", "TimeSplitters 2 (USA)") },
+
+  // ===== Brain / Puzzle =====
+  { title: "Professor Layton and the Curious Village", system: "DS", genre: "Puzzle", year: 2007, iconic: true, coop: false, perf: "good", info: "Bulmaca + hikaye. Anlık girip çıkmalık. Çizgi film stilinde, piksel yok.", img: T("Nintendo_-_Nintendo_DS", "Professor Layton and the Curious Village (USA)") },
+  { title: "Professor Layton and the Diabolical Box", system: "DS", genre: "Puzzle", year: 2007, iconic: true, coop: false, perf: "good", info: "Layton serisinin ikincisi.", img: T("Nintendo_-_Nintendo_DS", "Professor Layton and the Diabolical Box (USA)") },
+  { title: "Professor Layton and the Unwound Future", system: "DS", genre: "Puzzle", year: 2008, iconic: true, coop: false, perf: "good", info: "Birçok fan'a göre serinin zirvesi.", img: T("Nintendo_-_Nintendo_DS", "Professor Layton and the Unwound Future (USA)") },
+  { title: "Brain Age", system: "DS", genre: "Puzzle", year: 2005, iconic: true, coop: false, perf: "good", info: "Sudoku + beyin egzersizi. Günlük 5-10 dakika.", img: T("Nintendo_-_Nintendo_DS", "Brain Age - Train Your Brain in Minutes a Day! (USA)") },
+  { title: "Picross DS", system: "DS", genre: "Puzzle", year: 2007, iconic: true, coop: false, perf: "good", info: "Bağımlılık yapan görsel bulmaca.", img: T("Nintendo_-_Nintendo_DS", "Picross DS (USA)") },
+  { title: "Tetris DS", system: "DS", genre: "Puzzle", year: 2006, iconic: true, coop: false, perf: "good", info: "Klasik Tetris, DS modları ile.", img: T("Nintendo_-_Nintendo_DS", "Tetris DS (USA)") },
+  { title: "42 All-Time Classics", system: "DS", genre: "Puzzle", year: 2005, iconic: true, coop: true, perf: "good", info: "Satranç, dama, Mahjong, bowling — 42 oyun bir arada. Multiplayer var.", img: T("Nintendo_-_Nintendo_DS", "42 All-Time Classics (Europe) (En,Fr,De,Es,It)") },
+  { title: "Advance Wars", system: "GBA", genre: "Strategy", year: 2001, iconic: true, coop: false, perf: "good", info: "Sıra tabanlı strateji. Klasik.", img: T("Nintendo_-_Game_Boy_Advance", "Advance Wars (USA)") },
+  { title: "Advance Wars: Dual Strike", system: "DS", genre: "Strategy", year: 2005, iconic: true, coop: false, perf: "good", info: "DS'in çift ekran kullanan strateji oyunu.", img: T("Nintendo_-_Nintendo_DS", "Advance Wars - Dual Strike (USA)") },
+  { title: "Fire Emblem: Shadow Dragon", system: "DS", genre: "Strategy-RPG", year: 2008, iconic: false, coop: false, perf: "good", info: "Fire Emblem'in DS girişi.", img: T("Nintendo_-_Nintendo_DS", "Fire Emblem - Shadow Dragon (USA)") },
+  { title: "Puzzle Quest: Challenge of the Warlords", system: "DS", genre: "Puzzle-RPG", year: 2007, iconic: true, coop: false, perf: "good", info: "Match-3 + RPG. Bağımlılık yapar.", img: T("Nintendo_-_Nintendo_DS", "Puzzle Quest - Challenge of the Warlords (USA)") },
+  { title: "Chessmaster: The Art of Learning", system: "DS", genre: "Strategy", year: 2007, iconic: false, coop: false, perf: "good", info: "DS'in en iyi satranç oyunu.", img: T("Nintendo_-_Nintendo_DS", "Chessmaster - The Art of Learning (USA)") },
+];
+
+// Status persistence
+function getStatus(title) { return localStorage.getItem('rp5_' + title) || 'unplayed'; }
+function setStatus(title, status) { localStorage.setItem('rp5_' + title, status); render(); }
+
+let activeFilters = { search: '', system: '', genre: '', coop: false, iconic: false };
+
+function render() {
+  const grid = document.getElementById('grid');
+  const filtered = games.filter(g => {
+    if (activeFilters.search && !(g.title + ' ' + g.system + ' ' + g.genre).toLowerCase().includes(activeFilters.search.toLowerCase())) return false;
+    if (activeFilters.system && g.system !== activeFilters.system) return false;
+    if (activeFilters.genre && g.genre !== activeFilters.genre) return false;
+    if (activeFilters.coop && !g.coop) return false;
+    if (activeFilters.iconic && !g.iconic) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty">Filtreyle eşleşen oyun bulunamadı. Sıfırla butonunu dene.</div>';
+  } else {
+    grid.innerHTML = filtered.map(g => {
+      const status = getStatus(g.title);
+      const safeTitle = g.title.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+      const escapedTitle = g.title.replace(/'/g, "\\'");
+      return `
+        <div class="game-card" onclick="openModal('${escapedTitle}')">
+          <div class="boxart-wrapper">
+            <img class="boxart" src="${g.img}" alt="${safeTitle}" loading="lazy"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div class="boxart-fallback" style="display:none;">
+              <div class="fb-system">${g.system}</div>
+              <div class="fb-title">${safeTitle}</div>
+            </div>
+            ${g.iconic ? '<div class="iconic-corner">★</div>' : ''}
+            ${g.coop ? '<div class="coop-corner">2P</div>' : ''}
+            <div class="perf-overlay ${g.perf}">${g.perf === 'good' ? '✓ Smooth' : g.perf === 'warn' ? '⚠ Tweak' : '✗ Sorunlu'}</div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">${g.title}</div>
+            <div class="card-meta">
+              <span class="badge badge-system">${g.system}</span>
+              <span class="badge badge-genre">${g.genre}</span>
+              <span class="badge badge-year">${g.year}</span>
+            </div>
+            <div class="card-status" onclick="event.stopPropagation()">
+              <button class="status-btn unplayed ${status === 'unplayed' ? 'active' : ''}" onclick="setStatus('${escapedTitle}', 'unplayed')">Yeni</button>
+              <button class="status-btn playing ${status === 'playing' ? 'active' : ''}" onclick="setStatus('${escapedTitle}', 'playing')">Oynuyor</button>
+              <button class="status-btn done ${status === 'done' ? 'active' : ''}" onclick="setStatus('${escapedTitle}', 'done')">Bitti</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Stats
+  const totalGames = games.length;
+  const iconicCount = games.filter(g => g.iconic).length;
+  const coopCount = games.filter(g => g.coop).length;
+  const playingCount = games.filter(g => getStatus(g.title) === 'playing').length;
+  const doneCount = games.filter(g => getStatus(g.title) === 'done').length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><span class="num">${totalGames}</span><div class="label">Toplam Oyun</div></div>
+    <div class="stat-card"><span class="num" style="color:var(--gold);">${iconicCount}</span><div class="label">Kült Klasik ★</div></div>
+    <div class="stat-card"><span class="num" style="color:var(--good);">${coopCount}</span><div class="label">Co-op (2P)</div></div>
+    <div class="stat-card"><span class="num" style="color:var(--warn);">${playingCount}</span><div class="label">Oynanıyor</div></div>
+    <div class="stat-card"><span class="num" style="color:var(--good);">${doneCount}</span><div class="label">Bitirilen</div></div>
+  `;
+}
+
+function openModal(title) {
+  const g = games.find(x => x.title === title);
+  if (!g) return;
+  const perfText = g.perf === 'good' ? 'RP5\'te tertemiz çalışır, ekstra ayar gerekmez' : g.perf === 'warn' ? 'RP5\'te ayar/tweak gerektirir — resolution scale, frameskip ile iyileşir' : 'Sorunlu, beklemede tutmak iyi olur';
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-hero">
+      <img src="${g.img}" alt="${g.title}" onerror="this.style.display='none'">
+      <img class="modal-hero-art" src="${g.img}" alt="${g.title}" onerror="this.style.opacity='0.2'">
+      <div class="modal-hero-info">
+        <h2>${g.title} ${g.iconic ? '★' : ''}</h2>
+        <div class="card-meta">
+          <span class="badge badge-system">${g.system}</span>
+          <span class="badge badge-genre">${g.genre}</span>
+          <span class="badge badge-year">${g.year}</span>
+          ${g.coop ? '<span class="badge" style="background:rgba(46,204,113,0.85);color:white;">2P Co-op</span>' : ''}
+        </div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <h4>📖 Detaylar</h4>
+        <p>${g.info}</p>
+      </div>
+      <div class="modal-section">
+        <h4>⚙️ RP5 Durumu</h4>
+        <p>${perfText}</p>
+      </div>
+      ${g.iconic ? '<div class="modal-section"><h4>👑 Neden Kült?</h4><p>Bu oyun, türünde tarihsel bir mihenk taşı. Oynanılması gereken bir başyapıt sayılır.</p></div>' : ''}
+    </div>
+  `;
+  document.getElementById('modal').classList.add('active');
+}
+function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+// Setup
+const systems = [...new Set(games.map(g => g.system))].sort();
+const genres = [...new Set(games.map(g => g.genre))].sort();
+document.getElementById('filter-system').innerHTML = '<option value="">Tüm Sistemler</option>' + systems.map(s => `<option value="${s}">${s}</option>`).join('');
+document.getElementById('filter-genre').innerHTML = '<option value="">Tüm Türler</option>' + genres.map(s => `<option value="${s}">${s}</option>`).join('');
+
+document.getElementById('search').addEventListener('input', e => { activeFilters.search = e.target.value; render(); });
+document.getElementById('filter-system').addEventListener('change', e => { activeFilters.system = e.target.value; render(); });
+document.getElementById('filter-genre').addEventListener('change', e => { activeFilters.genre = e.target.value; render(); });
+document.getElementById('filter-coop').addEventListener('click', e => {
+  activeFilters.coop = !activeFilters.coop;
+  e.target.classList.toggle('active');
+  render();
+});
+document.getElementById('filter-iconic').addEventListener('click', e => {
+  activeFilters.iconic = !activeFilters.iconic;
+  e.target.classList.toggle('active');
+  render();
+});
+document.getElementById('reset').addEventListener('click', () => {
+  activeFilters = { search: '', system: '', genre: '', coop: false, iconic: false };
+  document.getElementById('search').value = '';
+  document.getElementById('filter-system').value = '';
+  document.getElementById('filter-genre').value = '';
+  document.getElementById('filter-coop').classList.remove('active');
+  document.getElementById('filter-iconic').classList.remove('active');
+  render();
+});
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+render();
+</script>
+</body>
+</html>
