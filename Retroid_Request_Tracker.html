@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>İstek Takibi — RP5 Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --bg-1: #0a0e1a;
+    --bg-2: #131829;
+    --bg-3: #1c2238;
+    --accent: #ff4655;
+    --accent-2: #00d4ff;
+    --gold: #ffb347;
+    --green: #2ecc71;
+    --text: #e8eaf0;
+    --muted: #8c93a8;
+    --border: #2a3149;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-1);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 { width: 400px; height: 400px; background: var(--accent); top: -100px; left: -100px; }
+  .orb-2 { width: 350px; height: 350px; background: var(--accent-2); bottom: -80px; right: -80px; }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .back-btn:hover { border-color: var(--accent-2); color: var(--accent-2); }
+
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-icon {
+    width: 46px;
+    height: 46px;
+    background: linear-gradient(135deg, #00d4ff, #0099bb);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+
+  h1 {
+    font-size: clamp(18px, 3vw, 26px);
+    font-weight: 800;
+  }
+
+  h1 span {
+    background: linear-gradient(90deg, var(--accent-2), #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stat-pill .num {
+    font-weight: 800;
+    font-size: 15px;
+  }
+
+  .stat-pill.total .num { color: var(--accent-2); }
+  .stat-pill.open .num { color: var(--gold); }
+  .stat-pill.done .num { color: var(--green); }
+
+  /* Add form */
+  .add-form {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .form-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  input[type="text"], textarea, select {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input[type="text"]:focus,
+  textarea:focus,
+  select:focus { border-color: var(--accent-2); }
+
+  textarea { resize: vertical; min-height: 70px; }
+
+  select { cursor: pointer; }
+  select option { background: var(--bg-3); }
+
+  .form-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .form-row > * { flex: 1; min-width: 140px; }
+
+  .add-btn {
+    background: linear-gradient(135deg, var(--accent-2), #0099bb);
+    border: none;
+    border-radius: 10px;
+    color: #000;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 24px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .add-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .add-btn:active { transform: translateY(0); }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn.active { border-color: var(--accent-2); color: var(--accent-2); background: rgba(0,212,255,0.08); }
+  .filter-btn:hover:not(.active) { border-color: var(--muted); color: var(--text); }
+
+  /* Request list */
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+    font-size: 14px;
+    background: var(--bg-2);
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+  }
+  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+
+  .request-item {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: border-color 0.2s, opacity 0.2s;
+    animation: slideIn 0.25s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .request-item.done {
+    opacity: 0.55;
+    border-color: rgba(46,204,113,0.25);
+  }
+
+  .check-btn {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+  .check-btn:hover { border-color: var(--green); }
+  .request-item.done .check-btn {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .item-body { flex: 1; min-width: 0; }
+
+  .item-title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .request-item.done .item-title {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  .item-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .item-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tag-oyun    { background: rgba(255,70,85,0.15); color: #ff4655; }
+  .tag-emülatör { background: rgba(0,212,255,0.15); color: #00d4ff; }
+  .tag-donanim  { background: rgba(255,179,71,0.15); color: #ffb347; }
+  .tag-diger    { background: rgba(140,147,168,0.15); color: #8c93a8; }
+
+  .prio-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .prio-yüksek { background: rgba(255,70,85,0.15); color: #ff4655; }
+  .prio-orta   { background: rgba(255,179,71,0.15); color: #ffb347; }
+  .prio-düşük  { background: rgba(46,204,113,0.15); color: #2ecc71; }
+
+  .item-date {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .del-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    line-height: 1;
+    margin-top: -2px;
+  }
+  .del-btn:hover { color: var(--accent); background: rgba(255,70,85,0.1); }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    padding-bottom: 8px;
+  }
+
+  @media (max-width: 500px) {
+    .input-row { flex-direction: column; }
+    .add-btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="container">
+
+  <header>
+    <a class="back-btn" href="index.html">← Hub</a>
+    <div class="header-title">
+      <div class="header-icon">📋</div>
+      <div>
+        <h1>İstek <span>Takibi</span></h1>
+        <p class="subtitle">Eklemek istediğin oyunlar, ayarlar ve özellikler</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-pill total"><span class="num" id="statTotal">0</span> Toplam</div>
+    <div class="stat-pill open"><span class="num" id="statOpen">0</span> Bekliyor</div>
+    <div class="stat-pill done"><span class="num" id="statDone">0</span> Tamamlandı</div>
+  </div>
+
+  <!-- Add Form -->
+  <div class="add-form">
+    <div class="form-title">+ Yeni İstek</div>
+    <div class="input-row">
+      <input type="text" id="titleInput" placeholder="İstek başlığı (örn: Zelda: Tears of the Kingdom ekle)" maxlength="120" />
+    </div>
+    <textarea id="noteInput" placeholder="Not / açıklama (isteğe bağlı)..." maxlength="400"></textarea>
+    <div class="form-row">
+      <select id="catSelect">
+        <option value="oyun">🎮 Oyun</option>
+        <option value="emülatör">⚙️ Emülatör</option>
+        <option value="donanım">🔧 Donanım</option>
+        <option value="diğer">💬 Diğer</option>
+      </select>
+      <select id="prioSelect">
+        <option value="yüksek">🔴 Yüksek Öncelik</option>
+        <option value="orta" selected>🟡 Orta Öncelik</option>
+        <option value="düşük">🟢 Düşük Öncelik</option>
+      </select>
+      <button class="add-btn" onclick="addRequest()">Ekle</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('hepsi', this)">Hepsi</button>
+    <button class="filter-btn" onclick="setFilter('bekliyor', this)">Bekliyor</button>
+    <button class="filter-btn" onclick="setFilter('tamamlandı', this)">Tamamlandı</button>
+    <button class="filter-btn" onclick="setFilter('oyun', this)">Oyun</button>
+    <button class="filter-btn" onclick="setFilter('emülatör', this)">Emülatör</button>
+    <button class="filter-btn" onclick="setFilter('donanım', this)">Donanım</button>
+    <button class="filter-btn" onclick="setFilter('diğer', this)">Diğer</button>
+  </div>
+
+  <!-- List -->
+  <div class="list" id="requestList"></div>
+
+  <footer>Veriler bu tarayıcıda yerel olarak saklanır · Retroid Pocket 5 Hub</footer>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'rp5_requests';
+  let currentFilter = 'hepsi';
+
+  function load() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  }
+
+  function save(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function addRequest() {
+    const title = document.getElementById('titleInput').value.trim();
+    if (!title) {
+      document.getElementById('titleInput').focus();
+      return;
+    }
+
+    const requests = load();
+    requests.unshift({
+      id: Date.now(),
+      title,
+      note: document.getElementById('noteInput').value.trim(),
+      category: document.getElementById('catSelect').value,
+      priority: document.getElementById('prioSelect').value,
+      done: false,
+      date: new Date().toLocaleDateString('tr-TR')
+    });
+    save(requests);
+
+    document.getElementById('titleInput').value = '';
+    document.getElementById('noteInput').value = '';
+    render();
+  }
+
+  function toggleDone(id) {
+    const requests = load();
+    const item = requests.find(r => r.id === id);
+    if (item) item.done = !item.done;
+    save(requests);
+    render();
+  }
+
+  function deleteRequest(id) {
+    const requests = load().filter(r => r.id !== id);
+    save(requests);
+    render();
+  }
+
+  function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function render() {
+    const requests = load();
+    const total = requests.length;
+    const done  = requests.filter(r => r.done).length;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statOpen').textContent  = total - done;
+    document.getElementById('statDone').textContent  = done;
+
+    let filtered = requests;
+    if (currentFilter === 'bekliyor')    filtered = requests.filter(r => !r.done);
+    else if (currentFilter === 'tamamlandı') filtered = requests.filter(r => r.done);
+    else if (['oyun','emülatör','donanım','diğer'].includes(currentFilter))
+      filtered = requests.filter(r => r.category === currentFilter);
+
+    const list = document.getElementById('requestList');
+
+    if (filtered.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          ${total === 0 ? 'Henüz istek yok. Yukarıdan ilk isteğini ekle!' : 'Bu filtre için sonuç yok.'}
+        </div>`;
+      return;
+    }
+
+    const catClass = { oyun: 'tag-oyun', 'emülatör': 'tag-emülatör', donanım: 'tag-donanim', diğer: 'tag-diger' };
+    const prioClass = { yüksek: 'prio-yüksek', orta: 'prio-orta', düşük: 'prio-düşük' };
+    const catLabel  = { oyun: '🎮 Oyun', 'emülatör': '⚙️ Emülatör', donanım: '🔧 Donanım', diğer: '💬 Diğer' };
+    const prioLabel = { yüksek: '🔴 Yüksek', orta: '🟡 Orta', düşük: '🟢 Düşük' };
+
+    list.innerHTML = filtered.map(r => `
+      <div class="request-item ${r.done ? 'done' : ''}">
+        <button class="check-btn" onclick="toggleDone(${r.id})" title="${r.done ? 'Geri al' : 'Tamamlandı olarak işaretle'}">
+          ${r.done ? '✓' : ''}
+        </button>
+        <div class="item-body">
+          <div class="item-title">${escHtml(r.title)}</div>
+          ${r.note ? `<div class="item-note">${escHtml(r.note)}</div>` : ''}
+          <div class="item-meta">
+            <span class="tag ${catClass[r.category] || 'tag-diger'}">${catLabel[r.category] || r.category}</span>
+            <span class="prio-tag ${prioClass[r.priority] || 'prio-orta'}">${prioLabel[r.priority] || r.priority}</span>
+            <span class="item-date">${r.date}</span>
+          </div>
+        </div>
+        <button class="del-btn" onclick="deleteRequest(${r.id})" title="Sil">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Enter ile ekle
+  document.getElementById('titleInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addRequest();
+  });
+
+  render();
+</script>
+</body>
+</html>
