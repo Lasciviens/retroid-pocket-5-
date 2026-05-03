@@ -434,6 +434,80 @@
     .modal-hero-info { left: 120px; }
     .modal-hero-info h2 { font-size: 1.2rem; }
   }
+
+  /* === SIRA BUTONU: Kart alt kısmına eklenen "＋ Sıra" butonu === */
+  .status-btn.queue-btn {
+    background: rgba(255,179,71,0.1);
+    border-color: rgba(255,179,71,0.3);
+    color: var(--gold);
+  }
+  .status-btn.queue-btn:hover {
+    background: rgba(255,179,71,0.2);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  /* Eklendi durumu — kısa süre yeşil yanıp söner */
+  .status-btn.queue-btn.added {
+    background: rgba(46,204,113,0.2);
+    border-color: var(--good);
+    color: var(--good);
+  }
+
+  /* === TOAST ANİMASYONLARI === */
+  @keyframes toastIn  { from { opacity:0; transform:translateX(-50%) translateY(16px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+  @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
+
+  /* === MOBİL BREAKPOINT 768px: Orta boy ekranlar === */
+  @media (max-width: 768px) {
+    /* Kart grid'i 180px minimum genişliğe düşür */
+    .game-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    /* Kontroller flex-wrap açık — butonlar alt satıra geçer */
+    .controls { flex-wrap: wrap; }
+  }
+
+  /* === MOBİL BREAKPOINT 480px: Küçük telefonlar === */
+  @media (max-width: 480px) {
+    body { padding: 10px; }
+
+    /* Başlık daha küçük */
+    h1 { font-size: 1.6rem; }
+    header { padding: 18px 14px; margin-bottom: 16px; }
+
+    /* Quick links daha küçük yazı */
+    .quick-links { gap: 6px; }
+    .quick-links a { font-size: 0.75rem; padding: 6px 10px; }
+
+    /* Stats 2 sütun: 5 kart daha az sıkışır */
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat-card .num { font-size: 1.6rem; }
+
+    /* Kontroller: yatay kaydırılabilir şerit
+       Böylece mobilde butonlar taşmaz, kullanıcı kaydırabilir */
+    .controls {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      gap: 8px;
+      padding-bottom: 6px;
+      /* Kaydırma çubuğunu gizle ama işlev kalsın */
+      scrollbar-width: none;
+    }
+    .controls::-webkit-scrollbar { display: none; }
+    .search-box { min-width: 200px; flex-shrink: 0; }
+    .filter-btn { white-space: nowrap; flex-shrink: 0; min-height: 40px; }
+
+    /* Kart grid: tek ya da çift sütun (160px minimum) */
+    .game-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 8px; }
+
+    /* Kart içi butonlar daha küçük — dokunuş hedefi korunuyor */
+    .status-btn { padding: 5px 2px; font-size: 0.58rem; }
+    .card-body { padding: 8px 10px 10px; }
+    .card-title { font-size: 0.85rem; min-height: 2.4em; }
+
+    /* Modal altında küçük boxart */
+    .modal-hero { height: 180px; }
+  }
 </style>
 </head>
 <body>
@@ -445,6 +519,7 @@
     <a href="Retroid_Coop_Dashboard.html">🎮 Co-op Hub (Eşle)</a>
     <a href="Retroid_Series_Roadmap.html">🗺️ Seri Yol Haritaları</a>
     <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatör Eşleştirme</a>
+    <a href="Retroid_Queue.html" style="color:var(--gold);border-color:rgba(255,179,71,0.3);">🎮 Oynama Sırası</a>
   </div>
 </header>
 
@@ -629,6 +704,47 @@ const games = [
 function getStatus(title) { return localStorage.getItem('rp5_' + title) || 'unplayed'; }
 function setStatus(title, status) { localStorage.setItem('rp5_' + title, status); render(); }
 
+/* === OYNAMA SIRASINA EKLE ===
+   Kart üzerindeki "＋ Sıra" butonuna basılınca çalışır.
+   Oyun nesnesini rp5_queue dizisine ekler; zaten varsa uyarı verir. */
+function addToQueue(e, title, btn) {
+  e.stopPropagation();
+  const g = games.find(x => x.title === title);
+  if (!g) return;
+
+  const q = JSON.parse(localStorage.getItem('rp5_queue') || '[]');
+  if (q.some(x => x.title === title)) {
+    showToast('Zaten sırada! →', '#f39c12');
+    return;
+  }
+  q.push({ id: Date.now(), title: g.title, system: g.system, img: g.img, year: g.year });
+  localStorage.setItem('rp5_queue', JSON.stringify(q));
+
+  /* Buton kısa süre yeşil "Eklendi" durumunu gösterir */
+  if (btn) {
+    btn.textContent = '✓ Eklendi';
+    btn.classList.add('added');
+    setTimeout(() => { btn.textContent = '＋ Sıra'; btn.classList.remove('added'); }, 1600);
+  }
+  showToast('Sıraya eklendi ✓');
+}
+
+/* === TOAST BİLDİRİMİ ===
+   Sayfanın alt ortasında geçici kayan bildirim gösterir. */
+function showToast(msg, color = '#2ecc71') {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = `
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:${color}; color:#000; font-weight:700;
+    padding:10px 20px; border-radius:999px; font-size:13px;
+    z-index:9999; animation:toastIn 0.2s ease, toastOut 0.3s ease 1.8s forwards;
+    pointer-events:none; white-space:nowrap;
+  `;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
 let activeFilters = { search: '', system: '', genre: '', coop: false, iconic: false };
 
 function render() {
@@ -673,6 +789,8 @@ function render() {
               <button class="status-btn unplayed ${status === 'unplayed' ? 'active' : ''}" onclick="setStatus('${escapedTitle}', 'unplayed')">Yeni</button>
               <button class="status-btn playing ${status === 'playing' ? 'active' : ''}" onclick="setStatus('${escapedTitle}', 'playing')">Oynuyor</button>
               <button class="status-btn done ${status === 'done' ? 'active' : ''}" onclick="setStatus('${escapedTitle}', 'done')">Bitti</button>
+              <!-- Oynama sırasına ekle butonu -->
+              <button class="status-btn queue-btn" onclick="addToQueue(event,'${escapedTitle}',this)">＋ Sıra</button>
             </div>
           </div>
         </div>

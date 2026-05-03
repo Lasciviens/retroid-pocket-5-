@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Oynama Sırası — RP5 Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  /* === TEMA DEĞİŞKENLERİ === */
+  :root {
+    --bg-1: #0a0e1a;
+    --bg-2: #131829;
+    --bg-3: #1c2238;
+    --accent: #ff4655;
+    --accent-2: #00d4ff;
+    --gold: #ffb347;
+    --green: #2ecc71;
+    --text: #e8eaf0;
+    --muted: #8c93a8;
+    --border: #2a3149;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-1);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    /* Sürtünmesiz dokunmatik kaydırma */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Dekoratif izgara arka planı */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Parlak küre efektleri */
+  .orb {
+    position: fixed; border-radius: 50%;
+    filter: blur(80px); opacity: 0.1;
+    pointer-events: none; z-index: 0;
+  }
+  .orb-1 { width: 400px; height: 400px; background: var(--accent); top: -150px; left: -100px; }
+  .orb-2 { width: 350px; height: 350px; background: var(--accent-2); bottom: -100px; right: -80px; }
+
+  /* === ANA KONTEYNER === */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 860px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  /* === BAŞLIK ALANI === */
+  header {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 14px;
+    color: var(--muted); text-decoration: none;
+    font-size: 13px; transition: all 0.2s; white-space: nowrap;
+  }
+  .back-btn:hover { border-color: var(--accent-2); color: var(--accent-2); }
+
+  .header-icon {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, var(--gold), #e67e22);
+    border-radius: 12px; display: flex;
+    align-items: center; justify-content: center;
+    font-size: 22px; box-shadow: 0 0 20px rgba(255,179,71,0.3);
+  }
+
+  h1 { font-size: clamp(18px, 3vw, 26px); font-weight: 800; }
+  h1 span {
+    background: linear-gradient(90deg, var(--gold), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .subtitle { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+  /* Sıra linki */
+  .queue-link {
+    margin-left: auto;
+    background: linear-gradient(135deg, var(--gold), #e67e22);
+    border: none; border-radius: 10px;
+    color: #000; font-family: inherit;
+    font-size: 12px; font-weight: 700;
+    padding: 8px 16px; cursor: pointer;
+    text-decoration: none; display: inline-flex;
+    align-items: center; gap: 6px;
+    transition: opacity 0.2s;
+  }
+  .queue-link:hover { opacity: 0.85; }
+
+  /* === STATS BAR === */
+  .stats-bar {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 999px; padding: 6px 14px;
+    font-size: 12px; display: flex; align-items: center; gap: 6px;
+  }
+  .stat-pill .num { font-weight: 800; font-size: 15px; }
+  .stat-pill.s-total .num { color: var(--accent-2); }
+  .stat-pill.s-playing .num { color: var(--gold); }
+
+  /* === ARAMA KUTUSU === */
+  .search-panel {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 16px; padding: 18px; position: relative;
+  }
+  .search-panel-title {
+    font-size: 12px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 12px;
+  }
+  .search-row { display: flex; gap: 8px; }
+
+  input[type="text"], select {
+    background: var(--bg-3); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    font-family: inherit; font-size: 14px;
+    padding: 10px 14px; outline: none;
+    transition: border-color 0.2s; width: 100%;
+  }
+  input[type="text"]:focus, select:focus { border-color: var(--accent-2); }
+
+  .add-btn {
+    background: linear-gradient(135deg, var(--gold), #e67e22);
+    border: none; border-radius: 10px;
+    color: #000; font-family: inherit;
+    font-size: 13px; font-weight: 700;
+    padding: 10px 20px; cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .add-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .add-btn:active { transform: translateY(0); }
+
+  /* Arama sonuçları açılır kutusu */
+  .search-results {
+    position: absolute; left: 18px; right: 18px;
+    background: var(--bg-3); border: 1px solid var(--accent-2);
+    border-radius: 10px; margin-top: 4px;
+    z-index: 50; overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    display: none; /* JS ile gösterilir */
+  }
+  .search-result-item {
+    padding: 10px 14px; cursor: pointer;
+    font-size: 13px; display: flex;
+    align-items: center; gap: 10px;
+    transition: background 0.15s;
+  }
+  .search-result-item:hover { background: rgba(0,212,255,0.08); }
+  .search-result-item .r-system {
+    font-size: 10px; font-weight: 700;
+    color: var(--accent-2); background: rgba(0,212,255,0.1);
+    padding: 2px 6px; border-radius: 4px; white-space: nowrap;
+  }
+  .search-result-item .r-title { flex: 1; }
+  .search-result-item .r-year { color: var(--muted); font-size: 11px; }
+  .no-results { padding: 12px 14px; color: var(--muted); font-size: 13px; }
+
+  /* === BOŞ DURUM === */
+  .empty-state {
+    text-align: center; padding: 60px 24px;
+    color: var(--muted); font-size: 14px;
+    background: var(--bg-2); border: 1px dashed var(--border);
+    border-radius: 16px;
+  }
+  .empty-state .icon { font-size: 42px; margin-bottom: 14px; }
+
+  /* === SIRA LİSTESİ BAŞLIK SATIRI === */
+  .list-header {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .list-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .clear-btn {
+    background: transparent; border: 1px solid rgba(255,70,85,0.3);
+    border-radius: 8px; color: var(--accent);
+    font-family: inherit; font-size: 11px;
+    font-weight: 700; padding: 5px 12px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .clear-btn:hover { background: rgba(255,70,85,0.1); }
+
+  /* === SIRA LİSTESİ === */
+  .queue-list {
+    display: flex; flex-direction: column; gap: 6px;
+    /* Sürükle-bırak sırasında taşma olmaması için */
+    position: relative;
+  }
+
+  /* Tek bir sıra öğesi — yatay geniş kart */
+  .queue-item {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 12px; display: flex;
+    align-items: center; gap: 0;
+    transition: border-color 0.2s, box-shadow 0.2s, opacity 0.15s;
+    user-select: none; /* Sürüklerken metin seçilmesin */
+    position: relative; overflow: hidden;
+  }
+  /* İlk öğe = NOW PLAYING vurgusu */
+  .queue-item.now-playing {
+    border-color: var(--gold);
+    box-shadow: 0 0 12px rgba(255,179,71,0.2);
+  }
+  /* Sürükleme sırasında görsel geri bildirim */
+  .queue-item.dragging {
+    opacity: 0.4; border-style: dashed;
+  }
+  /* Bırakma hedefi vurgulama */
+  .queue-item.drag-over {
+    border-color: var(--accent-2);
+    box-shadow: 0 0 0 2px var(--accent-2);
+  }
+
+  /* Sürükleme tutamacı */
+  .drag-handle {
+    width: 40px; min-width: 40px; height: 100%;
+    display: flex; align-items: center;
+    justify-content: center; cursor: grab;
+    color: var(--border); font-size: 18px;
+    padding: 14px 0; transition: color 0.2s;
+    touch-action: none; /* Touch sürüklemeyi etkinleştir */
+  }
+  .drag-handle:hover { color: var(--muted); }
+  .drag-handle:active { cursor: grabbing; }
+
+  /* Küçük boxart thumbnail */
+  .item-thumb {
+    width: 50px; min-width: 50px; height: 70px;
+    border-radius: 6px; overflow: hidden;
+    background: var(--bg-3);
+    position: relative;
+  }
+  .item-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  /* Resim yüklenemezse sistem + başlık göster */
+  .item-thumb-fallback {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 8px; color: var(--muted);
+    text-align: center; padding: 4px;
+    line-height: 1.2;
+  }
+  .item-thumb-fallback .fb-sys {
+    font-size: 9px; font-weight: 700;
+    color: var(--accent-2); margin-bottom: 2px;
+  }
+
+  /* Öğe bilgi bölümü */
+  .item-info {
+    flex: 1; padding: 10px 12px;
+    min-width: 0; /* flex shrink için */
+  }
+  .item-title {
+    font-size: 14px; font-weight: 700;
+    line-height: 1.3; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .item-meta {
+    display: flex; align-items: center;
+    gap: 6px; margin-top: 5px; flex-wrap: wrap;
+  }
+  .item-badge {
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .badge-sys { background: rgba(0,212,255,0.12); color: var(--accent-2); }
+  .badge-year { background: var(--bg-3); color: var(--muted); border: 1px solid var(--border); }
+  /* İlk öğe için "NOW PLAYING" etiketi */
+  .badge-now {
+    background: linear-gradient(90deg, var(--gold), #e67e22);
+    color: #000; font-size: 9px;
+  }
+
+  /* Öğe sıra numarası */
+  .item-rank {
+    font-size: 11px; font-weight: 800;
+    color: var(--border); min-width: 20px;
+    text-align: right; padding-right: 2px;
+  }
+
+  /* Silme butonu */
+  .del-btn {
+    background: transparent; border: none;
+    color: var(--muted); font-size: 15px;
+    cursor: pointer; padding: 10px 14px;
+    border-radius: 6px; transition: color 0.2s, background 0.2s;
+    line-height: 1; min-height: 44px; min-width: 44px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .del-btn:hover { color: var(--accent); background: rgba(255,70,85,0.08); }
+
+  /* Sayı rozeti — sıra numarası */
+  .rank-num {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; min-width: 28px;
+    font-size: 12px; font-weight: 800;
+    color: var(--muted); /* varsayılan gri */
+  }
+  /* İlk öğe altın renkli */
+  .queue-item.now-playing .rank-num { color: var(--gold); }
+
+  footer {
+    text-align: center; color: var(--muted);
+    font-size: 11px; padding-bottom: 8px;
+  }
+
+  /* === TOAST BİLDİRİMİ === */
+  @keyframes toastIn  { from { opacity:0; transform:translateX(-50%) translateY(16px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+  @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
+
+  /* === MOBİL BREAKPOINT 480px === */
+  @media (max-width: 480px) {
+    body { padding: 12px; }
+    .header-icon { width: 38px; height: 38px; font-size: 18px; }
+    h1 { font-size: 18px; }
+    /* Kaydırılabilir stats bar */
+    .stats-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+    .stat-pill { flex-shrink: 0; }
+    /* Arama satırı dikey */
+    .search-row { flex-direction: column; }
+    .add-btn { width: 100%; }
+    /* Küçük thumbnail mobilde biraz geniş */
+    .item-thumb { width: 44px; min-width: 44px; height: 62px; }
+    .item-title { font-size: 13px; }
+    /* Drag handle mobilde daha büyük dokunma hedefi */
+    .drag-handle { width: 36px; min-width: 36px; }
+    .del-btn { padding: 8px 10px; min-width: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="container">
+
+  <!-- === BAŞLIK === -->
+  <header>
+    <a class="back-btn" href="index.html">← Hub</a>
+    <div class="header-icon">🎮</div>
+    <div>
+      <h1>Oynama <span>Sırası</span></h1>
+      <p class="subtitle">Çalmak istediğin oyunların listesi</p>
+    </div>
+  </header>
+
+  <!-- === İSTATİSTİKLER === -->
+  <div class="stats-bar">
+    <div class="stat-pill s-total"><span class="num" id="statTotal">0</span> Oyun</div>
+    <div class="stat-pill s-playing"><span class="num" id="statNow">—</span> Şu an</div>
+  </div>
+
+  <!-- === OYUN ARAMA PANELİ === -->
+  <div class="search-panel">
+    <div class="search-panel-title">+ Sıraya Oyun Ekle</div>
+    <div class="search-row">
+      <div style="position:relative; flex:1;">
+        <input type="text" id="searchInput"
+               placeholder="🔍 Oyun adı yaz..."
+               autocomplete="off" />
+        <!-- Sonuçlar kutusu JS ile doldurulur -->
+        <div class="search-results" id="searchResults"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === SIRA LİSTESİ BAŞLIĞI === -->
+  <div class="list-header">
+    <span class="list-title">Sıradaki Oyunlar</span>
+    <button class="clear-btn" onclick="clearAll()">Tümünü Temizle</button>
+  </div>
+
+  <!-- === SIRA LİSTESİ === -->
+  <div class="queue-list" id="queueList"></div>
+
+  <footer>Veriler bu tarayıcıda yerel olarak saklanır · Retroid Pocket 5 Hub</footer>
+
+</div>
+
+<script>
+/* === VERİ TABANI: Compact oyun listesi (başlık + sistem + resim + yıl) ===
+   Library Dashboard'daki tam games dizisinin hafif kopyası.
+   Arama ve "sıraya ekle" işlevi için kullanılır. */
+const GAMES_INDEX = [
+  {title:"GTA: San Andreas",system:"PS2",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20San%20Andreas%20%28USA%29%20%28v3.00%29.png"},
+  {title:"GTA: Vice City",system:"PS2",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20Vice%20City%20%28USA%29%20%28v3.00%29.png"},
+  {title:"GTA III",system:"PS2",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Grand%20Theft%20Auto%20III%20%28USA%29%20%28v3.00%29.png"},
+  {title:"GTA: Liberty City Stories",system:"PSP",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20Liberty%20City%20Stories%20%28USA%29.png"},
+  {title:"GTA: Vice City Stories",system:"PSP",year:2006,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20Vice%20City%20Stories%20%28USA%29.png"},
+  {title:"GTA: Chinatown Wars",system:"DS",year:2009,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20Chinatown%20Wars%20%28USA%29%20%28En%2CFr%2CDe%2CEs%2CIt%29.png"},
+  {title:"God of War: Chains of Olympus",system:"PSP",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/God%20of%20War%20-%20Chains%20of%20Olympus%20%28USA%29.png"},
+  {title:"God of War: Ghost of Sparta",system:"PSP",year:2010,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/God%20of%20War%20-%20Ghost%20of%20Sparta%20%28USA%29.png"},
+  {title:"God of War",system:"PS2",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/God%20of%20War%20%28USA%29.png"},
+  {title:"God of War II",system:"PS2",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/God%20of%20War%20II%20%28USA%29.png"},
+  {title:"Pokemon FireRed",system:"GBA",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Pokemon%20-%20Fire%20Red%20Version%20%28USA%2C%20Europe%29.png"},
+  {title:"Pokemon LeafGreen",system:"GBA",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Pokemon%20-%20Leaf%20Green%20Version%20%28USA%2C%20Europe%29.png"},
+  {title:"Pokemon Emerald",system:"GBA",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Pokemon%20-%20Emerald%20Version%20%28USA%2C%20Europe%29.png"},
+  {title:"Pokemon HeartGold",system:"DS",year:2009,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Pokemon%20HeartGold%20Version%20%28USA%29.png"},
+  {title:"Pokemon SoulSilver",system:"DS",year:2009,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Pokemon%20SoulSilver%20Version%20%28USA%29.png"},
+  {title:"Pokemon Platinum",system:"DS",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Pokemon%20-%20Platinum%20Version%20%28USA%29.png"},
+  {title:"Pokemon Black",system:"DS",year:2010,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Pokemon%20-%20Black%20Version%20%28USA%2C%20Europe%29.png"},
+  {title:"Pokemon White",system:"DS",year:2010,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Pokemon%20-%20White%20Version%20%28USA%2C%20Europe%29.png"},
+  {title:"Pokemon Black 2",system:"DS",year:2012,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Pokemon%20-%20Black%20Version%202%20%28USA%2C%20Europe%29.png"},
+  {title:"Pokemon X",system:"3DS",year:2013,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_3DS/master/Named_Boxarts/Pokemon%20X%20%28USA%29.png"},
+  {title:"Pokemon Sun",system:"3DS",year:2016,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_3DS/master/Named_Boxarts/Pokemon%20Sun%20%28USA%29.png"},
+  {title:"Super Mario 64",system:"N64",year:1996,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Super%20Mario%2064%20%28USA%29.png"},
+  {title:"Super Mario Sunshine",system:"GameCube",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Super%20Mario%20Sunshine%20%28USA%29.png"},
+  {title:"Super Mario Galaxy",system:"Wii",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii/master/Named_Boxarts/Super%20Mario%20Galaxy%20%28USA%29.png"},
+  {title:"Super Mario Galaxy 2",system:"Wii",year:2010,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii/master/Named_Boxarts/Super%20Mario%20Galaxy%202%20%28USA%29.png"},
+  {title:"Mario Kart: Double Dash!!",system:"GameCube",year:2003,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Mario%20Kart%20-%20Double%20Dash!!%20%28USA%29.png"},
+  {title:"Mario Kart Wii",system:"Wii",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii/master/Named_Boxarts/Mario%20Kart%20Wii%20%28USA%29.png"},
+  {title:"Mario Kart 64",system:"N64",year:1996,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Mario%20Kart%2064%20%28USA%29.png"},
+  {title:"Mario Kart DS",system:"DS",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Mario%20Kart%20DS%20%28USA%29.png"},
+  {title:"New Super Mario Bros. Wii",system:"Wii",year:2009,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii/master/Named_Boxarts/New%20Super%20Mario%20Bros.%20Wii%20%28USA%29.png"},
+  {title:"New Super Mario Bros.",system:"DS",year:2006,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/New%20Super%20Mario%20Bros.%20%28USA%2C%20Australia%29.png"},
+  {title:"Paper Mario: Thousand-Year Door",system:"GameCube",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Paper%20Mario%20-%20The%20Thousand-Year%20Door%20%28USA%29.png"},
+  {title:"Paper Mario",system:"N64",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Paper%20Mario%20%28USA%29.png"},
+  {title:"Mario & Luigi: Superstar Saga",system:"GBA",year:2003,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Mario%20%26%20Luigi%20-%20Superstar%20Saga%20%28USA%2C%20Australia%29.png"},
+  {title:"Super Mario World",system:"GBA",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Super%20Mario%20Advance%202%20-%20Super%20Mario%20World%20%28USA%29.png"},
+  {title:"Mario Party 7",system:"GameCube",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Mario%20Party%207%20%28USA%29.png"},
+  {title:"Mario Party 4",system:"GameCube",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Mario%20Party%204%20%28USA%29.png"},
+  {title:"The Legend of Zelda: Ocarina of Time",system:"N64",year:1998,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Ocarina%20of%20Time%20%28USA%29.png"},
+  {title:"The Legend of Zelda: Majora's Mask",system:"N64",year:2000,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Majora%27s%20Mask%20%28USA%29.png"},
+  {title:"The Legend of Zelda: The Wind Waker",system:"GameCube",year:2003,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20The%20Wind%20Waker%20%28USA%29.png"},
+  {title:"The Legend of Zelda: Twilight Princess",system:"GameCube",year:2006,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Twilight%20Princess%20%28USA%29.png"},
+  {title:"The Legend of Zelda: A Link to the Past",system:"SNES",year:1991,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Super_Nintendo_Entertainment_System/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20A%20Link%20to%20the%20Past%20%28USA%29.png"},
+  {title:"The Legend of Zelda: The Minish Cap",system:"GBA",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20The%20Minish%20Cap%20%28USA%29.png"},
+  {title:"The Legend of Zelda: Phantom Hourglass",system:"DS",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Phantom%20Hourglass%20%28USA%29.png"},
+  {title:"The Legend of Zelda: Spirit Tracks",system:"DS",year:2009,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Spirit%20Tracks%20%28USA%29.png"},
+  {title:"The Legend of Zelda: A Link Between Worlds",system:"3DS",year:2013,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_3DS/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20A%20Link%20Between%20Worlds%20%28USA%29.png"},
+  {title:"The Legend of Zelda: Four Swords Adventures",system:"GameCube",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Four%20Swords%20Adventures%20%28USA%29.png"},
+  {title:"Sonic the Hedgehog 2",system:"Genesis",year:1992,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Mega_Drive_-_Genesis/master/Named_Boxarts/Sonic%20The%20Hedgehog%202%20%28World%29%20%28Rev%20A%29.png"},
+  {title:"Sonic the Hedgehog 3 & Knuckles",system:"Genesis",year:1994,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Mega_Drive_-_Genesis/master/Named_Boxarts/Sonic%20The%20Hedgehog%203%20%28USA%29.png"},
+  {title:"Sonic Adventure",system:"Dreamcast",year:1998,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Dreamcast/master/Named_Boxarts/Sonic%20Adventure%20%28USA%29.png"},
+  {title:"Sonic Adventure 2: Battle",system:"GameCube",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Sonic%20Adventure%202%20Battle%20%28USA%29.png"},
+  {title:"Sonic Heroes",system:"GameCube",year:2003,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Sonic%20Heroes%20%28USA%29.png"},
+  {title:"Sonic Advance",system:"GBA",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Sonic%20Advance%20%28USA%29.png"},
+  {title:"Crash Bandicoot",system:"PS1",year:1996,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Crash%20Bandicoot%20%28USA%29.png"},
+  {title:"Crash Bandicoot 2",system:"PS1",year:1997,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Crash%20Bandicoot%202%20-%20Cortex%20Strikes%20Back%20%28USA%29.png"},
+  {title:"Crash Bandicoot 3: Warped",system:"PS1",year:1998,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Crash%20Bandicoot%203%20-%20Warped%20%28USA%29.png"},
+  {title:"Crash Team Racing",system:"PS1",year:1999,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Crash%20Team%20Racing%20%28USA%29.png"},
+  {title:"Crash Bandicoot: Wrath of Cortex",system:"PS2",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Crash%20Bandicoot%20-%20The%20Wrath%20of%20Cortex%20%28USA%29.png"},
+  {title:"Tekken 3",system:"PS1",year:1998,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Tekken%203%20%28USA%29.png"},
+  {title:"Tekken 5",system:"PS2",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Tekken%205%20%28USA%29.png"},
+  {title:"Tekken: Dark Resurrection",system:"PSP",year:2006,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/Tekken%20-%20Dark%20Resurrection%20%28USA%29.png"},
+  {title:"Final Fantasy X",system:"PS2",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Final%20Fantasy%20X%20%28USA%29.png"},
+  {title:"Final Fantasy VII",system:"PS1",year:1997,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Final%20Fantasy%20VII%20%28USA%29%20%28Disc%201%29.png"},
+  {title:"Final Fantasy IX",system:"PS1",year:2000,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Final%20Fantasy%20IX%20%28USA%29%20%28Disc%201%29.png"},
+  {title:"Crisis Core: Final Fantasy VII",system:"PSP",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/Crisis%20Core%20-%20Final%20Fantasy%20VII%20%28USA%29.png"},
+  {title:"Final Fantasy Tactics: War of the Lions",system:"PSP",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/Final%20Fantasy%20Tactics%20-%20The%20War%20of%20the%20Lions%20%28USA%29.png"},
+  {title:"Final Fantasy VI",system:"SNES",year:1994,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Super_Nintendo_Entertainment_System/master/Named_Boxarts/Final%20Fantasy%20III%20%28USA%29.png"},
+  {title:"Resident Evil 4",system:"GameCube",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Resident%20Evil%204%20%28USA%29%20%28Disc%201%29.png"},
+  {title:"Resident Evil Code: Veronica X",system:"PS2",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Resident%20Evil%20-%20Code%20Veronica%20X%20%28USA%29.png"},
+  {title:"Devil May Cry 3: Dante's Awakening",system:"PS2",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Devil%20May%20Cry%203%20-%20Dante%27s%20Awakening%20-%20Special%20Edition%20%28USA%29.png"},
+  {title:"Metal Gear Solid 3: Snake Eater",system:"PS2",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Metal%20Gear%20Solid%203%20-%20Snake%20Eater%20%28USA%29.png"},
+  {title:"Metal Gear Solid",system:"PS1",year:1998,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Metal%20Gear%20Solid%20%28USA%29%20%28Disc%201%29.png"},
+  {title:"Kingdom Hearts",system:"PS2",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Kingdom%20Hearts%20%28USA%29.png"},
+  {title:"Kingdom Hearts II",system:"PS2",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Kingdom%20Hearts%20II%20%28USA%29.png"},
+  {title:"Kingdom Hearts: Birth by Sleep",system:"PSP",year:2010,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/Kingdom%20Hearts%20-%20Birth%20by%20Sleep%20%28USA%29.png"},
+  {title:"Jak and Daxter: The Precursor Legacy",system:"PS2",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Jak%20and%20Daxter%20-%20The%20Precursor%20Legacy%20%28USA%29.png"},
+  {title:"Ratchet & Clank",system:"PS2",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Ratchet%20%26%20Clank%20%28USA%29.png"},
+  {title:"Sly Cooper and the Thievius Raccoonus",system:"PS2",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Sly%20Cooper%20and%20the%20Thievius%20Raccoonus%20%28USA%29.png"},
+  {title:"Sly 2: Band of Thieves",system:"PS2",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Sly%202%20-%20Band%20of%20Thieves%20%28USA%29.png"},
+  {title:"Metroid Prime",system:"GameCube",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Metroid%20Prime%20%28USA%29.png"},
+  {title:"Metroid Fusion",system:"GBA",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Metroid%20Fusion%20%28USA%2C%20Australia%29.png"},
+  {title:"Metroid: Zero Mission",system:"GBA",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Metroid%20-%20Zero%20Mission%20%28USA%29.png"},
+  {title:"Shadow of the Colossus",system:"PS2",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Shadow%20of%20the%20Colossus%20%28USA%29.png"},
+  {title:"Okami",system:"PS2",year:2006,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Okami%20%28USA%29.png"},
+  {title:"Castlevania: Symphony of the Night",system:"PS1",year:1997,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Castlevania%20-%20Symphony%20of%20the%20Night%20%28USA%29.png"},
+  {title:"Castlevania: Aria of Sorrow",system:"GBA",year:2003,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Castlevania%20-%20Aria%20of%20Sorrow%20%28USA%29.png"},
+  {title:"Tony Hawk's Pro Skater 3",system:"PS2",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Tony%20Hawk%27s%20Pro%20Skater%203%20%28USA%29.png"},
+  {title:"Persona 4",system:"PS2",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Shin%20Megami%20Tensei%20-%20Persona%204%20%28USA%29.png"},
+  {title:"Persona 3 FES",system:"PS2",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Shin%20Megami%20Tensei%20-%20Persona%203%20FES%20%28USA%29.png"},
+  {title:"Pikmin",system:"GameCube",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Pikmin%20%28USA%29.png"},
+  {title:"Pikmin 2",system:"GameCube",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Pikmin%202%20%28USA%29.png"},
+  {title:"Soulcalibur II",system:"GameCube",year:2003,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/SoulCalibur%20II%20%28USA%29.png"},
+  {title:"Smash Bros Melee",system:"GameCube",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Super%20Smash%20Bros.%20Melee%20%28USA%29%20%28En%2CJa%29.png"},
+  {title:"TimeSplitters 2",system:"PS2",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/TimeSplitters%202%20%28USA%29.png"},
+  {title:"Professor Layton and the Curious Village",system:"DS",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Professor%20Layton%20and%20the%20Curious%20Village%20%28USA%29.png"},
+  {title:"Professor Layton and the Diabolical Box",system:"DS",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Professor%20Layton%20and%20the%20Diabolical%20Box%20%28USA%29.png"},
+  {title:"Professor Layton and the Unwound Future",system:"DS",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Professor%20Layton%20and%20the%20Unwound%20Future%20%28USA%29.png"},
+  {title:"Brain Age",system:"DS",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Brain%20Age%20-%20Train%20Your%20Brain%20in%20Minutes%20a%20Day!%20%28USA%29.png"},
+  {title:"Picross DS",system:"DS",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Picross%20DS%20%28USA%29.png"},
+  {title:"Tetris DS",system:"DS",year:2006,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Tetris%20DS%20%28USA%29.png"},
+  {title:"42 All-Time Classics",system:"DS",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/42%20All-Time%20Classics%20%28Europe%29%20%28En%2CFr%2CDe%2CEs%2CIt%29.png"},
+  {title:"Advance Wars",system:"GBA",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Advance%20Wars%20%28USA%29.png"},
+  {title:"Advance Wars: Dual Strike",system:"DS",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Advance%20Wars%20-%20Dual%20Strike%20%28USA%29.png"},
+  {title:"Fire Emblem: Shadow Dragon",system:"DS",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Fire%20Emblem%20-%20Shadow%20Dragon%20%28USA%29.png"},
+  {title:"Puzzle Quest: Challenge of the Warlords",system:"DS",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Puzzle%20Quest%20-%20Challenge%20of%20the%20Warlords%20%28USA%29.png"},
+  {title:"Chessmaster: The Art of Learning",system:"DS",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Chessmaster%20-%20The%20Art%20of%20Learning%20%28USA%29.png"},
+];
+
+/* === localStorage YARDIMCI FONKSİYONLAR === */
+const QUEUE_KEY = 'rp5_queue';
+
+/* Kuyruğu localStorage'dan oku */
+function loadQueue() {
+  return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+}
+
+/* Kuyruğu localStorage'a yaz */
+function saveQueue(q) {
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
+}
+
+/* === KUYRUK ÖĞESI EKLEME ===
+   Library'den eklenenler tam nesneyle gelir; arama ile eklenenlerde img boş olabilir */
+function addToQueue(game) {
+  const q = loadQueue();
+  /* Aynı oyun zaten sıradaysa bildiri ver, ekleme */
+  if (q.some(x => x.title === game.title)) {
+    showToast('Zaten sırada!', '#f39c12');
+    return;
+  }
+  q.push({ id: Date.now(), title: game.title, system: game.system, img: game.img || '', year: game.year || '' });
+  saveQueue(q);
+  render();
+  showToast('Sıraya eklendi ✓');
+}
+
+/* === KUYRUKTAN ÇIKARMA === */
+function removeFromQueue(id) {
+  saveQueue(loadQueue().filter(x => x.id !== id));
+  render();
+}
+
+/* === TÜM KUYRUĞU TEMİZLE === */
+function clearAll() {
+  if (!loadQueue().length) return;
+  if (!confirm('Tüm sıra silinsin mi?')) return;
+  saveQueue([]);
+  render();
+}
+
+/* === ARAMA: GAMES_INDEX içinde filtrele, sonuçları göster === */
+const searchInput   = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim().toLowerCase();
+  if (q.length < 1) { searchResults.style.display = 'none'; return; }
+
+  /* En fazla 8 eşleşen oyunu göster */
+  const matches = GAMES_INDEX
+    .filter(g => g.title.toLowerCase().includes(q) || g.system.toLowerCase().includes(q))
+    .slice(0, 8);
+
+  if (!matches.length) {
+    searchResults.innerHTML = '<div class="no-results">Sonuç bulunamadı</div>';
+  } else {
+    searchResults.innerHTML = matches.map(g => `
+      <div class="search-result-item" onclick="pickGame(${GAMES_INDEX.indexOf(g)})">
+        <span class="r-system">${g.system}</span>
+        <span class="r-title">${escHtml(g.title)}</span>
+        <span class="r-year">${g.year}</span>
+      </div>
+    `).join('');
+  }
+  searchResults.style.display = 'block';
+});
+
+/* Kullanıcı sonuç listesinden oyun seçti */
+function pickGame(idx) {
+  addToQueue(GAMES_INDEX[idx]);
+  searchInput.value = '';
+  searchResults.style.display = 'none';
+}
+
+/* Kutu dışına tıklayınca sonuçları kapat */
+document.addEventListener('click', e => {
+  if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+    searchResults.style.display = 'none';
+  }
+});
+
+/* === SÜRÜKLE-BIRAK (vanilla, masaüstü + dokunmatik) ===
+   Her öğedeki ≡ tutamacı ile yukarı/aşağı taşıma.
+   HTML5 drag API mobilde çalışmaz, bu yüzden mouse + touch events kullanıyoruz. */
+
+let dragState = null; /* Aktif sürükleme durumu */
+
+/* Sürükleme başlangıcı — mouse veya touch olabilir */
+function onDragStart(e, itemEl) {
+  /* Sürüklenen öğenin mevcut sırası */
+  const list = document.getElementById('queueList');
+  const items = [...list.querySelectorAll('.queue-item')];
+  const fromIndex = items.indexOf(itemEl);
+
+  /* Orijinal öğeyi soluk göster */
+  itemEl.classList.add('dragging');
+
+  /* Hayalet kopya oluştur — kullanıcının parmağı/mouseu ile hareket eder */
+  const ghost = itemEl.cloneNode(true);
+  ghost.style.cssText = `
+    position:fixed; pointer-events:none; z-index:1000;
+    width:${itemEl.offsetWidth}px; opacity:0.85;
+    border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.5);
+    transition:none;
+  `;
+  document.body.appendChild(ghost);
+
+  /* Başlangıç koordinatları */
+  const startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+  const startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+  ghost.style.top  = (itemEl.getBoundingClientRect().top)  + 'px';
+  ghost.style.left = (itemEl.getBoundingClientRect().left) + 'px';
+
+  dragState = { fromIndex, itemEl, ghost, startY, startX, list, items };
+}
+
+/* Sürükleme devam ediyor — ghost'u imleç/parmakla birlikte hareket ettir */
+function onDragMove(e) {
+  if (!dragState) return;
+  e.preventDefault(); /* Sayfanın kaymasını engelle (touch için kritik) */
+
+  const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+  const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+  const dy = clientY - dragState.startY;
+  const dx = clientX - dragState.startX;
+
+  /* Ghost'u hareket ettir */
+  const orig = dragState.itemEl.getBoundingClientRect();
+  dragState.ghost.style.top  = (orig.top  + dy) + 'px';
+  dragState.ghost.style.left = (orig.left + dx) + 'px';
+
+  /* Hangi öğenin üzerinde durulduğunu bul (drag-over vurgulaması) */
+  dragState.items.forEach(el => el.classList.remove('drag-over'));
+  const target = findTargetItem(clientY, dragState.items, dragState.itemEl);
+  if (target && target !== dragState.itemEl) target.classList.add('drag-over');
+}
+
+/* Sürükleme bitti — öğeyi yeni konuma bırak */
+function onDragEnd(e) {
+  if (!dragState) return;
+  const { fromIndex, itemEl, ghost, list, items } = dragState;
+
+  const clientY = e.type === 'touchend' ? e.changedTouches[0].clientY : e.clientY;
+
+  /* Hedef öğeyi bul ve sırayı güncelle */
+  const target = findTargetItem(clientY, items, itemEl);
+  const toIndex = target ? items.indexOf(target) : fromIndex;
+
+  if (toIndex !== fromIndex) {
+    /* localStorage'daki diziyi yeniden sırala */
+    const q = loadQueue();
+    const [moved] = q.splice(fromIndex, 1);
+    q.splice(toIndex, 0, moved);
+    saveQueue(q);
+  }
+
+  /* Temizlik */
+  ghost.remove();
+  itemEl.classList.remove('dragging');
+  items.forEach(el => el.classList.remove('drag-over'));
+  dragState = null;
+
+  render();
+}
+
+/* clientY konumuna göre en yakın öğeyi döndür */
+function findTargetItem(clientY, items, exclude) {
+  let closest = null, minDist = Infinity;
+  items.forEach(el => {
+    if (el === exclude) return;
+    const rect = el.getBoundingClientRect();
+    const mid  = rect.top + rect.height / 2;
+    const dist = Math.abs(clientY - mid);
+    if (dist < minDist) { minDist = dist; closest = el; }
+  });
+  return closest;
+}
+
+/* Mouse sürükleme dinleyicileri (document seviyesinde) */
+document.addEventListener('mousemove', onDragMove);
+document.addEventListener('mouseup',   onDragEnd);
+/* Touch sürükleme dinleyicileri — passive:false, preventDefault için zorunlu */
+document.addEventListener('touchmove', onDragMove, { passive: false });
+document.addEventListener('touchend',  onDragEnd);
+
+/* === HTML KAÇIŞ YARDIMCISI (XSS koruması) === */
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* === TOAST BİLDİRİMİ === */
+function showToast(msg, color = '#2ecc71') {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = `
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(0);
+    background:${color}; color:#000; font-weight:700;
+    padding:10px 20px; border-radius:999px; font-size:13px;
+    z-index:9999; animation:toastIn 0.2s ease, toastOut 0.3s ease 1.8s forwards;
+    pointer-events:none;
+  `;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+/* === ANA RENDER FONKSİYONU ===
+   Tüm kuyruk öğelerini çizer, istatistikleri günceller,
+   drag-handle event listener'larını bağlar. */
+function render() {
+  const q    = loadQueue();
+  const list = document.getElementById('queueList');
+
+  /* İstatistikleri güncelle */
+  document.getElementById('statTotal').textContent = q.length;
+  document.getElementById('statNow').textContent   = q.length ? escHtml(q[0].title) : '—';
+
+  if (!q.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🎮</div>
+        Sıra boş. Kütüphaneden veya aramadan oyun ekle!
+      </div>`;
+    return;
+  }
+
+  /* Her öğeyi yatay geniş kart olarak render et */
+  list.innerHTML = q.map((item, i) => `
+    <div class="queue-item ${i === 0 ? 'now-playing' : ''}"
+         data-id="${item.id}">
+
+      <!-- Sürükleme tutamacı -->
+      <div class="drag-handle" title="Sürükle">≡</div>
+
+      <!-- Sıra numarası -->
+      <div class="rank-num">${i + 1}</div>
+
+      <!-- Küçük boxart resmi -->
+      <div class="item-thumb">
+        ${item.img
+          ? `<img src="${escHtml(item.img)}" alt="${escHtml(item.title)}" loading="lazy"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+             <div class="item-thumb-fallback" style="display:none;">
+               <div class="fb-sys">${escHtml(item.system)}</div>
+               <small>${escHtml(item.title.slice(0,20))}</small>
+             </div>`
+          : `<div class="item-thumb-fallback" style="display:flex;">
+               <div class="fb-sys">${escHtml(item.system)}</div>
+               <small>${escHtml(item.title.slice(0,20))}</small>
+             </div>`
+        }
+      </div>
+
+      <!-- Oyun bilgileri -->
+      <div class="item-info">
+        <div class="item-title">${escHtml(item.title)}</div>
+        <div class="item-meta">
+          <span class="item-badge badge-sys">${escHtml(item.system)}</span>
+          ${item.year ? `<span class="item-badge badge-year">${item.year}</span>` : ''}
+          ${i === 0 ? '<span class="item-badge badge-now">▶ Now Playing</span>' : ''}
+        </div>
+      </div>
+
+      <!-- Sil butonu -->
+      <button class="del-btn" onclick="removeFromQueue(${item.id})" title="Kaldır">✕</button>
+    </div>
+  `).join('');
+
+  /* Drag handle'lara mouse + touch başlangıç dinleyicilerini bağla */
+  list.querySelectorAll('.queue-item').forEach((itemEl) => {
+    const handle = itemEl.querySelector('.drag-handle');
+    /* Mouse */
+    handle.addEventListener('mousedown', e => { e.preventDefault(); onDragStart(e, itemEl); });
+    /* Touch */
+    handle.addEventListener('touchstart', e => { e.preventDefault(); onDragStart(e, itemEl); }, { passive: false });
+  });
+}
+
+/* Sayfa yüklenince kuyruğu çiz */
+render();
+</script>
+</body>
+</html>
