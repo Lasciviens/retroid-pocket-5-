@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Migration v2 — Normalized Schema</title>
+<style>
+  body { font-family: monospace; background: #0a0e1a; color: #e8eaf0; padding: 30px; }
+  h2 { color: #ff4655; margin-bottom: 8px; }
+  p { color: #8c93a8; margin-bottom: 20px; }
+  button { background: #ff4655; color: white; border: none; padding: 14px 28px; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 6px 4px; }
+  button:disabled { background: #333; color: #666; cursor: not-allowed; }
+  button.secondary { background: #1c2238; border: 1px solid #2a3149; }
+  #log { background: #131829; border: 1px solid #2a3149; border-radius: 8px; padding: 20px; margin-top: 20px; max-height: 600px; overflow-y: auto; line-height: 1.9; font-size: 13px; }
+  .ok { color: #2ecc71; } .err { color: #e74c3c; } .info { color: #00d4ff; } .warn { color: #f39c12; }
+  .step { color: #ffb347; font-weight: bold; margin-top: 8px; }
+  #progress { margin-top: 16px; background: #1c2238; border-radius: 8px; overflow: hidden; height: 8px; }
+  #progress-bar { height: 100%; background: linear-gradient(90deg, #ff4655, #00d4ff); width: 0%; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<h2>🚀 Migration v2 — Normalized Schema</h2>
+<p>Lookup tabloları → Seriler → Oyunlar → Platform bağlantıları sırasıyla yükler. Sadece bir kere çalıştır.</p>
+<button id="btn" onclick="runMigration()">▶ Migration Başlat</button>
+<button class="secondary" onclick="clearLog()">Log Temizle</button>
+<div id="progress"><div id="progress-bar"></div></div>
+<div id="log"></div>
+
+<script>
+const URL = 'https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+
+const T = (system, title) =>
+  `https://raw.githubusercontent.com/libretro-thumbnails/${system}/master/Named_Boxarts/${encodeURIComponent(title)}.png`;
+
+// ── LOOKUP DATA ──────────────────────────────────────────────
+const SYSTEMS = [
+  { name: 'PS1', full_name: 'Sony PlayStation', manufacturer: 'Sony', release_year: 1994, generation: 5 },
+  { name: 'PS2', full_name: 'Sony PlayStation 2', manufacturer: 'Sony', release_year: 2000, generation: 6 },
+  { name: 'PSP', full_name: 'Sony PlayStation Portable', manufacturer: 'Sony', release_year: 2005, generation: 7 },
+  { name: 'GBA', full_name: 'Nintendo Game Boy Advance', manufacturer: 'Nintendo', release_year: 2001, generation: 6 },
+  { name: 'DS', full_name: 'Nintendo DS', manufacturer: 'Nintendo', release_year: 2004, generation: 7 },
+  { name: '3DS', full_name: 'Nintendo 3DS', manufacturer: 'Nintendo', release_year: 2011, generation: 8 },
+  { name: 'N64', full_name: 'Nintendo 64', manufacturer: 'Nintendo', release_year: 1996, generation: 5 },
+  { name: 'GameCube', full_name: 'Nintendo GameCube', manufacturer: 'Nintendo', release_year: 2001, generation: 6 },
+  { name: 'Wii', full_name: 'Nintendo Wii', manufacturer: 'Nintendo', release_year: 2006, generation: 7 },
+  { name: 'SNES', full_name: 'Super Nintendo Entertainment System', manufacturer: 'Nintendo', release_year: 1990, generation: 4 },
+  { name: 'NES', full_name: 'Nintendo Entertainment System', manufacturer: 'Nintendo', release_year: 1983, generation: 3 },
+  { name: 'Genesis', full_name: 'Sega Genesis / Mega Drive', manufacturer: 'Sega', release_year: 1988, generation: 4 },
+  { name: 'Dreamcast', full_name: 'Sega Dreamcast', manufacturer: 'Sega', release_year: 1998, generation: 6 },
+];
+
+const GENRES = [
+  { name: 'Action' }, { name: 'RPG' }, { name: 'Action-RPG' }, { name: 'Platformer' },
+  { name: 'Racing' }, { name: 'Fighting' }, { name: 'Strategy' }, { name: 'Strategy-RPG' },
+  { name: 'Puzzle' }, { name: 'Puzzle-RPG' }, { name: 'Party' }, { name: 'Sports' },
+  { name: 'Survival Horror' }, { name: 'Stealth' }, { name: 'Action-Adventure' },
+  { name: 'Metroidvania' }, { name: 'FPS' },
+];
+
+const SERIES = [
+  { name: 'Grand Theft Auto', description: 'Rockstar Games open-world crime series' },
+  { name: 'God of War', description: 'Sony Santa Monica action series' },
+  { name: 'Pokemon', description: 'Nintendo/Game Freak RPG series' },
+  { name: 'Super Mario', description: 'Nintendo flagship platformer series' },
+  { name: 'Mario Kart', description: 'Nintendo racing series' },
+  { name: 'Paper Mario', description: 'Nintendo RPG spin-off series' },
+  { name: 'Mario Party', description: 'Nintendo party game series' },
+  { name: 'Mario & Luigi', description: 'Nintendo handheld RPG series' },
+  { name: 'The Legend of Zelda', description: 'Nintendo action-adventure series' },
+  { name: 'Sonic the Hedgehog', description: 'Sega platformer series' },
+  { name: 'Crash Bandicoot', description: 'Naughty Dog / Activision platformer series' },
+  { name: 'Tekken', description: 'Bandai Namco fighting series' },
+  { name: 'Final Fantasy', description: 'Square Enix JRPG series' },
+  { name: 'Resident Evil', description: 'Capcom survival horror series' },
+  { name: 'Metal Gear', description: 'Konami stealth series' },
+  { name: 'Kingdom Hearts', description: 'Square Enix action-RPG series' },
+  { name: 'Jak and Daxter', description: 'Naughty Dog platformer series' },
+  { name: 'Ratchet & Clank', description: 'Insomniac Games platformer series' },
+  { name: 'Sly Cooper', description: 'Sucker Punch stealth platformer series' },
+  { name: 'Metroid', description: 'Nintendo action-adventure series' },
+  { name: 'Castlevania', description: 'Konami action series' },
+  { name: 'Persona', description: 'Atlus JRPG series' },
+  { name: 'Devil May Cry', description: 'Capcom hack-and-slash series' },
+  { name: 'Tony Hawk', description: 'Activision sports series' },
+  { name: 'Professor Layton', description: 'Level-5 puzzle adventure series' },
+  { name: 'Advance Wars', description: 'Nintendo/Intelligent Systems strategy series' },
+  { name: 'Fire Emblem', description: 'Nintendo/Intelligent Systems strategy-RPG series' },
+  { name: 'Super Smash Bros.', description: 'Nintendo fighting series' },
+  { name: 'TimeSplitters', description: 'Free Radical FPS series' },
+  { name: 'Pikmin', description: 'Nintendo strategy series' },
+];
+
+const EMULATORS = [
+  { name: 'AetherSX2', type: 'standalone', supported_systems: ['PS2'], notes: 'Best PS2 emulator for Android/RP5' },
+  { name: 'DuckStation', type: 'standalone', supported_systems: ['PS1'], notes: 'Best PS1 emulator. PGXP support.' },
+  { name: 'PPSSPP', type: 'standalone', supported_systems: ['PSP'], notes: 'Best PSP emulator. 1080p upscale.' },
+  { name: 'mGBA', type: 'retroarch_core', supported_systems: ['GBA'], notes: 'Cycle-accurate GBA emulation' },
+  { name: 'DraStic', type: 'standalone', supported_systems: ['DS'], notes: 'Fast DS emulator, paid but worth it' },
+  { name: 'MelonDS', type: 'retroarch_core', supported_systems: ['DS'], notes: 'Free DS alternative' },
+  { name: 'Citra', type: 'retroarch_core', supported_systems: ['3DS'], notes: 'Some games slow on RP5' },
+  { name: 'Mupen64Plus-Next', type: 'retroarch_core', supported_systems: ['N64'], notes: 'Best N64 core' },
+  { name: 'Dolphin', type: 'standalone', supported_systems: ['GameCube', 'Wii'], notes: 'Best GC/Wii emulator' },
+  { name: 'Snes9x', type: 'retroarch_core', supported_systems: ['SNES'], notes: 'Best speed/accuracy balance' },
+  { name: 'Mesen', type: 'retroarch_core', supported_systems: ['NES'], notes: 'Most accurate NES core' },
+  { name: 'Genesis Plus GX', type: 'retroarch_core', supported_systems: ['Genesis'], notes: 'Gold standard Genesis emulator' },
+  { name: 'Flycast', type: 'retroarch_core', supported_systems: ['Dreamcast'], notes: 'Best Dreamcast emulator' },
+];
+
+// ── GAME DATA ────────────────────────────────────────────────
+const GAMES = [
+  // title, series, genres[], year, coop, coopNotes, iconic, rating, desc, platforms[]
+  // platform: { system, emulator, perf, perfNotes, cover }
+
+  { title: 'GTA: San Andreas', series: 'Grand Theft Auto', genres: ['Action'], year: 2004, coop: false, iconic: true, rating: 10,
+    desc: 'Serinin zirvesi. Açık dünya, RPG mekaniği, geniş harita.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', perfNotes: 'RP5\'te tertemiz çalışır', cover: T('Sony_-_PlayStation_2', 'Grand Theft Auto - San Andreas (USA) (v3.00)') }] },
+
+  { title: 'GTA: Vice City', series: 'Grand Theft Auto', genres: ['Action'], year: 2002, coop: false, iconic: true, rating: 9,
+    desc: '80\'lerin Miami atmosferi, ikonik soundtrack.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Grand Theft Auto - Vice City (USA) (v3.00)') }] },
+
+  { title: 'GTA III', series: 'Grand Theft Auto', genres: ['Action'], year: 2001, coop: false, iconic: true, rating: 8,
+    desc: '3D GTA\'yı yaratan oyun.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Grand Theft Auto III (USA) (v3.00)') }] },
+
+  { title: 'GTA: Liberty City Stories', series: 'Grand Theft Auto', genres: ['Action'], year: 2005, coop: false, iconic: false, rating: 7,
+    desc: 'GTA III\'ün PSP prequel\'i.',
+    platforms: [{ system: 'PSP', emulator: 'PPSSPP', perf: 'good', cover: T('Sony_-_PlayStation_Portable', 'Grand Theft Auto - Liberty City Stories (USA)') }] },
+
+  { title: 'GTA: Vice City Stories', series: 'Grand Theft Auto', genres: ['Action'], year: 2006, coop: false, iconic: false, rating: 7,
+    desc: 'Vice City evreninin PSP genişlemesi.',
+    platforms: [{ system: 'PSP', emulator: 'PPSSPP', perf: 'good', cover: T('Sony_-_PlayStation_Portable', 'Grand Theft Auto - Vice City Stories (USA)') }] },
+
+  { title: 'GTA: Chinatown Wars', series: 'Grand Theft Auto', genres: ['Action'], year: 2009, coop: false, iconic: false, rating: 8,
+    desc: 'Top-down GTA, DS\'in en iyi 3rd party oyunlarından.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Grand Theft Auto - Chinatown Wars (USA) (En,Fr,De,Es,It)') }] },
+
+  { title: 'God of War: Chains of Olympus', series: 'God of War', genres: ['Action'], year: 2008, coop: false, iconic: true, rating: 9,
+    desc: 'PSP\'nin en iyi 3D aksiyon oyunlarından. AMOLED\'de muhteşem.',
+    platforms: [{ system: 'PSP', emulator: 'PPSSPP', perf: 'good', cover: T('Sony_-_PlayStation_Portable', 'God of War - Chains of Olympus (USA)') }] },
+
+  { title: 'God of War: Ghost of Sparta', series: 'God of War', genres: ['Action'], year: 2010, coop: false, iconic: true, rating: 9,
+    desc: 'PSP\'nin teknik şaheseri.',
+    platforms: [{ system: 'PSP', emulator: 'PPSSPP', perf: 'good', cover: T('Sony_-_PlayStation_Portable', 'God of War - Ghost of Sparta (USA)') }] },
+
+  { title: 'God of War', series: 'God of War', genres: ['Action'], year: 2005, coop: false, iconic: true, rating: 10,
+    desc: 'Kratos\'un başlangıcı. Demanding PS2 oyunu.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'warn', perfNotes: '55+ FPS sabit, vapor chamber devreye girer', cover: T('Sony_-_PlayStation_2', 'God of War (USA)') }] },
+
+  { title: 'God of War II', series: 'God of War', genres: ['Action'], year: 2007, coop: false, iconic: true, rating: 10,
+    desc: 'PS2\'nin teknik tavanını zorlayan oyun.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'warn', perfNotes: 'Ayar gerektiriyor', cover: T('Sony_-_PlayStation_2', 'God of War II (USA)') }] },
+
+  { title: 'Pokemon FireRed', series: 'Pokemon', genres: ['RPG'], year: 2004, coop: false, iconic: true, rating: 9,
+    desc: 'Klasik Kanto bölgesi remake.',
+    platforms: [{ system: 'GBA', emulator: 'mGBA', perf: 'good', cover: T('Nintendo_-_Game_Boy_Advance', 'Pokemon - Fire Red Version (USA, Europe)') }] },
+
+  { title: 'Pokemon LeafGreen', series: 'Pokemon', genres: ['RPG'], year: 2004, coop: false, iconic: true, rating: 9,
+    desc: 'FireRed\'in eşi.',
+    platforms: [{ system: 'GBA', emulator: 'mGBA', perf: 'good', cover: T('Nintendo_-_Game_Boy_Advance', 'Pokemon - Leaf Green Version (USA, Europe)') }] },
+
+  { title: 'Pokemon Emerald', series: 'Pokemon', genres: ['RPG'], year: 2005, coop: false, iconic: true, rating: 10,
+    desc: 'Hoenn üçlemesinin definitive sürümü. Battle Frontier var.',
+    platforms: [{ system: 'GBA', emulator: 'mGBA', perf: 'good', cover: T('Nintendo_-_Game_Boy_Advance', 'Pokemon - Emerald Version (USA, Europe)') }] },
+
+  { title: 'Pokemon HeartGold', series: 'Pokemon', genres: ['RPG'], year: 2009, coop: false, iconic: true, rating: 10,
+    desc: 'Johto + Kanto, iki bölge. Pokémon\'un altın çağı.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Pokemon HeartGold Version (USA)') }] },
+
+  { title: 'Pokemon SoulSilver', series: 'Pokemon', genres: ['RPG'], year: 2009, coop: false, iconic: true, rating: 10,
+    desc: 'HeartGold\'un eşi.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Pokemon SoulSilver Version (USA)') }] },
+
+  { title: 'Pokemon Platinum', series: 'Pokemon', genres: ['RPG'], year: 2008, coop: false, iconic: true, rating: 9,
+    desc: 'Sinnoh definitive sürümü. Distortion World epik.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Pokemon - Platinum Version (USA)') }] },
+
+  { title: 'Pokemon Black', series: 'Pokemon', genres: ['RPG'], year: 2010, coop: false, iconic: true, rating: 9,
+    desc: 'Hikaye odaklı, en iyi Pokemon hikayesi diyenler var.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Pokemon - Black Version (USA, Europe)') }] },
+
+  { title: 'Pokemon White', series: 'Pokemon', genres: ['RPG'], year: 2010, coop: false, iconic: true, rating: 9,
+    desc: 'Black\'in eşi. Unova bölgesi.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Pokemon - White Version (USA, Europe)') }] },
+
+  { title: 'Pokemon Black 2', series: 'Pokemon', genres: ['RPG'], year: 2012, coop: false, iconic: false, rating: 8,
+    desc: 'Doğrudan sequel — nadir bir Pokemon devamı.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Pokemon - Black Version 2 (USA, Europe)') }] },
+
+  { title: 'Pokemon X', series: 'Pokemon', genres: ['RPG'], year: 2013, coop: false, iconic: false, rating: 7,
+    desc: 'Serinin ilk 3D oyunu. Mega Evolution.',
+    platforms: [{ system: '3DS', emulator: 'Citra', perf: 'warn', perfNotes: 'Bazı alanlar yavaş olabilir', cover: T('Nintendo_-_Nintendo_3DS', 'Pokemon X (USA)') }] },
+
+  { title: 'Pokemon Sun', series: 'Pokemon', genres: ['RPG'], year: 2016, coop: false, iconic: false, rating: 7,
+    desc: 'Alola bölgesi. Hikaye odaklı yenilik.',
+    platforms: [{ system: '3DS', emulator: 'Citra', perf: 'warn', cover: T('Nintendo_-_Nintendo_3DS', 'Pokemon Sun (USA)') }] },
+
+  { title: 'Super Mario 64', series: 'Super Mario', genres: ['Platformer'], year: 1996, coop: false, iconic: true, rating: 10,
+    desc: '3D platformerın doğuşu.',
+    platforms: [{ system: 'N64', emulator: 'Mupen64Plus-Next', perf: 'good', cover: T('Nintendo_-_Nintendo_64', 'Super Mario 64 (USA)') }] },
+
+  { title: 'Super Mario Sunshine', series: 'Super Mario', genres: ['Platformer'], year: 2002, coop: false, iconic: true, rating: 9,
+    desc: 'FLUDD ile yenilikçi bir Mario. Tropik atmosfer.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Super Mario Sunshine (USA)') }] },
+
+  { title: 'Super Mario Galaxy', series: 'Super Mario', genres: ['Platformer'], year: 2007, coop: false, iconic: true, rating: 10,
+    desc: 'Yerçekimi bulmacaları, orkestra soundtrack. Şaheser.',
+    platforms: [{ system: 'Wii', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_Wii', 'Super Mario Galaxy (USA)') }] },
+
+  { title: 'Super Mario Galaxy 2', series: 'Super Mario', genres: ['Platformer'], year: 2010, coop: false, iconic: true, rating: 10,
+    desc: 'Galaxy\'nin daha rafine versiyonu. Yoshi var.',
+    platforms: [{ system: 'Wii', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_Wii', 'Super Mario Galaxy 2 (USA)') }] },
+
+  { title: 'New Super Mario Bros. Wii', series: 'Super Mario', genres: ['Platformer'], year: 2009, coop: true, coopNotes: '4 kişiye kadar local co-op', iconic: true, rating: 9,
+    desc: '4 kişiye kadar local co-op. Eşinle TOP TIER.',
+    platforms: [{ system: 'Wii', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_Wii', 'New Super Mario Bros. Wii (USA)') }] },
+
+  { title: 'New Super Mario Bros.', series: 'Super Mario', genres: ['Platformer'], year: 2006, coop: false, iconic: false, rating: 8,
+    desc: 'DS\'in en sevilen platformerı.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'New Super Mario Bros. (USA, Australia)') }] },
+
+  { title: 'Mario Kart: Double Dash!!', series: 'Mario Kart', genres: ['Racing'], year: 2003, coop: true, coopNotes: 'Biri sürer biri item atar — eşinle split-screen', iconic: true, rating: 9,
+    desc: 'İki karakterli kart yarışı.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Mario Kart - Double Dash!! (USA)') }] },
+
+  { title: 'Mario Kart Wii', series: 'Mario Kart', genres: ['Racing'], year: 2008, coop: true, coopNotes: 'Split-screen 2P', iconic: true, rating: 9,
+    desc: 'Bisiklet ve motor. 12 kişilik yarışlar.',
+    platforms: [{ system: 'Wii', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_Wii', 'Mario Kart Wii (USA)') }] },
+
+  { title: 'Mario Kart 64', series: 'Mario Kart', genres: ['Racing'], year: 1996, coop: true, coopNotes: '2P split-screen', iconic: true, rating: 8,
+    desc: 'Klasik MK. 4P local.',
+    platforms: [{ system: 'N64', emulator: 'Mupen64Plus-Next', perf: 'good', cover: T('Nintendo_-_Nintendo_64', 'Mario Kart 64 (USA)') }] },
+
+  { title: 'Mario Kart DS', series: 'Mario Kart', genres: ['Racing'], year: 2005, coop: true, coopNotes: 'Local multiplayer', iconic: false, rating: 8,
+    desc: 'İlk taşınabilir online Mario Kart.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Mario Kart DS (USA)') }] },
+
+  { title: 'Paper Mario: The Thousand-Year Door', series: 'Paper Mario', genres: ['RPG'], year: 2004, coop: false, iconic: true, rating: 10,
+    desc: 'Paper Mario serisinin zirvesi.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Paper Mario - The Thousand-Year Door (USA)') }] },
+
+  { title: 'Paper Mario', series: 'Paper Mario', genres: ['RPG'], year: 2001, coop: false, iconic: true, rating: 9,
+    desc: 'İlk Paper Mario, charm dolu.',
+    platforms: [{ system: 'N64', emulator: 'Mupen64Plus-Next', perf: 'good', cover: T('Nintendo_-_Nintendo_64', 'Paper Mario (USA)') }] },
+
+  { title: 'Mario & Luigi: Superstar Saga', series: 'Mario & Luigi', genres: ['RPG'], year: 2003, coop: false, iconic: true, rating: 9,
+    desc: 'Komik diyaloglar, seri RPG\'nin başlangıcı.',
+    platforms: [{ system: 'GBA', emulator: 'mGBA', perf: 'good', cover: T('Nintendo_-_Game_Boy_Advance', 'Mario & Luigi - Superstar Saga (USA, Australia)') }] },
+
+  { title: 'Mario Party 7', series: 'Mario Party', genres: ['Party'], year: 2005, coop: true, coopNotes: '8 player', iconic: false, rating: 8,
+    desc: '8 player\'a kadar parti oyunu.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Mario Party 7 (USA)') }] },
+
+  { title: 'Mario Party 4', series: 'Mario Party', genres: ['Party'], year: 2002, coop: true, coopNotes: '4P local', iconic: false, rating: 7,
+    desc: 'İlk GameCube Mario Party.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Mario Party 4 (USA)') }] },
+
+  { title: 'The Legend of Zelda: Ocarina of Time', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 1998, coop: false, iconic: true, rating: 10,
+    desc: 'Tüm zamanların en iyi oyunu sayılan başyapıt. 3D action-adventure\'ın doğuşu.',
+    platforms: [{ system: 'N64', emulator: 'Mupen64Plus-Next', perf: 'good', cover: T('Nintendo_-_Nintendo_64', 'Legend of Zelda, The - Ocarina of Time (USA)') }] },
+
+  { title: 'The Legend of Zelda: Majora\'s Mask', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 2000, coop: false, iconic: true, rating: 10,
+    desc: 'Karanlık, atmosferik kült klasik. 3 günlük zaman döngüsü.',
+    platforms: [{ system: 'N64', emulator: 'Mupen64Plus-Next', perf: 'good', cover: T('Nintendo_-_Nintendo_64', 'Legend of Zelda, The - Majora\'s Mask (USA)') }] },
+
+  { title: 'The Legend of Zelda: The Wind Waker', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 2003, coop: false, iconic: true, rating: 10,
+    desc: 'Cel-shaded sanat tarzı, AMOLED\'de büyüleyici.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Legend of Zelda, The - The Wind Waker (USA)') }] },
+
+  { title: 'The Legend of Zelda: Twilight Princess', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 2006, coop: false, iconic: true, rating: 9,
+    desc: 'Karanlık ve epik atmosfer.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'warn', perfNotes: 'Büyük alanlarda framedrop olabilir', cover: T('Nintendo_-_GameCube', 'Legend of Zelda, The - Twilight Princess (USA)') }] },
+
+  { title: 'The Legend of Zelda: A Link to the Past', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 1991, coop: false, iconic: true, rating: 10,
+    desc: '2D Zelda\'nın tepe noktası.',
+    platforms: [{ system: 'SNES', emulator: 'Snes9x', perf: 'good', cover: T('Nintendo_-_Super_Nintendo_Entertainment_System', 'Legend of Zelda, The - A Link to the Past (USA)') }] },
+
+  { title: 'The Legend of Zelda: The Minish Cap', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 2004, coop: false, iconic: true, rating: 9,
+    desc: 'GBA Zelda\'nın güzel sanat stili.',
+    platforms: [{ system: 'GBA', emulator: 'mGBA', perf: 'good', cover: T('Nintendo_-_Game_Boy_Advance', 'Legend of Zelda, The - The Minish Cap (USA)') }] },
+
+  { title: 'The Legend of Zelda: Phantom Hourglass', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 2007, coop: false, iconic: false, rating: 7,
+    desc: 'Wind Waker direkt sequel\'i. Touch-controlled.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Legend of Zelda, The - Phantom Hourglass (USA)') }] },
+
+  { title: 'The Legend of Zelda: Spirit Tracks', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 2009, coop: false, iconic: false, rating: 7,
+    desc: 'Tren temalı Zelda.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Legend of Zelda, The - Spirit Tracks (USA)') }] },
+
+  { title: 'The Legend of Zelda: A Link Between Worlds', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 2013, coop: false, iconic: true, rating: 9,
+    desc: 'A Link to the Past\'in modern devamı.',
+    platforms: [{ system: '3DS', emulator: 'Citra', perf: 'warn', cover: T('Nintendo_-_Nintendo_3DS', 'Legend of Zelda, The - A Link Between Worlds (USA)') }] },
+
+  { title: 'The Legend of Zelda: Four Swords Adventures', series: 'The Legend of Zelda', genres: ['Action-Adventure'], year: 2004, coop: true, coopNotes: 'Co-op Zelda', iconic: false, rating: 7,
+    desc: 'Co-op Zelda deneyimi.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Legend of Zelda, The - Four Swords Adventures (USA)') }] },
+
+  { title: 'Sonic the Hedgehog 2', series: 'Sonic the Hedgehog', genres: ['Platformer'], year: 1992, coop: true, coopNotes: '2P split-screen yarışlar', iconic: true, rating: 8,
+    desc: 'Klasik 2D Sonic. Tails co-op.',
+    platforms: [{ system: 'Genesis', emulator: 'Genesis Plus GX', perf: 'good', cover: T('Sega_-_Mega_Drive_-_Genesis', 'Sonic The Hedgehog 2 (World) (Rev A)') }] },
+
+  { title: 'Sonic the Hedgehog 3 & Knuckles', series: 'Sonic the Hedgehog', genres: ['Platformer'], year: 1994, coop: false, iconic: true, rating: 9,
+    desc: 'Klasik Sonic\'in zirvesi.',
+    platforms: [{ system: 'Genesis', emulator: 'Genesis Plus GX', perf: 'good', cover: T('Sega_-_Mega_Drive_-_Genesis', 'Sonic The Hedgehog 3 (USA)') }] },
+
+  { title: 'Sonic Adventure', series: 'Sonic the Hedgehog', genres: ['Platformer'], year: 1998, coop: false, iconic: true, rating: 8,
+    desc: 'İlk 3D Sonic. Flycast ile çalışır.',
+    platforms: [{ system: 'Dreamcast', emulator: 'Flycast', perf: 'good', cover: T('Sega_-_Dreamcast', 'Sonic Adventure (USA)') }] },
+
+  { title: 'Sonic Adventure 2: Battle', series: 'Sonic the Hedgehog', genres: ['Platformer'], year: 2001, coop: true, coopNotes: 'Battle modu 2P', iconic: true, rating: 8,
+    desc: 'Chao Garden, multiplayer battle modu.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Sonic Adventure 2 Battle (USA)') }] },
+
+  { title: 'Sonic Heroes', series: 'Sonic the Hedgehog', genres: ['Platformer'], year: 2003, coop: false, iconic: false, rating: 6,
+    desc: 'Üçlü takım dinamikleri.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Sonic Heroes (USA)') }] },
+
+  { title: 'Crash Bandicoot', series: 'Crash Bandicoot', genres: ['Platformer'], year: 1996, coop: false, iconic: true, rating: 8,
+    desc: 'DuckStation ile 1080p upscaled mükemmel görünür.',
+    platforms: [{ system: 'PS1', emulator: 'DuckStation', perf: 'good', cover: T('Sony_-_PlayStation', 'Crash Bandicoot (USA)') }] },
+
+  { title: 'Crash Bandicoot 2: Cortex Strikes Back', series: 'Crash Bandicoot', genres: ['Platformer'], year: 1997, coop: false, iconic: true, rating: 9,
+    desc: 'Serinin en iyisi diyenler var.',
+    platforms: [{ system: 'PS1', emulator: 'DuckStation', perf: 'good', cover: T('Sony_-_PlayStation', 'Crash Bandicoot 2 - Cortex Strikes Back (USA)') }] },
+
+  { title: 'Crash Bandicoot 3: Warped', series: 'Crash Bandicoot', genres: ['Platformer'], year: 1998, coop: false, iconic: true, rating: 9,
+    desc: 'Klasik üçlemenin tepesi.',
+    platforms: [{ system: 'PS1', emulator: 'DuckStation', perf: 'good', cover: T('Sony_-_PlayStation', 'Crash Bandicoot 3 - Warped (USA)') }] },
+
+  { title: 'Crash Team Racing', series: 'Crash Bandicoot', genres: ['Racing'], year: 1999, coop: true, coopNotes: '2P split-screen — eşinle ZORUNLU', iconic: true, rating: 10,
+    desc: 'PS1\'in en iyi kart yarışı.',
+    platforms: [{ system: 'PS1', emulator: 'DuckStation', perf: 'good', cover: T('Sony_-_PlayStation', 'Crash Team Racing (USA)') }] },
+
+  { title: 'Crash Bandicoot: The Wrath of Cortex', series: 'Crash Bandicoot', genres: ['Platformer'], year: 2001, coop: false, iconic: false, rating: 6,
+    desc: 'PS2 dönemi Crash.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Crash Bandicoot - The Wrath of Cortex (USA)') }] },
+
+  { title: 'Tekken 3', series: 'Tekken', genres: ['Fighting'], year: 1998, coop: true, coopNotes: '2P versus', iconic: true, rating: 10,
+    desc: 'Tüm zamanların en iyi dövüş oyunlarından.',
+    platforms: [{ system: 'PS1', emulator: 'DuckStation', perf: 'good', cover: T('Sony_-_PlayStation', 'Tekken 3 (USA)') }] },
+
+  { title: 'Tekken 5', series: 'Tekken', genres: ['Fighting'], year: 2005, coop: true, coopNotes: '2P versus', iconic: true, rating: 10,
+    desc: 'PS2 Tekken\'in zirvesi.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Tekken 5 (USA)') }] },
+
+  { title: 'Tekken: Dark Resurrection', series: 'Tekken', genres: ['Fighting'], year: 2006, coop: true, coopNotes: 'Ad-hoc 2P', iconic: true, rating: 9,
+    desc: 'PSP\'nin gurur duyduğu dövüş oyunu.',
+    platforms: [{ system: 'PSP', emulator: 'PPSSPP', perf: 'good', cover: T('Sony_-_PlayStation_Portable', 'Tekken - Dark Resurrection (USA)') }] },
+
+  { title: 'Final Fantasy X', series: 'Final Fantasy', genres: ['RPG'], year: 2001, coop: false, iconic: true, rating: 10,
+    desc: 'Sphere Grid, dramatik hikaye. JRPG zirvesi.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Final Fantasy X (USA)') }] },
+
+  { title: 'Final Fantasy VII', series: 'Final Fantasy', genres: ['RPG'], year: 1997, coop: false, iconic: true, rating: 10,
+    desc: 'JRPG\'lerin altın standartı.',
+    platforms: [{ system: 'PS1', emulator: 'DuckStation', perf: 'good', cover: T('Sony_-_PlayStation', 'Final Fantasy VII (USA) (Disc 1)') }] },
+
+  { title: 'Final Fantasy IX', series: 'Final Fantasy', genres: ['RPG'], year: 2000, coop: false, iconic: true, rating: 10,
+    desc: 'Klasik fantasy temasına dönüş. Birçok kişiye göre serinin zirvesi.',
+    platforms: [{ system: 'PS1', emulator: 'DuckStation', perf: 'good', cover: T('Sony_-_PlayStation', 'Final Fantasy IX (USA) (Disc 1)') }] },
+
+  { title: 'Crisis Core: Final Fantasy VII', series: 'Final Fantasy', genres: ['Action-RPG'], year: 2007, coop: false, iconic: true, rating: 9,
+    desc: 'FF7 prequel, action-RPG.',
+    platforms: [{ system: 'PSP', emulator: 'PPSSPP', perf: 'good', cover: T('Sony_-_PlayStation_Portable', 'Crisis Core - Final Fantasy VII (USA)') }] },
+
+  { title: 'Final Fantasy Tactics: The War of the Lions', series: 'Final Fantasy', genres: ['Strategy-RPG'], year: 2007, coop: false, iconic: true, rating: 10,
+    desc: 'Tactical RPG\'nin definitive sürümü.',
+    platforms: [{ system: 'PSP', emulator: 'PPSSPP', perf: 'good', cover: T('Sony_-_PlayStation_Portable', 'Final Fantasy Tactics - The War of the Lions (USA)') }] },
+
+  { title: 'Final Fantasy VI', series: 'Final Fantasy', genres: ['RPG'], year: 1994, coop: false, iconic: true, rating: 10,
+    desc: 'JRPG\'nin SNES zirvesi.',
+    platforms: [{ system: 'SNES', emulator: 'Snes9x', perf: 'good', cover: T('Nintendo_-_Super_Nintendo_Entertainment_System', 'Final Fantasy III (USA)') }] },
+
+  { title: 'Resident Evil 4', series: 'Resident Evil', genres: ['Survival Horror', 'Action'], year: 2005, coop: false, iconic: true, rating: 10,
+    desc: 'Tüm zamanların en iyi action-horror oyunu.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Resident Evil 4 (USA) (Disc 1)') }] },
+
+  { title: 'Resident Evil: Code Veronica X', series: 'Resident Evil', genres: ['Survival Horror'], year: 2001, coop: false, iconic: true, rating: 8,
+    desc: 'Klasik RE. Sorunsuz çalışıyor.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Resident Evil - Code Veronica X (USA)') }] },
+
+  { title: 'Metal Gear Solid 3: Snake Eater', series: 'Metal Gear', genres: ['Stealth', 'Action'], year: 2004, coop: false, iconic: true, rating: 10,
+    desc: 'Serinin en sevilen oyunu. Jungle survival.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'warn', perfNotes: 'Tweaks ile playable', cover: T('Sony_-_PlayStation_2', 'Metal Gear Solid 3 - Snake Eater (USA)') }] },
+
+  { title: 'Metal Gear Solid', series: 'Metal Gear', genres: ['Stealth'], year: 1998, coop: false, iconic: true, rating: 10,
+    desc: 'Stealth tarihinin başlangıcı.',
+    platforms: [{ system: 'PS1', emulator: 'DuckStation', perf: 'good', cover: T('Sony_-_PlayStation', 'Metal Gear Solid (USA) (Disc 1)') }] },
+
+  { title: 'Kingdom Hearts', series: 'Kingdom Hearts', genres: ['Action-RPG'], year: 2002, coop: false, iconic: true, rating: 9,
+    desc: 'Disney + Final Fantasy crossover.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Kingdom Hearts (USA)') }] },
+
+  { title: 'Kingdom Hearts II', series: 'Kingdom Hearts', genres: ['Action-RPG'], year: 2005, coop: false, iconic: true, rating: 10,
+    desc: 'Aksiyon mekanikleri rafine.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Kingdom Hearts II (USA)') }] },
+
+  { title: 'Kingdom Hearts: Birth by Sleep', series: 'Kingdom Hearts', genres: ['Action-RPG'], year: 2010, coop: false, iconic: true, rating: 9,
+    desc: 'PSP\'nin en güzel görünen oyunlarından.',
+    platforms: [{ system: 'PSP', emulator: 'PPSSPP', perf: 'good', cover: T('Sony_-_PlayStation_Portable', 'Kingdom Hearts - Birth by Sleep (USA)') }] },
+
+  { title: 'Jak and Daxter: The Precursor Legacy', series: 'Jak and Daxter', genres: ['Platformer'], year: 2001, coop: false, iconic: true, rating: 9,
+    desc: 'PS2\'nin en iyi 3D platformerlarından.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Jak and Daxter - The Precursor Legacy (USA)') }] },
+
+  { title: 'Ratchet & Clank', series: 'Ratchet & Clank', genres: ['Platformer', 'Action'], year: 2002, coop: false, iconic: true, rating: 9,
+    desc: 'Silah çeşitliliği muhteşem.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Ratchet & Clank (USA)') }] },
+
+  { title: 'Sly Cooper and the Thievius Raccoonus', series: 'Sly Cooper', genres: ['Platformer', 'Stealth'], year: 2002, coop: false, iconic: true, rating: 8,
+    desc: 'Stealth platformer, çizgi film stilinde.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Sly Cooper and the Thievius Raccoonus (USA)') }] },
+
+  { title: 'Sly 2: Band of Thieves', series: 'Sly Cooper', genres: ['Platformer', 'Stealth'], year: 2004, coop: false, iconic: true, rating: 9,
+    desc: 'Sly serisinin zirvesi.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Sly 2 - Band of Thieves (USA)') }] },
+
+  { title: 'Metroid Prime', series: 'Metroid', genres: ['Action-Adventure'], year: 2002, coop: false, iconic: true, rating: 10,
+    desc: 'First-person Metroid. PrimeHack önerilir.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'warn', perfNotes: 'PrimeHack fork ile dual analog', cover: T('Nintendo_-_GameCube', 'Metroid Prime (USA)') }] },
+
+  { title: 'Metroid Fusion', series: 'Metroid', genres: ['Action-Adventure', 'Metroidvania'], year: 2002, coop: false, iconic: true, rating: 9,
+    desc: 'GBA\'nın en iyi metroidvania\'sı.',
+    platforms: [{ system: 'GBA', emulator: 'mGBA', perf: 'good', cover: T('Nintendo_-_Game_Boy_Advance', 'Metroid Fusion (USA, Australia)') }] },
+
+  { title: 'Metroid: Zero Mission', series: 'Metroid', genres: ['Action-Adventure', 'Metroidvania'], year: 2004, coop: false, iconic: true, rating: 9,
+    desc: 'İlk Metroid\'in remake\'i.',
+    platforms: [{ system: 'GBA', emulator: 'mGBA', perf: 'good', cover: T('Nintendo_-_Game_Boy_Advance', 'Metroid - Zero Mission (USA)') }] },
+
+  { title: 'Shadow of the Colossus', series: null, genres: ['Action-Adventure'], year: 2005, coop: false, iconic: true, rating: 10,
+    desc: 'Sanat eseri. 16 dev boss.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'warn', perfNotes: 'Resolution ayarlarıyla iyi çalışır', cover: T('Sony_-_PlayStation_2', 'Shadow of the Colossus (USA)') }] },
+
+  { title: 'Okami', series: null, genres: ['Action-Adventure'], year: 2006, coop: false, iconic: true, rating: 10,
+    desc: 'Sumi-e sanat tarzı. AMOLED\'de muhteşem.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Okami (USA)') }] },
+
+  { title: 'Castlevania: Symphony of the Night', series: 'Castlevania', genres: ['Metroidvania', 'Action-RPG'], year: 1997, coop: false, iconic: true, rating: 10,
+    desc: 'Metroidvania janrına ilham veren başyapıt.',
+    platforms: [{ system: 'PS1', emulator: 'DuckStation', perf: 'good', cover: T('Sony_-_PlayStation', 'Castlevania - Symphony of the Night (USA)') }] },
+
+  { title: 'Castlevania: Aria of Sorrow', series: 'Castlevania', genres: ['Metroidvania', 'Action-RPG'], year: 2003, coop: false, iconic: true, rating: 10,
+    desc: 'GBA Castlevania\'sının en iyisi.',
+    platforms: [{ system: 'GBA', emulator: 'mGBA', perf: 'good', cover: T('Nintendo_-_Game_Boy_Advance', 'Castlevania - Aria of Sorrow (USA)') }] },
+
+  { title: 'Devil May Cry 3: Dante\'s Awakening', series: 'Devil May Cry', genres: ['Action'], year: 2005, coop: false, iconic: true, rating: 10,
+    desc: 'Hack-and-slash zirvesi. Stil sistemi.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'warn', perfNotes: 'Occasional dips below 50 FPS', cover: T('Sony_-_PlayStation_2', 'Devil May Cry 3 - Dante\'s Awakening - Special Edition (USA)') }] },
+
+  { title: 'Tony Hawk\'s Pro Skater 3', series: 'Tony Hawk', genres: ['Sports'], year: 2001, coop: true, coopNotes: '2P split-screen', iconic: true, rating: 9,
+    desc: 'Soundtrack efsane. 2P split-screen var.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Tony Hawk\'s Pro Skater 3 (USA)') }] },
+
+  { title: 'Persona 4', series: 'Persona', genres: ['RPG'], year: 2008, coop: false, iconic: true, rating: 10,
+    desc: 'JRPG + sosyal sim.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Shin Megami Tensei - Persona 4 (USA)') }] },
+
+  { title: 'Persona 3 FES', series: 'Persona', genres: ['RPG'], year: 2007, coop: false, iconic: true, rating: 10,
+    desc: 'Persona serisinin modern formülünün başlangıcı.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'Shin Megami Tensei - Persona 3 FES (USA)') }] },
+
+  { title: 'Pikmin', series: 'Pikmin', genres: ['Strategy'], year: 2001, coop: false, iconic: false, rating: 8,
+    desc: 'Real-time strategy + bulmaca.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Pikmin (USA)') }] },
+
+  { title: 'Pikmin 2', series: 'Pikmin', genres: ['Strategy'], year: 2004, coop: true, coopNotes: 'Co-op modu var', iconic: true, rating: 9,
+    desc: 'İki başkahraman, daha derin mekanikler.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Pikmin 2 (USA)') }] },
+
+  { title: 'Soulcalibur II', series: null, genres: ['Fighting'], year: 2003, coop: true, coopNotes: '2P versus', iconic: true, rating: 9,
+    desc: 'GameCube exclusive Link karakteri ile.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'SoulCalibur II (USA)') }] },
+
+  { title: 'Super Smash Bros. Melee', series: 'Super Smash Bros.', genres: ['Fighting'], year: 2001, coop: true, coopNotes: '4P local', iconic: true, rating: 10,
+    desc: 'Smash\'in altın standardı.',
+    platforms: [{ system: 'GameCube', emulator: 'Dolphin', perf: 'good', cover: T('Nintendo_-_GameCube', 'Super Smash Bros. Melee (USA) (En,Ja)') }] },
+
+  { title: 'TimeSplitters 2', series: 'TimeSplitters', genres: ['FPS'], year: 2002, coop: true, coopNotes: 'Split-screen multiplayer', iconic: true, rating: 9,
+    desc: 'Split-screen FPS multiplayer\'ın en iyisi.',
+    platforms: [{ system: 'PS2', emulator: 'AetherSX2', perf: 'good', cover: T('Sony_-_PlayStation_2', 'TimeSplitters 2 (USA)') }] },
+
+  { title: 'Professor Layton and the Curious Village', series: 'Professor Layton', genres: ['Puzzle'], year: 2007, coop: false, iconic: true, rating: 9,
+    desc: 'Bulmaca + hikaye. Anlık girip çıkmalık.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Professor Layton and the Curious Village (USA)') }] },
+
+  { title: 'Professor Layton and the Diabolical Box', series: 'Professor Layton', genres: ['Puzzle'], year: 2007, coop: false, iconic: true, rating: 8,
+    desc: 'Layton serisinin ikincisi.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Professor Layton and the Diabolical Box (USA)') }] },
+
+  { title: 'Professor Layton and the Unwound Future', series: 'Professor Layton', genres: ['Puzzle'], year: 2008, coop: false, iconic: true, rating: 10,
+    desc: 'Fan\'lara göre serinin zirvesi.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Professor Layton and the Unwound Future (USA)') }] },
+
+  { title: 'Brain Age', series: null, genres: ['Puzzle'], year: 2005, coop: false, iconic: true, rating: 7,
+    desc: 'Sudoku + beyin egzersizi. Günlük 5-10 dakika.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Brain Age - Train Your Brain in Minutes a Day! (USA)') }] },
+
+  { title: 'Picross DS', series: null, genres: ['Puzzle'], year: 2007, coop: false, iconic: true, rating: 8,
+    desc: 'Bağımlılık yapan görsel bulmaca.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Picross DS (USA)') }] },
+
+  { title: 'Tetris DS', series: null, genres: ['Puzzle'], year: 2006, coop: false, iconic: true, rating: 8,
+    desc: 'Klasik Tetris, DS modları ile.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Tetris DS (USA)') }] },
+
+  { title: '42 All-Time Classics', series: null, genres: ['Puzzle', 'Party'], year: 2005, coop: true, coopNotes: 'Multiplayer var', iconic: true, rating: 8,
+    desc: 'Satranç, dama, Mahjong, bowling — 42 oyun bir arada.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', '42 All-Time Classics (Europe) (En,Fr,De,Es,It)') }] },
+
+  { title: 'Advance Wars', series: 'Advance Wars', genres: ['Strategy'], year: 2001, coop: false, iconic: true, rating: 9,
+    desc: 'Sıra tabanlı strateji klasiği.',
+    platforms: [{ system: 'GBA', emulator: 'mGBA', perf: 'good', cover: T('Nintendo_-_Game_Boy_Advance', 'Advance Wars (USA)') }] },
+
+  { title: 'Advance Wars: Dual Strike', series: 'Advance Wars', genres: ['Strategy'], year: 2005, coop: false, iconic: true, rating: 9,
+    desc: 'DS\'in çift ekran kullanan strateji oyunu.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Advance Wars - Dual Strike (USA)') }] },
+
+  { title: 'Fire Emblem: Shadow Dragon', series: 'Fire Emblem', genres: ['Strategy-RPG'], year: 2008, coop: false, iconic: false, rating: 7,
+    desc: 'Fire Emblem\'in DS girişi.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Fire Emblem - Shadow Dragon (USA)') }] },
+
+  { title: 'Puzzle Quest: Challenge of the Warlords', series: null, genres: ['Puzzle-RPG'], year: 2007, coop: false, iconic: true, rating: 8,
+    desc: 'Match-3 + RPG. Bağımlılık yapar.',
+    platforms: [{ system: 'DS', emulator: 'DraStic', perf: 'good', cover: T('Nintendo_-_Nintendo_DS', 'Puzzle Quest - Challenge of the Warlords (USA)') }] },
+];
+
+// ── API HELPERS ──────────────────────────────────────────────
+async function api(endpoint, method = 'GET', body = null) {
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': KEY,
+      'Authorization': `Bearer ${KEY}`,
+      'Prefer': 'return=representation'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(`${URL}/rest/v1/${endpoint}`, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`${res.status}: ${err}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+let logEl, progressBar;
+function log(msg, cls = '') { logEl.innerHTML += `<div class="${cls}">${msg}</div>`; logEl.scrollTop = logEl.scrollHeight; }
+function setProgress(p) { progressBar.style.width = p + '%'; }
+function clearLog() { logEl.innerHTML = ''; }
+
+async function runMigration() {
+  logEl = document.getElementById('log');
+  progressBar = document.getElementById('progress-bar');
+  document.getElementById('btn').disabled = true;
+  logEl.innerHTML = '';
+
+  try {
+    // STEP 1: Systems
+    log('<span class="step">═══ ADIM 1/5: Sistemler ═══</span>');
+    const sysResult = await api('systems', 'POST', SYSTEMS);
+    const sysMap = {};
+    sysResult.forEach(s => { sysMap[s.name] = s.id; });
+    log(`✓ ${sysResult.length} sistem yüklendi`, 'ok');
+    setProgress(10);
+
+    // STEP 2: Genres
+    log('<span class="step">═══ ADIM 2/5: Türler ═══</span>');
+    const genResult = await api('genres', 'POST', GENRES);
+    const genMap = {};
+    genResult.forEach(g => { genMap[g.name] = g.id; });
+    log(`✓ ${genResult.length} tür yüklendi`, 'ok');
+    setProgress(20);
+
+    // STEP 3: Series
+    log('<span class="step">═══ ADIM 3/5: Seriler ═══</span>');
+    const serResult = await api('series', 'POST', SERIES);
+    const serMap = {};
+    serResult.forEach(s => { serMap[s.name] = s.id; });
+    log(`✓ ${serResult.length} seri yüklendi`, 'ok');
+    setProgress(30);
+
+    // STEP 4: Emulators
+    log('<span class="step">═══ ADIM 4/5: Emülatörler ═══</span>');
+    const emuResult = await api('emulators', 'POST', EMULATORS);
+    const emuMap = {};
+    emuResult.forEach(e => { emuMap[e.name] = e.id; });
+    log(`✓ ${emuResult.length} emülatör yüklendi`, 'ok');
+    setProgress(40);
+
+    // STEP 5: Games + platforms + genres
+    log('<span class="step">═══ ADIM 5/5: Oyunlar ═══</span>');
+    let gameOk = 0, gameFail = 0;
+    const total = GAMES.length;
+
+    for (let i = 0; i < GAMES.length; i++) {
+      const g = GAMES[i];
+      try {
+        // Insert game
+        const [game] = await api('games', 'POST', [{
+          title: g.title,
+          series_id: g.series ? serMap[g.series] : null,
+          release_year: g.year,
+          description: g.desc,
+          is_coop: g.coop,
+          coop_notes: g.coopNotes || null,
+          play_status: 'backlog',
+          rating: g.rating,
+          is_iconic: g.iconic,
+        }]);
+
+        // Insert game_genres
+        if (g.genres && g.genres.length > 0) {
+          const ggRows = g.genres.filter(gn => genMap[gn]).map(gn => ({ game_id: game.id, genre_id: genMap[gn] }));
+          if (ggRows.length > 0) await api('game_genres', 'POST', ggRows);
+        }
+
+        // Insert game_platforms
+        for (const p of g.platforms) {
+          await api('game_platforms', 'POST', [{
+            game_id: game.id,
+            system_id: sysMap[p.system],
+            emulator_id: emuMap[p.emulator] || null,
+            performance: p.perf || 'good',
+            performance_notes: p.perfNotes || null,
+            cover_url: p.cover || null,
+            region: 'USA',
+          }]);
+        }
+
+        gameOk++;
+        log(`✓ [${i+1}/${total}] ${g.title}`, 'ok');
+      } catch(e) {
+        gameFail++;
+        log(`✗ [${i+1}/${total}] ${g.title}: ${e.message}`, 'err');
+      }
+
+      setProgress(40 + Math.round((i+1)/total * 60));
+      await new Promise(r => setTimeout(r, 50));
+    }
+
+    log('', '');
+    log(`🎉 Migration tamamlandı! ${gameOk} oyun başarılı, ${gameFail} hatalı.`, gameOk > 0 ? 'ok' : 'err');
+    setProgress(100);
+
+  } catch(e) {
+    log(`💥 Kritik hata: ${e.message}`, 'err');
+  }
+
+  document.getElementById('btn').disabled = false;
+}
+</script>
+</body>
+</html>
