@@ -374,9 +374,7 @@ async function saveNotes(id){
   const g=ALL.find(x=>x.id===id);
   if(g){g.playNotes=notes;g.gameLog=log;}
   await patch(`games?id=eq.${id}`,{play_notes:notes,game_log:log});
-  const st=document.getElementById('save-status');
-  st.style.display='inline';
-  setTimeout(()=>st.style.display='none',2000);
+  closeModal();
 }
 
 async function addToQueue(gameId){
