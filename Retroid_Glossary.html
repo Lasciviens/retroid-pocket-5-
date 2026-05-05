@@ -5,353 +5,113 @@
 <title>Retroid Glossary — Teknik Terimler</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  :root {
-    --bg-1: #0a0e1a;
-    --bg-2: #131829;
-    --bg-3: #1c2238;
-    --accent: #00d4ff;
-    --accent-2: #ff4655;
-    --gold: #ffb347;
-    --good: #2ecc71;
-    --text: #e8eaf0;
-    --muted: #8c93a8;
-    --border: #2a3149;
-    --code-bg: #0d1117;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 20px;
-    line-height: 1.6;
-  }
-  header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 30px 20px;
-    background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(255,179,71,0.1));
-    border: 1px solid var(--border);
-    border-radius: 16px;
-  }
-  h1 {
-    font-size: 2.5rem;
-    background: linear-gradient(90deg, var(--accent), var(--gold));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 8px;
-    letter-spacing: -1px;
-  }
-  .subtitle { color: var(--muted); }
-
-  .container {
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 24px;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-  .sidebar {
-    position: sticky;
-    top: 20px;
-    height: fit-content;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-  }
-  .sidebar h3 {
-    color: var(--accent);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-  }
-  .sidebar ul { list-style: none; }
-  .sidebar li { margin-bottom: 6px; }
-  .sidebar a {
-    color: var(--text);
-    text-decoration: none;
-    padding: 6px 10px;
-    display: block;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-  }
-  .sidebar a:hover { background: var(--bg-3); color: var(--accent); }
-
-  .search-wrapper {
-    margin-bottom: 20px;
-  }
-  .search-input {
-    width: 100%;
-    background: var(--bg-3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: 0.95rem;
-  }
-  .search-input:focus { outline: none; border-color: var(--accent); }
-
-  .term-card {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 16px;
-    transition: border-color 0.2s;
-    scroll-margin-top: 20px;
-  }
-  .term-card:hover { border-color: var(--accent); }
-  .term-card.hidden { display: none; }
-  .term-header {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-  .term-name {
-    font-size: 1.6rem;
-    color: var(--accent);
-    font-weight: 700;
-  }
-  .term-cat {
-    font-size: 0.7rem;
-    background: var(--bg-3);
-    color: var(--muted);
-    padding: 3px 10px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .term-card h4 {
-    color: var(--gold);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 16px;
-    margin-bottom: 6px;
-  }
-  .term-card p { margin-bottom: 8px; }
-  code, .code-block {
-    background: var(--code-bg);
-    color: var(--accent-2);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 0.9em;
-  }
-  .code-block {
-    display: block;
-    padding: 12px;
-    margin-top: 8px;
-    overflow-x: auto;
-    border: 1px solid var(--border);
-  }
-  .related {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-  .related a {
-    color: var(--accent);
-    text-decoration: none;
-    margin-right: 12px;
-  }
-  .related a:hover { text-decoration: underline; }
-
-  @media (max-width: 768px) {
-    .container { grid-template-columns: 1fr; }
-    .sidebar { position: static; }
-  }
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#00d4ff;--accent-2:#ff4655;--gold:#ffb347;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149;--code-bg:#0d1117}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);min-height:100vh;padding:20px;line-height:1.6}
+header{text-align:center;margin-bottom:28px;padding:24px 20px;background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(255,179,71,.1));border:1px solid var(--border);border-radius:16px}
+h1{font-size:2.2rem;background:linear-gradient(90deg,var(--accent),var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;letter-spacing:-1px}
+.subtitle{color:var(--muted)}
+.quick-links{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
+.quick-links a:hover{border-color:var(--accent)}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:20px;max-width:1300px;margin:0 auto}
+.sidebar{position:sticky;top:20px;height:fit-content;background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.sidebar h3{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.sidebar ul{list-style:none}
+.sidebar li{margin-bottom:3px}
+.sidebar a{color:var(--text);text-decoration:none;padding:5px 8px;display:block;border-radius:6px;font-size:.85rem;transition:all .2s}
+.sidebar a:hover,.sidebar a.active{background:var(--bg-3);color:var(--accent)}
+.search-box{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:.9rem;margin-bottom:18px}
+.search-box:focus{outline:none;border-color:var(--accent)}
+.term-card{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:14px;transition:border-color .2s;scroll-margin-top:20px}
+.term-card:hover{border-color:var(--accent)}
+.term-card.hidden{display:none}
+.term-header{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.term-name{font-size:1.6rem;color:var(--accent);font-weight:700}
+.term-cat{font-size:.65rem;background:var(--bg-3);color:var(--muted);padding:3px 10px;border-radius:4px;text-transform:uppercase;letter-spacing:1px}
+.term-summary{font-size:1rem;font-weight:600;margin-bottom:12px;color:var(--text)}
+.term-detail{color:var(--text);line-height:1.8;font-size:.92rem}
+.term-detail code{background:var(--code-bg);color:var(--accent-2);padding:2px 6px;border-radius:4px;font-family:'Consolas',monospace;font-size:.88em}
+.loading{text-align:center;padding:60px;color:var(--muted)}
+.empty-msg{text-align:center;padding:40px;color:var(--muted)}
+footer{text-align:center;margin-top:36px;padding:16px;color:var(--muted);font-size:.8rem}
+footer a{color:var(--accent);text-decoration:none}
+@media(max-width:768px){.layout{grid-template-columns:1fr}.sidebar{position:static}}
 </style>
 </head>
 <body>
 <header>
   <h1>RETROID GLOSSARY</h1>
   <p class="subtitle">Teknik Terimler — Yazılımcı Mantığıyla Açıklamalı</p>
-  <a href="Retroid_Library_Dashboard.html" style="display:inline-block;margin-top:14px;color:var(--accent-2);text-decoration:none;font-size:0.85rem;">← Ana kütüphaneye dön</a>
+  <div class="quick-links">
+    <a href="index.html">🏠 Hub</a>
+    <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
+    <a href="Retroid_Series_Roadmap.html">🗺️ Seriler</a>
+    <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatörler</a>
+  </div>
 </header>
 
-<div class="container">
+<div class="layout">
   <aside class="sidebar">
     <h3>Terimler</h3>
-    <ul id="toc"></ul>
+    <ul id="toc"><li style="color:var(--muted);font-size:.8rem">Yükleniyor...</li></ul>
   </aside>
-
   <main>
-    <div class="search-wrapper">
-      <input type="text" class="search-input" id="search" placeholder="Terim, kategori veya açıklama ara...">
-    </div>
-    <div id="terms"></div>
+    <input type="text" class="search-box" id="search" placeholder="Terim, kategori veya açıklama ara...">
+    <div id="terms"><div class="loading">⏳ Yükleniyor...</div></div>
   </main>
 </div>
 
+<footer>
+  Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a>
+</footer>
+
 <script>
-const terms = [
-  {
-    id: 'rom',
-    name: 'ROM',
-    cat: 'Donanım/Dosya',
-    short: 'Read-Only Memory. Bir oyun kartuşunun veya diskinin dijital dökümü.',
-    detail: 'ROM aslında "Read-Only Memory" demek — donanım dünyasında, yazılamaz/silinmez bellek anlamına gelir. Eski oyunlar (NES, SNES, GBA, N64 vs.) fiziksel kartuşlarda bu tür ROM çiplerinde geliyordu. Bir oyunu emüle edebilmek için, o kartuştaki ROM çipinin içeriğinin <code>byte-by-byte</code> bir kopyası gerekir. İşte bu kopyaya da ROM dosyası deniyor (<code>.gba</code>, <code>.smc</code>, <code>.n64</code>).',
-    why: 'Çünkü emülatör, gerçek donanım gibi davranır. CPU bu ROM\'dan instruction\'ları okur, ekrana çizer. Yani senin elindeki <code>SuperMario64.z64</code> dosyası, aslında orijinal kartuşun içindeki silikon çipin bir mirror image\'i.',
-    how: 'Disk tabanlı sistemler (PS1, PS2, GameCube, Wii) için ROM yerine genellikle <code>ISO</code>, <code>BIN/CUE</code>, <code>CHD</code>, <code>RVZ</code> gibi disk image formatları kullanılır. Bunlar mantıken aynı şey — fiziksel medyanın dijital fotokopisi.',
-    related: ['dump', 'iso', 'emulation', 'bios']
-  },
-  {
-    id: 'bios',
-    name: 'BIOS',
-    cat: 'Donanım/Firmware',
-    short: 'Donanım ile yazılım arasındaki köprü. Konsolu açan ilk kod.',
-    detail: 'BIOS — "Basic Input/Output System". Konsolun içinde bir flash chip\'te bulunan, cihaz açıldığında çalışan ilk firmware. Donanımı initialize eder, oyunu kontrol eder, controller okur, çıkış üretir. Bir nevi konsolun "işletim sistemi öncesi katmanı".',
-    why: 'Bazı emülatörler (PS1, PS2, GBA, Saturn, Dreamcast) gerçek BIOS dump\'ı olmadan çalışmaz veya doğru çalışmaz. Çünkü bu BIOS rutinlerini software seviyesinde "high-level emulate" etmek, hata olasılığı yaratır. Düşün: gerçek konsol BIOS\'u <code>memcpy</code>, <code>printf</code>, save/load gibi sistem fonksiyonları sağlar. Oyun kodu bunları çağırır. Emülatörün ya bu BIOS\'u koşturması ya da bu fonksiyonları "fake" etmesi lazım.',
-    how: 'Bazı emülatörler "HLE" (High-Level Emulation) yapar: BIOS çağrılarını yakalar, kendi C++ koduyla taklit eder. Bu daha hızlı ama uyumsuzluk riski var. Diğerleri "LLE" (Low-Level Emulation) yapar: gerçek BIOS dump\'ını çalıştırır. Daha doğru ama yasal olarak senin kendi konsolundan dump etmen gereken bir dosya. Örneğin PCSX2 için <code>scph10000.bin</code> tarzı bir PS2 BIOS\'u kullanılır.',
-    related: ['emulation', 'firmware', 'rom']
-  },
-  {
-    id: 'emulation',
-    name: 'Emulation',
-    cat: 'Yazılım Konsepti',
-    short: 'Bir donanımın yazılımla taklit edilmesi.',
-    detail: 'Emulation, "şu donanımı tamamen yazılım katmanında taklit edeceğim" demek. PS2\'nin <code>Emotion Engine</code> CPU\'su ARM mimarisinde değil; Snapdragon 865 onu doğrudan çalıştıramaz. Emülatör, PS2 instruction\'larını runtime\'da okuyup ARM equivalent kodu üretir veya doğrudan interpret eder.',
-    why: 'Çünkü PS2 oyunlarının binary\'si o özel CPU/GPU mimarisi için derlendi. ARM CPU "MIPS R5900 instruction set"i bilmez. Emülatör arada bir <code>translator</code> görevi görür: "bu PS2 instruction\'ı al, ona denk gelen ARM kodunu çıkar, çalıştır".',
-    how: 'İki ana yaklaşım var: <strong>Interpreter</strong> (her instruction\'ı tek tek decode et, simulate et — yavaş ama basit) ve <strong>JIT/Recompiler</strong> (Just-In-Time: bir block kodu bir defaya mahsus ARM\'a çevir, cache\'le, sonra direkt cached versionu çalıştır — hızlı ama karmaşık). RP5\'teki AetherSX2, PPSSPP, Dolphin gibi emülatörler hep JIT kullanır.',
-    related: ['jit', 'core', 'frontend', 'rom']
-  },
-  {
-    id: 'frontend',
-    name: 'Frontend',
-    cat: 'UI/Yazılım',
-    short: 'Birden fazla emülatörü tek bir kullanıcı arayüzünden yöneten launcher.',
-    detail: 'Sen tek tek 30 emülatör çalıştırmak istemezsin. Frontend bunu çözer: tüm sisteminin ROM\'larını listeleyen, kapaklarını gösteren, doğru emülatörü doğru oyunla eşleştiren bir launcher uygulaması. RetroArch, Daijisho, ES-DE (EmulationStation), Pegasus en popüler frontendler.',
-    why: 'Çünkü her emülatörün kendi UI\'ı var, kendi save sistemi var, kendi ayarları var. Bunu birleştirmek isteyen kullanıcı için frontend "üst katman" olur. Bir nevi <code>launcher of launchers</code>.',
-    how: 'Frontend\'ler genellikle iki şekilde çalışır: ya <strong>libretro core</strong>\'ları kullanır (emülatörler shared library olarak yüklenir — RetroArch\'ın yaklaşımı), ya da <strong>standalone emulator</strong>\'ları intent ile çağırır (Daijisho\'nun yaklaşımı: "bu ROM için PPSSPP standalone\'unu launch et").',
-    related: ['core', 'retroarch', 'libretro', 'emulation']
-  },
-  {
-    id: 'core',
-    name: 'Core',
-    cat: 'Yazılım Mimarisi',
-    short: 'Frontend içinde çalışan emülatör modülü (özellikle RetroArch\'ta).',
-    detail: 'RetroArch dünyasında "core" terim, libretro API ile yazılmış bir emülatör shared library\'si (<code>.so</code>, <code>.dll</code>) demek. Örnek: <code>mgba_libretro.so</code> bir GBA core\'u, <code>pcsx_rearmed_libretro.so</code> bir PS1 core\'u.',
-    why: 'Çünkü RetroArch sadece bir frontend; emülatör mantığını içermiyor. Cores, gerçek emülasyonu yapan plug-in\'ler. Bu mimari sayesinde RetroArch güncellense bile core\'lar bağımsız güncellenebilir.',
-    how: 'libretro API standardize edilmiş bir interface — input, video, audio, save state callback\'leri. Core yazarı sadece bu interface\'i implement eder. RetroArch geriye kalan UI, controller mapping, shader pipeline gibi şeyleri halleder. RP5\'te en çok kullanılan core\'lar: PPSSPP, Beetle PSX HW, mGBA, Genesis Plus GX, melonDS.',
-    related: ['frontend', 'retroarch', 'emulation', 'standalone']
-  },
-  {
-    id: 'standalone',
-    name: 'Standalone Emulator',
-    cat: 'Yazılım',
-    short: 'Bağımsız çalışan, kendi UI\'ı olan emülatör.',
-    detail: 'Core\'un tersi. Örnek: PPSSPP standalone, AetherSX2, Dolphin standalone, DuckStation standalone. Kendi başına bir uygulama, kendi ayarları, kendi UI\'ı var. RetroArch içine bir core olarak da yüklenebilirler ama optimize edilmiş, en güncel feature\'ları olan versiyonu standalone\'dur.',
-    why: 'Genelde core versiyonu RetroArch entegrasyonu için biraz geriden gelir. Performans tuning veya en yeni feature için standalone tercih edilir. Joey\'s setup guide gibi rehberler de bu yüzden DuckStation/PPSSPP/AetherSX2 standalone önerir.',
-    how: 'RP5\'te frontend olarak Daijisho kullanırsan, oyunu açtığında doğrudan standalone emülatörü intent ile launch eder. Daha hızlı, daha az "abstraction" katmanı.',
-    related: ['frontend', 'core', 'retroarch']
-  },
-  {
-    id: 'save-state',
-    name: 'Save State',
-    cat: 'Yazılım Özelliği',
-    short: 'Tüm RAM/CPU durumunu disk\'e snapshot olarak kaydetme.',
-    detail: 'Save state, oyunun "Save" menüsünden bağımsız olarak, emülatörün o anki RAM, CPU register\'ları, GPU state\'ini disk\'e <code>blob</code> olarak yazması. Yani anlık fotoğraf. Tekrar yüklediğinde tam o noktaya geri dönersin.',
-    why: 'Çünkü orijinal konsollar memory card kullanıyordu — sadece oyunun izin verdiği yerde save edebilirdin (ör: Mario 64\'te Power Star toplayınca). Emülatör bu kısıtlamayı aşar: VM snapshot\'ı gibi düşün.',
-    how: 'Emülatör tüm emulated RAM\'ı (PS2 için 32MB), CPU state\'ini (registers, PC, flags), GPU state\'ini, audio buffer\'larını compress edip disk\'e yazar (genelde <code>.state</code> uzantılı). Restore ederken bu blob\'u tekrar load eder. Tüm sistem durumu deterministik olarak geri gelir. Emülatörler genellikle birden fazla "slot" tutar, böylece bir nokta önce/sonra dönebilirsin.',
-    related: ['rewind', 'memory-card', 'emulation']
-  },
-  {
-    id: 'dump',
-    name: 'Dump',
-    cat: 'İşlem',
-    short: 'Fiziksel medyadan dijital kopya çıkarma işlemi.',
-    detail: 'Bir kartuştan veya disk\'ten ROM/ISO dosyasını üretmek. "Dump etmek" — bir cihaz (kartuş okuyucu, GameCube modchip vs.) ile fiziksel medya\'yı byte byte okuyup dosyaya yazmak. Aynı zamanda "dumped game" — meşru olarak çıkarılmış bir ROM da denir.',
-    why: 'Çünkü ROM dosyaları fiziksel medyanın 1:1 kopyası olmalı. Sıkıştırmasız, modifiye edilmemiş. Aksi halde emülatör bazı checksum\'ları doğrulayamaz, oyun çökebilir.',
-    how: 'GBA için Joey\'s GBA dumper, GameCube için Nintendont/CleanRip, PS1 için CD-Rom ve <code>cdrdao</code> kullanılır. Her kartuş tipinin özel bir dumping protokolü var çünkü pinout farklı, mapper chipleri farklı.',
-    related: ['rom', 'iso', 'good-rom']
-  },
-  {
-    id: 'ntsc-pal',
-    name: 'NTSC / PAL',
-    cat: 'Standart',
-    short: 'Bölgesel video sinyali standartları. NTSC 60Hz (ABD/Japonya), PAL 50Hz (Avrupa).',
-    detail: 'NTSC ve PAL, analog televizyon standartları. NTSC ABD/Japonya/Kore, PAL Avrupa/Avustralya. Aralarındaki ana fark: <strong>refresh rate</strong> (60Hz vs 50Hz) ve <strong>resolution</strong> (NTSC: 480i, PAL: 576i).',
-    why: 'Bu çok önemli — çünkü PAL versiyonu bir oyun, aynı oyunun NTSC versiyonundan <strong>~%17 daha yavaş</strong> çalışır. Geliştiriciler 50Hz uyumu için lazy port yaptıysa, oyun fiziksel olarak yavaşlatılmıştır. Mario, Sonic gibi PAL versiyonları kötü ünlüdür.',
-    how: 'Emulasyonda her zaman <strong>NTSC versiyonu (genellikle "USA" veya "JP" etiketli)</strong> tercih et. ROM dosya isimlerinde <code>(USA)</code>, <code>(JPN)</code>, <code>(EUR)</code> tag\'leri vardır. PAL\'dan kaçın.',
-    related: ['fps', 'refresh-rate']
-  },
-  {
-    id: 'overclock',
-    name: 'Overclock',
-    cat: 'Performans',
-    short: 'CPU/GPU\'yu varsayılan üstü hızda çalıştırma.',
-    detail: 'Donanım çipinin clock speed\'ini varsayılan değerin üzerine çıkarmak. Örnek: Snapdragon 865 stock 2.84 GHz; overclock ile 3.0+ GHz\'e çıkartabilirsin. RP5 vapor chamber cooling ile bunu sürdürebilir.',
-    why: 'Emülasyon CPU-bound. PS2/GameCube gibi demanding sistemler için her ekstra MHz değerli. Overclock ile God of War 2 gibi marjinal oyunlar 60 FPS\'e ulaşabilir.',
-    how: 'Android\'de root gerekmiyor RP5\'te — built-in performance modes var. Linux (RetroOS gibi) custom firmware kullanırsan kernel-level OC yapabilirsin. Dikkat: ısı, batarya, çip ömrü trade-off\'u var.',
-    related: ['performance', 'thermal']
-  },
-  {
-    id: 'jit',
-    name: 'JIT (Recompiler)',
-    cat: 'Yazılım Mimarisi',
-    short: 'Just-In-Time: kaynak instruction\'ları runtime\'da hedef CPU koduna derler.',
-    detail: 'Emülatör performansının kalbi. Naive interpreter "bu instruction nedir?" deyip switch-case ile tek tek simule eder — yavaş. JIT recompiler ise basic block\'ları (örnek: 50 instruction\'lık bir loop) bir defaya mahsus ARM machine code\'a çevirir, cache\'ler. Sonraki çağırmalarda direkt native kod çalışır.',
-    why: 'Performans farkı 10x-50x olabilir. AetherSX2, PPSSPP, Dolphin hepsinin kalbinde JIT vardır. JIT olmasa modern handheld\'lerde PS2 emulasyonu mümkün olmazdı.',
-    how: 'JIT engine: source instruction stream → IR (intermediate representation) → optimization passes → target ARM code → executable memory page → çağır. Bu pipeline V8 (JavaScript) veya HotSpot (Java) ile aynı mantıkta. PCSX2\'nin <code>microVU</code>, Dolphin\'in <code>JitArm64</code> implementasyonları meşhurdur.',
-    related: ['emulation', 'interpreter', 'performance']
-  },
-  {
-    id: 'scraping',
-    name: 'Scraping',
-    cat: 'Frontend Özelliği',
-    short: 'ROM\'lara metadata, kapak görseli, açıklama otomatik bağlama.',
-    detail: 'Frontend\'in "scraper" modülü, ROM dosyasını online veritabanlarına (Screenscraper, TheGamesDB, IGDB) sorgular ve kapak resmi, açıklama, çıkış yılı, tür, oynanma süresi gibi metadata\'yı indirir. Sen <code>Mario_64.z64</code> dosyana koysan da, frontend "Super Mario 64" başlığını, kapak resmini, 1996 yılı bilgisini gösterir.',
-    why: 'Çünkü kütüphane görsel olmadan kötü görünür. Listemizde 100 oyun varsa, sadece dosya isimleri yerine güzel boxart ile görünmesi UX\'i tamamen değiştirir.',
-    how: 'Scraper, ROM\'un MD5/SHA hash\'ini alıp veritabanı ile match eder. Hash hit yoksa, dosya ismine fuzzy search yapar. Skraper (PC tool) çok güçlüdür — RP5 için PC\'de scrape edip cihaza sync atmak en iyi pratik.',
-    related: ['frontend', 'metadata', 'boxart']
-  },
-];
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
 
-const tocList = document.getElementById('toc');
-const termsContainer = document.getElementById('terms');
+async function load(){
+  const r=await fetch(`${SB}/rest/v1/glossary?select=*&order=term`,{headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}});
+  const terms=await r.json();
+  if(!terms.length){document.getElementById('terms').innerHTML='<div class="empty-msg">Glossary boş. Önce migrate_glossary.html\'i çalıştır.</div>';return;}
 
-terms.forEach(t => {
-  const li = document.createElement('li');
-  li.innerHTML = `<a href="#${t.id}">${t.name}</a>`;
-  tocList.appendChild(li);
+  const toc=document.getElementById('toc');
+  const cont=document.getElementById('terms');
+  toc.innerHTML='';
+  cont.innerHTML='';
 
-  const card = document.createElement('div');
-  card.className = 'term-card';
-  card.id = t.id;
-  card.dataset.search = (t.name + ' ' + t.cat + ' ' + t.short + ' ' + t.detail).toLowerCase();
-  card.innerHTML = `
-    <div class="term-header">
-      <div class="term-name">${t.name}</div>
-      <span class="term-cat">${t.cat}</span>
-    </div>
-    <p><strong>${t.short}</strong></p>
-    <h4>Detay</h4>
-    <p>${t.detail}</p>
-    <h4>Neden Var?</h4>
-    <p>${t.why}</p>
-    <h4>Teknik Olarak Nasıl Çalışır?</h4>
-    <p>${t.how}</p>
-    ${t.related && t.related.length ? `<div class="related"><strong>İlgili:</strong> ${t.related.map(r => `<a href="#${r}">${r}</a>`).join('')}</div>` : ''}
-  `;
-  termsContainer.appendChild(card);
-});
+  terms.forEach(t=>{
+    const id='term-'+t.id;
+    toc.innerHTML+=`<li><a href="#${id}" onclick="highlight('${id}')">${t.term}</a></li>`;
+    const card=document.createElement('div');
+    card.className='term-card';
+    card.id=id;
+    card.dataset.search=(t.term+' '+t.category+' '+t.summary+' '+t.full_explanation).toLowerCase();
+    card.innerHTML=`
+      <div class="term-header">
+        <div class="term-name">${t.term}</div>
+        <span class="term-cat">${t.category||''}</span>
+      </div>
+      <div class="term-summary">${t.summary||''}</div>
+      <div class="term-detail">${(t.full_explanation||'').replace(/`([^`]+)`/g,'<code>$1</code>')}</div>`;
+    cont.appendChild(card);
+  });
+}
 
-document.getElementById('search').addEventListener('input', e => {
-  const q = e.target.value.toLowerCase();
-  document.querySelectorAll('.term-card').forEach(card => {
-    if (card.dataset.search.includes(q)) card.classList.remove('hidden');
-    else card.classList.add('hidden');
+function highlight(id){
+  document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
+  const link=document.querySelector(`.sidebar a[href="#${id}"]`);
+  if(link)link.classList.add('active');
+}
+
+document.getElementById('search').addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  document.querySelectorAll('.term-card').forEach(c=>{
+    c.classList.toggle('hidden',!!q&&!c.dataset.search.includes(q));
   });
 });
+
+load();
 </script>
 </body>
 </html>

@@ -14,7 +14,7 @@ h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--accent-2)
 .quick-links{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
 .quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
 .quick-links a:hover{border-color:var(--accent-2)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:20px}
 .stat-card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
 .stat-card .num{font-size:1.8rem;font-weight:700;color:var(--accent-2);display:block}
 .stat-card .lbl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
@@ -24,12 +24,16 @@ h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--accent-2)
 .fbtn{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:.8rem;cursor:pointer;transition:all .2s;font-weight:500}
 .fbtn:hover{border-color:var(--accent-2)}
 .fbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.fbtn.wishlist-active{background:#a855f7;border-color:#a855f7;color:#fff}
 select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e8eaf0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
 .sort-group{display:flex;gap:4px;align-items:center}
 .sort-group label{font-size:.75rem;color:var(--muted)}
+.random-btn{background:linear-gradient(135deg,#f39c12,#e67e22);border:none;border-radius:8px;padding:9px 14px;color:#fff;font-size:.8rem;cursor:pointer;font-weight:700;transition:all .2s}
+.random-btn:hover{opacity:.85;transform:scale(1.02)}
 .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
 .game-card{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s;display:flex;flex-direction:column}
 .game-card:hover{transform:translateY(-3px);border-color:var(--accent-2);box-shadow:0 10px 24px rgba(0,212,255,.15)}
+.game-card.wishlist-card{border-color:#a855f7;box-shadow:0 0 0 1px #a855f720}
 .boxart-wrap{position:relative;width:100%;padding-top:133%;background:var(--bg-3);overflow:hidden}
 .boxart{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s}
 .game-card:hover .boxart{transform:scale(1.05)}
@@ -38,6 +42,7 @@ select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/
 .boxart-fb .ttl{font-size:.8rem;color:var(--text);margin-top:4px;line-height:1.3}
 .corner-star{position:absolute;top:6px;right:6px;background:linear-gradient(135deg,var(--gold),#ff8c00);color:var(--bg-1);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;z-index:2}
 .corner-coop{position:absolute;top:6px;left:6px;background:var(--good);color:#fff;padding:2px 6px;border-radius:4px;font-size:.6rem;font-weight:700;text-transform:uppercase;z-index:2}
+.corner-wish{position:absolute;top:6px;left:6px;background:#a855f7;color:#fff;padding:2px 6px;border-radius:4px;font-size:.6rem;font-weight:700;text-transform:uppercase;z-index:2}
 .perf-badge{position:absolute;bottom:6px;right:6px;padding:2px 6px;border-radius:4px;font-size:.6rem;font-weight:700;text-transform:uppercase;z-index:2;backdrop-filter:blur(4px)}
 .perf-badge.good{background:rgba(46,204,113,.85);color:#fff}
 .perf-badge.warn{background:rgba(243,156,18,.85);color:#fff}
@@ -51,12 +56,27 @@ select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/
 .badge-year{background:var(--bg-3);color:var(--muted);border:1px solid var(--border)}
 .badge-series{background:rgba(255,179,71,.1);color:var(--gold);border:1px solid rgba(255,179,71,.3)}
 .status-btns{display:flex;gap:3px;margin-top:auto;padding-top:6px}
-.sbtn{flex:1;background:var(--bg-3);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 2px;font-size:.58rem;cursor:pointer;transition:all .2s;text-transform:uppercase;font-weight:700}
+.sbtn{flex:1;background:var(--bg-3);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 2px;font-size:.55rem;cursor:pointer;transition:all .2s;text-transform:uppercase;font-weight:700}
 .sbtn:hover{color:var(--text)}
 .sbtn.active.backlog{background:var(--muted);color:#fff;border-color:var(--muted)}
 .sbtn.active.playing{background:var(--warn);color:#fff;border-color:var(--warn)}
 .sbtn.active.completed{background:var(--good);color:#fff;border-color:var(--good)}
 .sbtn.active.dropped{background:var(--bad);color:#fff;border-color:var(--bad)}
+.sbtn.active.wishlist{background:#a855f7;color:#fff;border-color:#a855f7}
+/* Random modal */
+.random-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;justify-content:center;align-items:center;padding:20px;backdrop-filter:blur(12px)}
+.random-overlay.active{display:flex}
+.random-card{background:var(--bg-2);border:1px solid var(--border);border-radius:20px;max-width:440px;width:100%;text-align:center;overflow:hidden}
+.random-card img{width:100%;height:260px;object-fit:cover}
+.random-card-body{padding:20px 24px 24px}
+.random-card-body h2{font-size:1.3rem;font-weight:800;margin-bottom:8px}
+.random-card-body .meta{color:var(--muted);font-size:.85rem;margin-bottom:16px}
+.random-card-body .desc{color:var(--text);font-size:.9rem;line-height:1.6;margin-bottom:20px}
+.random-actions{display:flex;gap:10px;justify-content:center}
+.random-actions button{padding:10px 20px;border-radius:8px;font-size:.9rem;cursor:pointer;font-weight:600;border:none;transition:all .2s}
+.btn-reroll{background:var(--bg-3);border:1px solid var(--border)!important;color:var(--text);border:none}
+.btn-close-random{background:var(--accent);color:#fff}
+/* Detail modal */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;justify-content:center;align-items:center;padding:20px;backdrop-filter:blur(8px)}
 .modal-overlay.active{display:flex}
 .modal{background:var(--bg-2);border:1px solid var(--border);border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
@@ -87,19 +107,19 @@ footer a{color:var(--accent-2);text-decoration:none}
   <p class="subtitle">Elite Game Library — Curated by Furkan</p>
   <div class="quick-links">
     <a href="index.html">🏠 Hub</a>
-    <a href="Retroid_Glossary.html">📖 Teknik Terimler</a>
-    <a href="Retroid_Coop_Dashboard.html">👫 Co-op Hub</a>
-    <a href="Retroid_Series_Roadmap.html">🗺️ Seri Yol Haritası</a>
-    <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatör Matrisi</a>
+    <a href="Retroid_Glossary.html">📖 Terimler</a>
+    <a href="Retroid_Series_Roadmap.html">🗺️ Seriler</a>
+    <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatörler</a>
     <a href="admin.html">➕ Oyun Ekle</a>
   </div>
 </header>
 
 <div class="stats">
-  <div class="stat-card"><span class="num" id="s-total">—</span><div class="lbl">Toplam Oyun</div></div>
-  <div class="stat-card"><span class="num" id="s-iconic" style="color:var(--gold)">—</span><div class="lbl">Kült Klasik ★</div></div>
-  <div class="stat-card"><span class="num" id="s-coop" style="color:var(--good)">—</span><div class="lbl">Co-op (2P)</div></div>
-  <div class="stat-card"><span class="num" id="s-playing" style="color:var(--warn)">—</span><div class="lbl">Oynanıyor</div></div>
+  <div class="stat-card"><span class="num" id="s-total">—</span><div class="lbl">Toplam</div></div>
+  <div class="stat-card"><span class="num" id="s-iconic" style="color:var(--gold)">—</span><div class="lbl">Kült ★</div></div>
+  <div class="stat-card"><span class="num" id="s-coop" style="color:var(--good)">—</span><div class="lbl">Co-op</div></div>
+  <div class="stat-card"><span class="num" id="s-wish" style="color:#a855f7">—</span><div class="lbl">İstek</div></div>
+  <div class="stat-card"><span class="num" id="s-playing" style="color:var(--warn)">—</span><div class="lbl">Oynuyor</div></div>
   <div class="stat-card"><span class="num" id="s-done" style="color:var(--good)">—</span><div class="lbl">Bitti</div></div>
 </div>
 
@@ -108,7 +128,14 @@ footer a{color:var(--accent-2);text-decoration:none}
   <select class="fbtn" id="f-system"><option value="">Tüm Sistemler</option></select>
   <select class="fbtn" id="f-genre"><option value="">Tüm Türler</option></select>
   <select class="fbtn" id="f-series"><option value="">Tüm Seriler</option></select>
-  <select class="fbtn" id="f-status"><option value="">Tüm Durumlar</option><option value="backlog">Backlog</option><option value="playing">Oynuyor</option><option value="completed">Bitti</option><option value="dropped">Bıraktım</option><option value="wishlist">İstek</option></select>
+  <select class="fbtn" id="f-status">
+    <option value="">Tüm Durumlar</option>
+    <option value="backlog">Backlog</option>
+    <option value="playing">Oynuyor</option>
+    <option value="completed">Bitti</option>
+    <option value="dropped">Bıraktım</option>
+    <option value="wishlist">İstek Listesi</option>
+  </select>
   <button class="fbtn" id="f-coop">👫 Co-op</button>
   <button class="fbtn" id="f-iconic">★ Kült</button>
   <div class="sort-group">
@@ -120,11 +147,13 @@ footer a{color:var(--accent-2);text-decoration:none}
       <option value="rating">Rating</option>
     </select>
   </div>
+  <button class="random-btn" onclick="showRandom()">🎲 Şans Eseri</button>
   <button class="fbtn" id="f-reset">↺ Sıfırla</button>
 </div>
 
 <div class="game-grid" id="grid"><div class="loading">⏳ Oyunlar yükleniyor...</div></div>
 
+<!-- Detail modal -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">×</button>
@@ -132,18 +161,22 @@ footer a{color:var(--accent-2);text-decoration:none}
   </div>
 </div>
 
+<!-- Random modal -->
+<div class="random-overlay" id="random-overlay">
+  <div class="random-card" id="random-card-content"></div>
+</div>
+
 <footer>
-  Retroid Pocket 5 · Elite Library · <a href="https://github.com/Lasciviens/retroid-pocket-5-" target="_blank">GitHub</a>
+  Retroid Pocket 5 · <a href="https://lasciviens.netlify.app" target="_blank">lasciviens.netlify.app</a> · <a href="https://github.com/Lasciviens/retroid-pocket-5-" target="_blank">GitHub</a>
 </footer>
 
 <script>
-const SB_URL='https://bniqmxbtvgwkaoswugds.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}};
 
-const h={headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}};
-
-async function sb(ep){const r=await fetch(`${SB_URL}/rest/v1/${ep}`,h);return r.json();}
-async function sbPatch(ep,body){await fetch(`${SB_URL}/rest/v1/${ep}`,{method:'PATCH',headers:{...h.headers,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(body)});}
+async function sb(ep){const r=await fetch(`${SB}/rest/v1/${ep}`,H);return r.json();}
+async function patch(ep,body){await fetch(`${SB}/rest/v1/${ep}`,{method:'PATCH',headers:{...H.headers,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(body)});}
 
 let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,sort:'title'};
 
@@ -156,20 +189,16 @@ async function load(){
     genres:(g.game_genres||[]).map(gg=>gg.genres?.name).filter(Boolean),
     platforms:(g.game_platforms||[]).map(p=>({system:p.systems?.name,emulator:p.emulators?.name,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url}))
   }));
-
-  const systems=[...new Set(ALL.flatMap(g=>g.platforms.map(p=>p.system)).filter(Boolean))].sort();
-  const genres=[...new Set(ALL.flatMap(g=>g.genres))].sort();
-  const series=[...new Set(ALL.map(g=>g.series).filter(Boolean))].sort();
   const fSys=document.getElementById('f-system');
   const fGen=document.getElementById('f-genre');
   const fSer=document.getElementById('f-series');
-  systems.forEach(s=>fSys.innerHTML+=`<option value="${s}">${s}</option>`);
-  genres.forEach(g=>fGen.innerHTML+=`<option value="${g}">${g}</option>`);
-  series.forEach(s=>fSer.innerHTML+=`<option value="${s}">${s}</option>`);
+  [...new Set(ALL.flatMap(g=>g.platforms.map(p=>p.system)).filter(Boolean))].sort().forEach(s=>fSys.innerHTML+=`<option value="${s}">${s}</option>`);
+  [...new Set(ALL.flatMap(g=>g.genres))].sort().forEach(g=>fGen.innerHTML+=`<option value="${g}">${g}</option>`);
+  [...new Set(ALL.map(g=>g.series).filter(Boolean))].sort().forEach(s=>fSer.innerHTML+=`<option value="${s}">${s}</option>`);
   render();
 }
 
-function filtered(){
+function getFiltered(){
   let list=ALL.filter(g=>{
     if(filters.search){const q=filters.search.toLowerCase();if(!(g.title+(g.series||'')+g.genres.join(' ')).toLowerCase().includes(q))return false;}
     if(filters.system&&!g.platforms.some(p=>p.system===filters.system))return false;
@@ -190,35 +219,33 @@ function filtered(){
 }
 
 function render(){
-  const list=filtered();
   document.getElementById('s-total').textContent=ALL.length;
   document.getElementById('s-iconic').textContent=ALL.filter(g=>g.iconic).length;
   document.getElementById('s-coop').textContent=ALL.filter(g=>g.coop).length;
+  document.getElementById('s-wish').textContent=ALL.filter(g=>g.status==='wishlist').length;
   document.getElementById('s-playing').textContent=ALL.filter(g=>g.status==='playing').length;
   document.getElementById('s-done').textContent=ALL.filter(g=>g.status==='completed').length;
-
+  const list=getFiltered();
   const grid=document.getElementById('grid');
   if(!list.length){grid.innerHTML='<div class="empty">Filtreyle eşleşen oyun bulunamadı.</div>';return;}
-
   grid.innerHTML=list.map(g=>{
     const cover=g.platforms[0]?.cover||'';
     const sys=g.platforms.map(p=>p.system).filter(Boolean).join(', ');
     const perf=g.platforms[0]?.perf||'good';
     const perfLabel=perf==='good'?'✓ Smooth':perf==='warn'?'⚠ Tweak':'✗ Sorunlu';
-    const genre=g.genres[0]||'';
-    const esc=s=>s.replace(/'/g,"\\'");
-    return`<div class="game-card" onclick="openModal('${g.id}')">
+    const isWish=g.status==='wishlist';
+    return`<div class="game-card${isWish?' wishlist-card':''}" onclick="openModal('${g.id}')">
       <div class="boxart-wrap">
         ${cover?`<img class="boxart" src="${cover}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="boxart-fb" style="display:none"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`:`<div class="boxart-fb" style="display:flex"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`}
         ${g.iconic?'<div class="corner-star">★</div>':''}
-        ${g.coop?'<div class="corner-coop">2P</div>':''}
+        ${isWish?'<div class="corner-wish">♡ İstek</div>':g.coop?'<div class="corner-coop">2P</div>':''}
         <div class="perf-badge ${perf}">${perfLabel}</div>
       </div>
       <div class="card-body">
         <div class="card-title">${g.title}</div>
         <div class="badges">
           ${sys?`<span class="badge badge-sys">${sys}</span>`:''}
-          ${genre?`<span class="badge badge-genre">${genre}</span>`:''}
+          ${g.genres[0]?`<span class="badge badge-genre">${g.genres[0]}</span>`:''}
           ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
           ${g.series?`<span class="badge badge-series">${g.series}</span>`:''}
         </div>
@@ -227,6 +254,7 @@ function render(){
           <button class="sbtn${g.status==='playing'?' active playing':''}" onclick="setStatus('${g.id}','playing')">Oynuyor</button>
           <button class="sbtn${g.status==='completed'?' active completed':''}" onclick="setStatus('${g.id}','completed')">Bitti</button>
           <button class="sbtn${g.status==='dropped'?' active dropped':''}" onclick="setStatus('${g.id}','dropped')">Bıktım</button>
+          <button class="sbtn${g.status==='wishlist'?' active wishlist':''}" onclick="setStatus('${g.id}','wishlist')">♡</button>
         </div>
       </div>
     </div>`;
@@ -238,7 +266,27 @@ async function setStatus(id,status){
   if(!g)return;
   g.status=status;
   render();
-  await sbPatch(`games?id=eq.${id}`,{play_status:status});
+  await patch(`games?id=eq.${id}`,{play_status:status});
+}
+
+function showRandom(){
+  const pool=getFiltered();
+  if(!pool.length)return;
+  const g=pool[Math.floor(Math.random()*pool.length)];
+  const cover=g.platforms[0]?.cover||'';
+  const sys=g.platforms.map(p=>p.system).filter(Boolean).join(' / ');
+  document.getElementById('random-card-content').innerHTML=`
+    ${cover?`<img src="${cover}" style="width:100%;height:240px;object-fit:cover" onerror="this.style.display='none'">`:''}
+    <div class="random-card-body">
+      <h2>${g.title}${g.iconic?' ★':''}</h2>
+      <div class="meta">${sys}${g.year?' · '+g.year:''} ${g.coop?'· 👫 Co-op':''}</div>
+      ${g.desc?`<div class="desc">${g.desc}</div>`:''}
+      <div class="random-actions">
+        <button class="btn-reroll" onclick="showRandom()">🎲 Başka Öneri</button>
+        <button class="btn-close-random" onclick="document.getElementById('random-overlay').classList.remove('active')">Tamam</button>
+      </div>
+    </div>`;
+  document.getElementById('random-overlay').classList.add('active');
 }
 
 function openModal(id){
@@ -289,12 +337,13 @@ document.getElementById('f-coop').addEventListener('click',e=>{filters.coop=!fil
 document.getElementById('f-iconic').addEventListener('click',e=>{filters.iconic=!filters.iconic;e.target.classList.toggle('active');render();});
 document.getElementById('f-reset').addEventListener('click',()=>{
   filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,sort:'title'};
-  ['search'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('search').value='';
   ['f-system','f-genre','f-series','f-status','f-sort'].forEach(id=>document.getElementById(id).value='');
   ['f-coop','f-iconic'].forEach(id=>document.getElementById(id).classList.remove('active'));
   render();
 });
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.getElementById('random-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)e.target.classList.remove('active');});
 
 load();
 </script>

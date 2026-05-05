@@ -2,445 +2,135 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Retroid Series Roadmap — Hangi Seriden Nereden Başlamalı?</title>
+<title>Retroid Series Roadmap</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  :root {
-    --bg-1: #0a0e1a;
-    --bg-2: #131829;
-    --bg-3: #1c2238;
-    --accent: #ffb347;
-    --accent-2: #00d4ff;
-    --gold: #ffb347;
-    --good: #2ecc71;
-    --text: #e8eaf0;
-    --muted: #8c93a8;
-    --border: #2a3149;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 20px;
-    line-height: 1.6;
-  }
-  header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 36px 20px;
-    background: linear-gradient(135deg, rgba(255,179,71,0.1), rgba(0,212,255,0.1));
-    border: 1px solid var(--border);
-    border-radius: 16px;
-  }
-  h1 {
-    font-size: 2.5rem;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -1px;
-  }
-  .subtitle { color: var(--muted); }
-  .back-link {
-    display: inline-block;
-    margin-top: 16px;
-    color: var(--accent-2);
-    text-decoration: none;
-    font-size: 0.85rem;
-  }
-
-  .container {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 24px;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-  .sidebar {
-    position: sticky;
-    top: 20px;
-    height: fit-content;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px;
-  }
-  .sidebar h3 {
-    color: var(--accent);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-  }
-  .sidebar ul { list-style: none; }
-  .sidebar li { margin-bottom: 4px; }
-  .sidebar a {
-    color: var(--text);
-    text-decoration: none;
-    padding: 8px 12px;
-    display: block;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-  }
-  .sidebar a:hover { background: var(--bg-3); color: var(--accent); }
-
-  /* SERIES CARD */
-  .series {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 24px;
-    margin-bottom: 24px;
-    scroll-margin-top: 20px;
-  }
-  .series-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-  }
-  .series-icon { font-size: 2rem; }
-  .series-name {
-    font-size: 1.6rem;
-    color: var(--accent);
-    font-weight: 700;
-  }
-  .series-tagline {
-    color: var(--muted);
-    margin-bottom: 18px;
-    font-style: italic;
-  }
-
-  /* TIMELINE */
-  .timeline {
-    position: relative;
-    padding-left: 32px;
-    border-left: 2px solid var(--border);
-    margin-top: 16px;
-  }
-  .timeline-step {
-    position: relative;
-    margin-bottom: 24px;
-    padding-left: 12px;
-  }
-  .timeline-step::before {
-    content: '';
-    position: absolute;
-    left: -42px;
-    top: 6px;
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: var(--bg-3);
-    border: 2px solid var(--accent);
-  }
-  .timeline-step.essential::before {
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-  }
-  .timeline-step.skip::before {
-    background: var(--bg-1);
-    border-color: var(--muted);
-  }
-
-  .step-header {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    margin-bottom: 8px;
-  }
-  .step-art {
-    width: 64px; height: 88px;
-    border-radius: 4px;
-    object-fit: cover;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    flex-shrink: 0;
-  }
-  .step-info { flex: 1; }
-  .step-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .step-meta {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 6px;
-  }
-  .badge {
-    font-size: 0.65rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  .badge-essential { background: var(--accent); color: var(--bg-1); }
-  .badge-recommended { background: var(--accent-2); color: var(--bg-1); }
-  .badge-skip { background: var(--bg-3); color: var(--muted); border: 1px solid var(--border); }
-  .badge-system { background: var(--bg-3); color: var(--accent-2); border: 1px solid var(--border); }
-
-  .step-desc {
-    color: var(--text);
-    line-height: 1.6;
-    font-size: 0.92rem;
-  }
-  .step-desc strong { color: var(--accent); }
-
-  /* PRO TIP */
-  .pro-tip {
-    margin-top: 16px;
-    padding: 14px 16px;
-    background: rgba(0,212,255,0.08);
-    border-left: 3px solid var(--accent-2);
-    border-radius: 6px;
-    font-size: 0.9rem;
-  }
-  .pro-tip strong { color: var(--accent-2); }
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#ffb347;--accent-2:#00d4ff;--gold:#ffb347;--good:#2ecc71;--warn:#f39c12;--bad:#e74c3c;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);min-height:100vh;padding:20px}
+header{text-align:center;margin-bottom:28px;padding:24px 20px;background:linear-gradient(135deg,rgba(255,179,71,.1),rgba(0,212,255,.1));border:1px solid var(--border);border-radius:16px}
+h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;letter-spacing:-1px}
+.subtitle{color:var(--muted);font-size:.9rem}
+.quick-links{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
+.quick-links a:hover{border-color:var(--accent-2)}
+.search-box{width:100%;max-width:500px;display:block;margin:0 auto 24px;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:.9rem}
+.search-box:focus{outline:none;border-color:var(--accent)}
+.series-section{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:20px;transition:border-color .2s}
+.series-section:hover{border-color:var(--accent)}
+.series-section.hidden{display:none}
+.series-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;cursor:pointer}
+.series-icon{width:42px;height:42px;background:linear-gradient(135deg,rgba(255,179,71,.2),rgba(0,212,255,.2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.series-name{font-size:1.2rem;font-weight:800;color:var(--accent)}
+.series-desc{font-size:.8rem;color:var(--muted);margin-top:2px}
+.series-count{margin-left:auto;background:var(--bg-3);border:1px solid var(--border);padding:4px 10px;border-radius:6px;font-size:.75rem;color:var(--muted)}
+.games-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+.games-row::-webkit-scrollbar{height:4px}
+.games-row::-webkit-scrollbar-track{background:var(--bg-3)}
+.games-row::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.game-chip{flex-shrink:0;background:var(--bg-3);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:130px;cursor:pointer;transition:all .2s;text-decoration:none;display:flex;flex-direction:column}
+.game-chip:hover{border-color:var(--accent-2);transform:translateY(-2px)}
+.game-chip img{width:100%;height:90px;object-fit:cover}
+.game-chip-img-fb{width:100%;height:90px;background:var(--bg-1);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted);text-align:center;padding:4px}
+.game-chip-body{padding:8px;flex:1;display:flex;flex-direction:column;gap:3px}
+.game-chip-title{font-size:.72rem;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--text)}
+.game-chip-meta{font-size:.65rem;color:var(--muted)}
+.game-chip-badges{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
+.chip-badge{font-size:.55rem;padding:1px 4px;border-radius:3px;font-weight:700;text-transform:uppercase}
+.chip-iconic{background:rgba(255,179,71,.2);color:var(--gold);border:1px solid rgba(255,179,71,.3)}
+.chip-coop{background:rgba(46,204,113,.2);color:var(--good);border:1px solid rgba(46,204,113,.3)}
+.chip-status-playing{background:rgba(243,156,18,.2);color:var(--warn)}
+.chip-status-completed{background:rgba(46,204,113,.2);color:var(--good)}
+.chip-status-wishlist{background:rgba(168,85,247,.2);color:#a855f7}
+.loading{text-align:center;padding:60px;color:var(--muted)}
+footer{text-align:center;margin-top:36px;padding:16px;color:var(--muted);font-size:.8rem}
+footer a{color:var(--accent);text-decoration:none}
 </style>
 </head>
 <body>
 <header>
-  <h1>🗺️ SERİ YOL HARİTALARI</h1>
-  <p class="subtitle">Hangi seriden hangi sırayla başlamalı? — Yazılımcı için optimize edilmiş yollar</p>
-  <a href="Retroid_Library_Dashboard.html" class="back-link">← Ana kütüphaneye dön</a>
+  <h1>SERİ YOL HARİTASI</h1>
+  <p class="subtitle">Her serinin kronolojik oyun listesi — nereden başlamalısın?</p>
+  <div class="quick-links">
+    <a href="index.html">🏠 Hub</a>
+    <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
+    <a href="Retroid_Glossary.html">📖 Glossary</a>
+    <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatörler</a>
+  </div>
 </header>
 
-<div class="container">
-  <aside class="sidebar">
-    <h3>Seriler</h3>
-    <ul>
-      <li><a href="#zelda">⚔️ Zelda</a></li>
-      <li><a href="#pokemon">🎮 Pokemon</a></li>
-      <li><a href="#mario">🍄 Mario</a></li>
-      <li><a href="#gta">🚗 GTA</a></li>
-      <li><a href="#god-of-war">🗡️ God of War</a></li>
-      <li><a href="#final-fantasy">✨ Final Fantasy</a></li>
-      <li><a href="#metroid">👽 Metroid</a></li>
-      <li><a href="#kingdom-hearts">🔑 Kingdom Hearts</a></li>
-      <li><a href="#metal-gear">🐍 Metal Gear</a></li>
-      <li><a href="#resident-evil">🧟 Resident Evil</a></li>
-    </ul>
-  </aside>
+<input type="text" class="search-box" id="search" placeholder="🔍 Seri veya oyun ara...">
 
-  <main id="content"></main>
-</div>
+<div id="content"><div class="loading">⏳ Yükleniyor...</div></div>
+
+<footer>
+  Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a>
+</footer>
 
 <script>
-const T = (system, title) =>
-  `https://raw.githubusercontent.com/libretro-thumbnails/${system}/master/Named_Boxarts/${encodeURIComponent(title)}.png`;
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}};
 
-const series = [
-  {
-    id: 'zelda',
-    icon: '⚔️',
-    name: 'The Legend of Zelda',
-    tagline: 'Hero of Time\'ın izinde — 3D\'den başla, 2D\'ye dön',
-    steps: [
-      { title: "Ocarina of Time", system: "N64", year: 1998, type: "essential", img: T("Nintendo_-_Nintendo_64", "Legend of Zelda, The - Ocarina of Time (USA)"),
-        desc: "<strong>BAŞLANGIÇ NOKTASI.</strong> 3D action-adventure'ın doğuşu. Z-targeting, müzik mekanikleri, bulmaca-savaş dengesi — modern action-adventure'ın temellerini bu attı. Yazılımcı bakışıyla: 1998'de bu seviyede bir AI ve open world kurmuş olmaları çılgın." },
-      { title: "Majora's Mask", system: "N64", year: 2000, type: "essential", img: T("Nintendo_-_Nintendo_64", "Legend of Zelda, The - Majora's Mask (USA)"),
-        desc: "OoT'tan hemen sonra. <strong>3 günlük zaman döngüsü</strong> mekaniği — programatik düşününce: NPC'ler kendi schedule'larında, zaman geri sarınca state reset oluyor. Karanlık, atmosferik, kült." },
-      { title: "The Wind Waker", system: "GameCube", year: 2003, type: "essential", img: T("Nintendo_-_GameCube", "Legend of Zelda, The - The Wind Waker (USA)"),
-        desc: "Cel-shaded sanat tarzı AMOLED'de büyüleyici. Açık deniz keşfi, gemi mekanikleri. Eskiden 'çocuksu' diye eleştirilmişti, şimdi şaheser." },
-      { title: "Twilight Princess", system: "GameCube", year: 2006, type: "recommended", img: T("Nintendo_-_GameCube", "Legend of Zelda, The - Twilight Princess (USA)"),
-        desc: "Karanlık ton, OoT'a benzer formül ama büyük ölçek. RP5'te bazı bölgelerde framedrop olabilir, tweak gerekir." },
-      { title: "A Link to the Past", system: "SNES", year: 1991, type: "essential", img: T("Nintendo_-_Super_Nintendo_Entertainment_System", "Legend of Zelda, The - A Link to the Past (USA)"),
-        desc: "2D Zelda'nın zirvesi. 3D oyunlardan sonra geriye dön — formülü daha iyi anlarsın." },
-      { title: "The Minish Cap", system: "GBA", year: 2004, type: "recommended", img: T("Nintendo_-_Game_Boy_Advance", "Legend of Zelda, The - The Minish Cap (USA)"),
-        desc: "GBA'nın küçük şaheseri. Anlık girip çıkmalık, kompakt." },
-      { title: "A Link Between Worlds", system: "3DS", year: 2013, type: "recommended", img: T("Nintendo_-_Nintendo_3DS", "Legend of Zelda, The - A Link Between Worlds (USA)"),
-        desc: "A Link to the Past'ın modern devamı. Lime3DS ile çalışır." },
-    ],
-    tip: "<strong>Sıralama tartışması:</strong> Zelda kronolojisi karmaşık ama oynama sırası farklı bir şey. 3D quality > 2D quality; ama 2D'nin kendine has charm'ı var. Bu listenin sırası önerilir."
-  },
-  {
-    id: 'pokemon',
-    icon: '🎮',
-    name: 'Pokemon',
-    tagline: 'Tek bir generation seç, bitir — sonra geriye veya ileriye git',
-    steps: [
-      { title: "Pokemon Emerald", system: "GBA", year: 2005, type: "essential", img: T("Nintendo_-_Game_Boy_Advance", "Pokemon - Emerald Version (USA, Europe)"),
-        desc: "<strong>EN İYİ BAŞLANGIÇ.</strong> Hoenn üçlemesinin definitive sürümü. Battle Frontier ile 100+ saat içerik. Modern Pokemon formülü burada oturdu (yetenekler, çift dövüş, doğa farkları)." },
-      { title: "Pokemon HeartGold / SoulSilver", system: "DS", year: 2009, type: "essential", img: T("Nintendo_-_Nintendo_DS", "Pokemon HeartGold Version (USA)"),
-        desc: "Pokemon'un altın çağı. <strong>İki bölge</strong> (Johto + Kanto), Pokémon seninle yürüyor, GB Sounds ile retro müzik. Birçok fan'a göre seri zirvesi." },
-      { title: "Pokemon Platinum", system: "DS", year: 2008, type: "essential", img: T("Nintendo_-_Nintendo_DS", "Pokemon - Platinum Version (USA)"),
-        desc: "Sinnoh definitive sürümü. Distortion World epik. Karanlık ton." },
-      { title: "Pokemon Black / White", system: "DS", year: 2010, type: "recommended", img: T("Nintendo_-_Nintendo_DS", "Pokemon - Black Version (USA, Europe)"),
-        desc: "<strong>En iyi Pokemon hikayesi</strong> diyenler var. Tüm Pokemon'lar yeni — eski jenerasyonlardan hiçbiri yok başlangıçta." },
-      { title: "Pokemon FireRed / LeafGreen", system: "GBA", year: 2004, type: "recommended", img: T("Nintendo_-_Game_Boy_Advance", "Pokemon - Fire Red Version (USA, Europe)"),
-        desc: "Klasik Kanto remake'i. Nostalji + modern mekanikler." },
-    ],
-    tip: "<strong>Tek bir Pokemon yetiyor.</strong> Bir tane bitir, oyunu tat. Hepsini oynamaya çalışırsan yorulursun. Önerim: Emerald'la başla, ikinci olarak HeartGold."
-  },
-  {
-    id: 'mario',
-    icon: '🍄',
-    name: 'Super Mario',
-    tagline: 'Klasiklerden modern 3D\'ye — tüm türler temsil edilir',
-    steps: [
-      { title: "Super Mario 64", system: "N64", year: 1996, type: "essential", img: T("Nintendo_-_Nintendo_64", "Super Mario 64 (USA)"),
-        desc: "<strong>3D platformerın doğuşu.</strong> Tarihsel önem dışında bile harika oynanır. 30 yıllık olmasına rağmen kontroller tertemiz." },
-      { title: "Super Mario Sunshine", system: "GameCube", year: 2002, type: "recommended", img: T("Nintendo_-_GameCube", "Super Mario Sunshine (USA)"),
-        desc: "FLUDD ile yenilikçi bir Mario. Tropikal tema, sıra dışı bölümler. RP5'te tertemiz." },
-      { title: "Super Mario Galaxy", system: "Wii", year: 2007, type: "essential", img: T("Nintendo_-_Wii", "Super Mario Galaxy (USA)"),
-        desc: "<strong>3D Mario'nun şaheseri.</strong> Yerçekimi bulmacaları — programatik düşününce, her gezegenin kendine ait gravity vector'ü var, oyuncu o yüzeyde 'aşağı' tanımı dinamik. Orkestra soundtrack." },
-      { title: "Super Mario Galaxy 2", system: "Wii", year: 2010, type: "essential", img: T("Nintendo_-_Wii", "Super Mario Galaxy 2 (USA)"),
-        desc: "Galaxy 1'in daha rafine versiyonu. Yoshi var, yeni güçler." },
-      { title: "Paper Mario: Thousand-Year Door", system: "GameCube", year: 2004, type: "essential", img: T("Nintendo_-_GameCube", "Paper Mario - The Thousand-Year Door (USA)"),
-        desc: "RPG dalı. Birçok kişiye göre <strong>en iyi Mario oyunu</strong>. Komik diyaloglar, sıra tabanlı turn-based dövüş." },
-      { title: "Mario & Luigi: Superstar Saga", system: "GBA", year: 2003, type: "recommended", img: T("Nintendo_-_Game_Boy_Advance", "Mario & Luigi - Superstar Saga (USA, Australia)"),
-        desc: "Taşınabilir RPG dalı. Çok komik." },
-    ],
-    tip: "<strong>Wife-friendly tip:</strong> Galaxy 1 & 2'deki 'co-star' modunda 2. oyuncu Wii Remote'la yıldız parçaları toplayarak yardım eder — eşinle pasif co-op için harika."
-  },
-  {
-    id: 'gta',
-    icon: '🚗',
-    name: 'GTA',
-    tagline: 'San Andreas ile başla, geri git veya yeni dene',
-    steps: [
-      { title: "GTA: San Andreas", system: "PS2", year: 2004, type: "essential", img: T("Sony_-_PlayStation_2", "Grand Theft Auto - San Andreas (USA) (v3.00)"),
-        desc: "<strong>Serinin zirvesi.</strong> 3 ilde geçen muazzam harita. RPG mekanikleri (yeme, kaslı/zayıf, beceriler). Portmaster native port   daha iyidir." },
-      { title: "GTA: Vice City", system: "PS2", year: 2002, type: "essential", img: T("Sony_-_PlayStation_2", "Grand Theft Auto - Vice City (USA) (v3.00)"),
-        desc: "80'lerin Miami atmosferi. <strong>İkonik soundtrack</strong> — tek başına oyun değer. Daha kompakt, anlatım daha sıkı." },
-      { title: "GTA III", system: "PS2", year: 2001, type: "recommended", img: T("Sony_-_PlayStation_2", "Grand Theft Auto III (USA) (v3.00)"),
-        desc: "3D GTA'yı yaratan. Tarihsel önem var ama San Andreas/VC oynadıysan biraz dated geliyor." },
-      { title: "GTA: Liberty City Stories", system: "PSP", year: 2005, type: "recommended", img: T("Sony_-_PlayStation_Portable", "Grand Theft Auto - Liberty City Stories (USA)"),
-        desc: "GTA III evreninin PSP prequel'i. PPSSPP'de tertemiz çalışır." },
-      { title: "GTA: Chinatown Wars", system: "DS", year: 2009, type: "recommended", img: T("Nintendo_-_Nintendo_DS", "Grand Theft Auto - Chinatown Wars (USA) (En,Fr,De,Es,It)"),
-        desc: "Top-down GTA, DS'in en iyi 3rd party oyunlarından. Farklı bir deneyim." },
-    ],
-    tip: "<strong>Portmaster önerisi:</strong> GTA III/VC/SA için RP5'te native Portmaster portu var — emülasyondan çok daha iyi performans, daha rahat kontroller. Önce onu dene."
-  },
-  {
-    id: 'god-of-war',
-    icon: '🗡️',
-    name: 'God of War',
-    tagline: 'PSP\'den başla, sonra PS2\'ye geç (kronolojik mantıklı)',
-    steps: [
-      { title: "GoW: Chains of Olympus", system: "PSP", year: 2008, type: "essential", img: T("Sony_-_PlayStation_Portable", "God of War - Chains of Olympus (USA)"),
-        desc: "<strong>İlk oyna.</strong> Kronolojik olarak GoW 1'den önce. PSP'nin en iyi 3D aksiyon oyunlarından, tertemiz çalışır. Kratos'un orijin hikayesi." },
-      { title: "God of War (1)", system: "PS2", year: 2005, type: "essential", img: T("Sony_-_PlayStation_2", "God of War (USA)"),
-        desc: "Serinin başlangıcı. 'Why' burada. Demanding ama RP5 vapor chamber ile 55+ FPS sabit." },
-      { title: "GoW: Ghost of Sparta", system: "PSP", year: 2010, type: "essential", img: T("Sony_-_PlayStation_Portable", "God of War - Ghost of Sparta (USA)"),
-        desc: "Kronolojik olarak GoW 1 ile 2 arasında. <strong>PSP'nin teknik şaheseri</strong> — bu kadar güzel görünen handheld oyunu nadir." },
-      { title: "God of War II", system: "PS2", year: 2007, type: "essential", img: T("Sony_-_PlayStation_2", "God of War II (USA)"),
-        desc: "PS2'nin teknik tavanını zorlayan oyun. Ayarları doğru yaparsan akıcı. Hikaye olarak da en güçlülerden." },
-    ],
-    tip: "<strong>Sıralama önemli:</strong> Kronolojik sıra (CoO → GoW1 → GoS → GoW2) hikayeyi çok daha tatmin edici yapar. Çıkış sırasından kaçın."
-  },
-  {
-    id: 'final-fantasy',
-    icon: '✨',
-    name: 'Final Fantasy',
-    tagline: 'Birbirinden bağımsız hikayeler — istediğinden başla',
-    steps: [
-      { title: "Final Fantasy IX", system: "PS1", year: 2000, type: "essential", img: T("Sony_-_PlayStation", "Final Fantasy IX (USA) (Disc 1)"),
-        desc: "<strong>İlk JRPG'n için ideal.</strong> Klasik fantasy, sevimli karakterler, accessible mekanikler. Birçok kişiye göre <strong>serinin zirvesi</strong>." },
-      { title: "Final Fantasy X", system: "PS2", year: 2001, type: "essential", img: T("Sony_-_PlayStation_2", "Final Fantasy X (USA)"),
-        desc: "Sphere Grid sistemi, dramatik hikaye. RP5'te playable confirmed. Voice acting ile ilk Final Fantasy." },
-      { title: "Final Fantasy VII", system: "PS1", year: 1997, type: "essential", img: T("Sony_-_PlayStation", "Final Fantasy VII (USA) (Disc 1)"),
-        desc: "JRPG tarihinin altın standartı. DuckStation upscaled mükemmel görünür. <strong>Tarihsel önemi var</strong>." },
-      { title: "Crisis Core: FF VII", system: "PSP", year: 2007, type: "recommended", img: T("Sony_-_PlayStation_Portable", "Crisis Core - Final Fantasy VII (USA)"),
-        desc: "FF7 prequel, action-RPG. FF7'yi oynadıktan sonra mantıklı." },
-      { title: "FF Tactics: War of the Lions", system: "PSP", year: 2007, type: "essential", img: T("Sony_-_PlayStation_Portable", "Final Fantasy Tactics - The War of the Lions (USA)"),
-        desc: "Tactical RPG dalı. <strong>Strateji sevenler için ZORUNLU.</strong> Definitive sürüm." },
-      { title: "Final Fantasy VI", system: "SNES", year: 1994, type: "recommended", img: T("Nintendo_-_Super_Nintendo_Entertainment_System", "Final Fantasy III (USA)"),
-        desc: "JRPG'nin SNES zirvesi. Ensemble cast, opera sahnesi efsane." },
-    ],
-    tip: "<strong>Bağımsız evrenler:</strong> Final Fantasy oyunları (VII Compilation hariç) hikaye olarak birbirinden bağımsız. İstediğinle başlayabilirsin. Önerim FF IX → FF X."
-  },
-  {
-    id: 'metroid',
-    icon: '👽',
-    name: 'Metroid',
-    tagline: 'Atmosferik exploration — 2D\'den 3D\'ye',
-    steps: [
-      { title: "Metroid: Zero Mission", system: "GBA", year: 2004, type: "essential", img: T("Nintendo_-_Game_Boy_Advance", "Metroid - Zero Mission (USA)"),
-        desc: "<strong>İlk Metroid'in remake'i.</strong> Buradan başlamak en iyisi — tüm seri formülünü öğretir." },
-      { title: "Metroid Fusion", system: "GBA", year: 2002, type: "essential", img: T("Nintendo_-_Game_Boy_Advance", "Metroid Fusion (USA, Australia)"),
-        desc: "GBA'nın en iyi metroidvania'sı. Daha lineer ama hikaye olarak güçlü." },
-      { title: "Metroid Prime", system: "GameCube", year: 2002, type: "essential", img: T("Nintendo_-_GameCube", "Metroid Prime (USA)"),
-        desc: "<strong>First-person Metroid.</strong> RP5'te <strong>PrimeHack</strong> (modified Dolphin) önerilir — dual analog stick desteği için." },
-    ],
-    tip: "<strong>Teknik not:</strong> Metroid Prime için standart Dolphin yerine PrimeHack kullan. Ki bu ayrı bir Dolphin fork — modern dual-analog FPS kontrolleri ekler. Pointer kontrolü ile orijinal kontroller dağınıktı."
-  },
-  {
-    id: 'kingdom-hearts',
-    icon: '🔑',
-    name: 'Kingdom Hearts',
-    tagline: 'Disney + Final Fantasy — kronolojik sıra önemli',
-    steps: [
-      { title: "Kingdom Hearts: Birth by Sleep", system: "PSP", year: 2010, type: "essential", img: T("Sony_-_PlayStation_Portable", "Kingdom Hearts - Birth by Sleep (USA)"),
-        desc: "<strong>Kronolojik başlangıç</strong> (10 yıl önce yer alır). PSP'nin en güzel görünen oyunlarından. Aslında sonra çıktı ama önce oynamak hikayeye iyi." },
-      { title: "Kingdom Hearts", system: "PS2", year: 2002, type: "essential", img: T("Sony_-_PlayStation_2", "Kingdom Hearts (USA)"),
-        desc: "Serinin doğuşu. Sora ile tanış. Dövüş sistemi sade ama charm dolu." },
-      { title: "Kingdom Hearts II", system: "PS2", year: 2005, type: "essential", img: T("Sony_-_PlayStation_2", "Kingdom Hearts II (USA)"),
-        desc: "<strong>Aksiyon mekanikleri rafine.</strong> Final Mix patch (Türkçe altyazı + ekstra içerik) ile mükemmel. Birçok kişiye göre serinin zirvesi." },
-    ],
-    tip: "<strong>Hikaye uyarısı:</strong> KH evreni karmaşık. Ana üçlemeyi (BBS → KH1 → KH2) bitirdikten sonra DS/3DS spin-off'lara giriş yapmak istersen. 'Re:coded' ve '358/2 Days' opsiyoneldir."
-  },
-  {
-    id: 'metal-gear',
-    icon: '🐍',
-    name: 'Metal Gear Solid',
-    tagline: 'Kronolojik mi, çıkış sırası mı? Çıkış sırası önerilir',
-    steps: [
-      { title: "Metal Gear Solid", system: "PS1", year: 1998, type: "essential", img: T("Sony_-_PlayStation", "Metal Gear Solid (USA) (Disc 1)"),
-        desc: "<strong>Stealth tarihinin başlangıcı.</strong> DuckStation'da tertemiz. Hikaye olarak Snake Eater'dan sonra — ama oyun olarak ilk." },
-      { title: "MGS3: Snake Eater", system: "PS2", year: 2004, type: "essential", img: T("Sony_-_PlayStation_2", "Metal Gear Solid 3 - Snake Eater (USA)"),
-        desc: "<strong>Serinin en sevileni</strong>. Kronolojik olarak ilki. Demanding ama RP5'te tweaks ile playable." },
-    ],
-    tip: "<strong>Sıralama tartışması:</strong> Kronolojik (3 → 1) hikaye olarak kötü değil ama oyun deneyimi olarak çıkış sırası (1 → 3) daha iyidir. MGS1'in saf charm'ı sonradan oynayınca kaybolur."
-  },
-  {
-    id: 'resident-evil',
-    icon: '🧟',
-    name: 'Resident Evil',
-    tagline: 'RE4 modern başlangıç — eski oyunlara sonra dön',
-    steps: [
-      { title: "Resident Evil 4", system: "GameCube", year: 2005, type: "essential", img: T("Nintendo_-_GameCube", "Resident Evil 4 (USA) (Disc 1)"),
-        desc: "<strong>Tüm zamanların en iyi action-horror oyunu.</strong> Modern third-person shooter formülünü tek başına yarattı. GameCube versiyonu RP5'te smooth." },
-      { title: "RE Code: Veronica X", system: "PS2", year: 2001, type: "recommended", img: T("Sony_-_PlayStation_2", "Resident Evil - Code Veronica X (USA)"),
-        desc: "Klasik RE formülü (tank kontroller, fixed camera). RP5'te baştan sona test edildi, sorunsuz." },
-    ],
-    tip: "<strong>Modern vs klasik:</strong> RE4 ile başla — modern olduğu için kontrolleri daha yumuşak. Eski RE'ler (1-3, Code Veronica) tank kontrollü, alışmak vakit alır."
-  },
-];
+const ICONS={'Grand Theft Auto':'🚗','God of War':'⚔️','Pokemon':'🔴','Super Mario':'🍄','Mario Kart':'🏎️','The Legend of Zelda':'🗡️','Sonic the Hedgehog':'💨','Crash Bandicoot':'🐾','Tekken':'👊','Final Fantasy':'💎','Resident Evil':'🧟','Metal Gear':'📦','Kingdom Hearts':'🔑','Jak and Daxter':'🌿','Ratchet & Clank':'🔧','Sly Cooper':'🦝','Metroid':'🚀','Castlevania':'🏰','Persona':'🎭','Devil May Cry':'😈','Pikmin':'🌱','Super Smash Bros.':'🥊','TimeSplitters':'⏱️','Paper Mario':'📄','Mario Party':'🎲','Mario & Luigi':'👨‍🌾','Advance Wars':'🪖','Fire Emblem':'⚔️','Professor Layton':'🎩'};
 
-// Render
-document.getElementById('content').innerHTML = series.map(s => `
-  <section class="series" id="${s.id}">
-    <div class="series-header">
-      <span class="series-icon">${s.icon}</span>
-      <h2 class="series-name">${s.name}</h2>
-    </div>
-    <p class="series-tagline">${s.tagline}</p>
-    <div class="timeline">
-      ${s.steps.map(step => `
-        <div class="timeline-step ${step.type === 'essential' ? 'essential' : step.type === 'skip' ? 'skip' : ''}">
-          <div class="step-header">
-            <img class="step-art" src="${step.img}" alt="${step.title}" onerror="this.style.opacity='0.2'">
-            <div class="step-info">
-              <div class="step-title">${step.title}</div>
-              <div class="step-meta">
-                <span class="badge badge-system">${step.system} · ${step.year}</span>
-                ${step.type === 'essential' ? '<span class="badge badge-essential">ZORUNLU</span>' : step.type === 'recommended' ? '<span class="badge badge-recommended">Önerilir</span>' : '<span class="badge badge-skip">Atla</span>'}
-              </div>
-              <p class="step-desc">${step.desc}</p>
-            </div>
+async function load(){
+  const [seriesData, gamesData]=await Promise.all([
+    fetch(`${SB}/rest/v1/series?select=id,name,description&order=name`,H).then(r=>r.json()),
+    fetch(`${SB}/rest/v1/games?select=id,title,release_year,rating,is_iconic,is_coop,play_status,series_id,game_platforms(cover_url,systems(name))&order=release_year`,H).then(r=>r.json()),
+  ]);
+
+  const cont=document.getElementById('content');
+
+  // Sadece kütüphanede oyunu olan serileri göster
+  const seriesWithGames=seriesData.filter(s=>gamesData.some(g=>g.series_id===s.id));
+
+  if(!seriesWithGames.length){cont.innerHTML='<div class="loading">Seri bulunamadı.</div>';return;}
+
+  cont.innerHTML=seriesWithGames.map(s=>{
+    const games=gamesData.filter(g=>g.series_id===s.id).sort((a,b)=>(a.release_year||9999)-(b.release_year||9999));
+    const icon=ICONS[s.name]||'🎮';
+    const gamesHtml=games.map(g=>{
+      const cover=g.game_platforms?.[0]?.cover_url||'';
+      const sys=g.game_platforms?.map(p=>p.systems?.name).filter(Boolean).join('/');
+      const statusBadge=g.play_status==='playing'?'<span class="chip-badge chip-status-playing">Oynuyor</span>':
+                        g.play_status==='completed'?'<span class="chip-badge chip-status-completed">Bitti</span>':
+                        g.play_status==='wishlist'?'<span class="chip-badge chip-status-wishlist">♡ İstek</span>':'';
+      return`<a class="game-chip" href="Retroid_Library_Dashboard.html" title="${g.title}">
+        ${cover?`<img src="${cover}" loading="lazy" onerror="this.style.display='none'">`:`<div class="game-chip-img-fb">${sys||'?'}</div>`}
+        <div class="game-chip-body">
+          <div class="game-chip-title">${g.title}</div>
+          <div class="game-chip-meta">${sys||'?'} ${g.release_year?'· '+g.release_year:''}</div>
+          <div class="game-chip-badges">
+            ${g.is_iconic?'<span class="chip-badge chip-iconic">★ Kült</span>':''}
+            ${g.is_coop?'<span class="chip-badge chip-coop">2P</span>':''}
+            ${statusBadge}
           </div>
         </div>
-      `).join('')}
-    </div>
-    <div class="pro-tip">💡 ${s.tip}</div>
-  </section>
-`).join('');
+      </a>`;
+    }).join('');
+    return`<div class="series-section" data-search="${s.name.toLowerCase()} ${games.map(g=>g.title.toLowerCase()).join(' ')}">
+      <div class="series-header">
+        <div class="series-icon">${icon}</div>
+        <div>
+          <div class="series-name">${s.name}</div>
+          ${s.description?`<div class="series-desc">${s.description}</div>`:''}
+        </div>
+        <div class="series-count">${games.length} oyun</div>
+      </div>
+      <div class="games-row">${gamesHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('search').addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  document.querySelectorAll('.series-section').forEach(s=>{
+    s.classList.toggle('hidden',!!q&&!s.dataset.search.includes(q));
+  });
+});
+
+load();
 </script>
 </body>
 </html>

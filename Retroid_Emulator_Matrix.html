@@ -2,451 +2,113 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Retroid Emulator Matrix — Hangi Sistem İçin Hangi Emülatör?</title>
+<title>Retroid Emulator Matrix</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  :root {
-    --bg-1: #0a0e1a;
-    --bg-2: #131829;
-    --bg-3: #1c2238;
-    --accent: #00d4ff;
-    --accent-2: #ff4655;
-    --gold: #ffb347;
-    --good: #2ecc71;
-    --warn: #f39c12;
-    --bad: #e74c3c;
-    --text: #e8eaf0;
-    --muted: #8c93a8;
-    --border: #2a3149;
-    --code-bg: #0d1117;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 20px;
-    line-height: 1.6;
-  }
-  header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 36px 20px;
-    background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(255,179,71,0.1));
-    border: 1px solid var(--border);
-    border-radius: 16px;
-  }
-  h1 {
-    font-size: 2.5rem;
-    background: linear-gradient(90deg, var(--accent), var(--gold));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -1px;
-  }
-  .subtitle { color: var(--muted); }
-  .back-link {
-    display: inline-block;
-    margin-top: 16px;
-    color: var(--accent-2);
-    text-decoration: none;
-    font-size: 0.85rem;
-  }
-
-  /* TABLE */
-  .matrix-wrapper {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 30px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  thead {
-    background: var(--bg-3);
-  }
-  th {
-    text-align: left;
-    padding: 14px 16px;
-    color: var(--accent);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 2px solid var(--border);
-  }
-  td {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(0,212,255,0.04); }
-
-  .system-cell strong { color: var(--accent); font-size: 1rem; }
-  .system-cell .sub { color: var(--muted); font-size: 0.8rem; display: block; }
-
-  .perf-pill {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .perf-good { background: rgba(46,204,113,0.2); color: var(--good); border: 1px solid rgba(46,204,113,0.4); }
-  .perf-warn { background: rgba(243,156,18,0.2); color: var(--warn); border: 1px solid rgba(243,156,18,0.4); }
-  .perf-bad { background: rgba(231,76,60,0.2); color: var(--bad); border: 1px solid rgba(231,76,60,0.4); }
-
-  code {
-    background: var(--code-bg);
-    color: var(--accent-2);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Consolas', monospace;
-    font-size: 0.85em;
-  }
-
-  .emu-name { color: var(--gold); font-weight: 700; }
-  .emu-alt { color: var(--muted); font-size: 0.85rem; }
-
-  /* DEEP DIVE */
-  .deep-dive {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-  .deep-dive h3 {
-    color: var(--accent);
-    font-size: 1.4rem;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .deep-dive h4 {
-    color: var(--gold);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 16px;
-    margin-bottom: 6px;
-  }
-  .deep-dive p { margin-bottom: 8px; }
-  .deep-dive ul { margin-left: 20px; margin-top: 6px; }
-  .deep-dive li { margin-bottom: 4px; }
-
-  .key-feature {
-    background: rgba(0,212,255,0.08);
-    border-left: 3px solid var(--accent);
-    padding: 10px 14px;
-    border-radius: 4px;
-    margin: 10px 0;
-    font-size: 0.9rem;
-  }
-
-  .section-title {
-    font-size: 1.6rem;
-    color: var(--text);
-    margin: 30px 0 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .section-title::before {
-    content: '';
-    width: 4px;
-    height: 24px;
-    background: var(--accent);
-    border-radius: 2px;
-  }
-
-  @media (max-width: 768px) {
-    table, thead, tbody, th, td, tr { display: block; }
-    thead { display: none; }
-    tr { background: var(--bg-2); margin-bottom: 12px; border-radius: 8px; padding: 12px; border: 1px solid var(--border); }
-    td { border: none; padding: 6px 0; }
-    td::before { content: attr(data-label) ': '; color: var(--accent); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; }
-  }
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#00d4ff;--accent-2:#ff4655;--gold:#ffb347;--good:#2ecc71;--warn:#f39c12;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);min-height:100vh;padding:20px}
+header{text-align:center;margin-bottom:28px;padding:24px 20px;background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(255,70,85,.1));border:1px solid var(--border);border-radius:16px}
+h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;letter-spacing:-1px}
+.subtitle{color:var(--muted);font-size:.9rem}
+.quick-links{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
+.quick-links a:hover{border-color:var(--accent)}
+.section-title{font-size:1.2rem;font-weight:800;color:var(--accent);margin:28px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px}
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .2s}
+.card:hover{border-color:var(--accent)}
+.card-title{font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.card-sub{font-size:.75rem;color:var(--muted);margin-bottom:8px}
+.card-note{font-size:.85rem;color:var(--text);line-height:1.5}
+.badge{display:inline-block;font-size:.65rem;padding:2px 8px;border-radius:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-right:4px;margin-bottom:4px}
+.badge-standalone{background:rgba(46,204,113,.2);color:var(--good);border:1px solid rgba(46,204,113,.3)}
+.badge-core{background:rgba(0,212,255,.15);color:var(--accent);border:1px solid rgba(0,212,255,.3)}
+.badge-sys{background:var(--bg-3);color:var(--muted);border:1px solid var(--border)}
+.gen-tag{display:inline-block;background:rgba(255,179,71,.15);color:var(--gold);border:1px solid rgba(255,179,71,.3);font-size:.65rem;padding:2px 8px;border-radius:4px;font-weight:700;margin-left:6px}
+.loading{text-align:center;padding:60px;color:var(--muted)}
+.table-wrap{overflow-x:auto;margin-bottom:30px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg-3);color:var(--accent);padding:10px 14px;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:hover td{background:var(--bg-3)}
+footer{text-align:center;margin-top:36px;padding:16px;color:var(--muted);font-size:.8rem}
+footer a{color:var(--accent);text-decoration:none}
 </style>
 </head>
 <body>
 <header>
-  <h1>⚙️ EMULATOR MATRIX</h1>
-  <p class="subtitle">RP5 için sistem ↔ emülatör eşleştirme rehberi · neden ve nasıl</p>
-  <a href="Retroid_Library_Dashboard.html" class="back-link">← Ana kütüphaneye dön</a>
+  <h1>EMÜLATÖR MATRİSİ</h1>
+  <p class="subtitle">Hangi sistem için hangi emülatör? RP5 için optimize seçimler.</p>
+  <div class="quick-links">
+    <a href="index.html">🏠 Hub</a>
+    <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
+    <a href="Retroid_Glossary.html">📖 Glossary</a>
+    <a href="Retroid_Series_Roadmap.html">🗺️ Seriler</a>
+  </div>
 </header>
 
-<h2 class="section-title">📋 Hızlı Referans Tablosu</h2>
-<div class="matrix-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th>Sistem</th>
-        <th>Önerilen Emulator</th>
-        <th>Alternatifler</th>
-        <th>RP5 Performansı</th>
-        <th>Tip</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Game Boy / Color</strong><span class="sub">1989 / 1998</span></td>
-        <td data-label="Emulator"><span class="emu-name">SameBoy</span> <span class="emu-alt">(libretro core)</span></td>
-        <td data-label="Alt"><span class="emu-alt">Gambatte, mGBA</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ %1000 Hız</span></td>
-        <td data-label="Tip">Standalone</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Game Boy Advance</strong><span class="sub">2001</span></td>
-        <td data-label="Emulator"><span class="emu-name">mGBA</span></td>
-        <td data-label="Alt"><span class="emu-alt">VBA-M (eski)</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ Tertemiz</span></td>
-        <td data-label="Tip">Standalone</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>NES / Famicom</strong><span class="sub">1985</span></td>
-        <td data-label="Emulator"><span class="emu-name">Mesen</span> <span class="emu-alt">(libretro)</span></td>
-        <td data-label="Alt"><span class="emu-alt">FCEUmm, Nestopia UE</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ %1000 Hız</span></td>
-        <td data-label="Tip">RetroArch core</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>SNES / Super Famicom</strong><span class="sub">1990</span></td>
-        <td data-label="Emulator"><span class="emu-name">Snes9x</span></td>
-        <td data-label="Alt"><span class="emu-alt">bsnes (HD ama yavaş)</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ Tertemiz</span></td>
-        <td data-label="Tip">Standalone / core</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Nintendo 64</strong><span class="sub">1996</span></td>
-        <td data-label="Emulator"><span class="emu-name">Mupen64Plus FZ</span></td>
-        <td data-label="Alt"><span class="emu-alt">Mupen64 Next, ParaLLEl</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ Smooth</span></td>
-        <td data-label="Tip">Standalone (en iyi)</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>GameCube</strong><span class="sub">2001</span></td>
-        <td data-label="Emulator"><span class="emu-name">Dolphin</span></td>
-        <td data-label="Alt"><span class="emu-alt">PrimeHack (Metroid Prime için)</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ Tam Smooth</span></td>
-        <td data-label="Tip">Standalone</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Wii</strong><span class="sub">2006</span></td>
-        <td data-label="Emulator"><span class="emu-name">Dolphin</span></td>
-        <td data-label="Alt"><span class="emu-alt">—</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-warn">⚠ Bazı oyunlarda tweak</span></td>
-        <td data-label="Tip">Standalone</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Nintendo DS</strong><span class="sub">2004</span></td>
-        <td data-label="Emulator"><span class="emu-name">melonDS</span></td>
-        <td data-label="Alt"><span class="emu-alt">DraStic (paid, en hızlı)</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ Tertemiz</span></td>
-        <td data-label="Tip">Standalone</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Nintendo 3DS</strong><span class="sub">2011</span></td>
-        <td data-label="Emulator"><span class="emu-name">Lime3DS</span> <span class="emu-alt">(Citra fork)</span></td>
-        <td data-label="Alt"><span class="emu-alt">Azahar, MandarineApp</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-warn">⚠ Oyuna göre</span></td>
-        <td data-label="Tip">Standalone</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Sega Genesis / MD</strong><span class="sub">1988</span></td>
-        <td data-label="Emulator"><span class="emu-name">Genesis Plus GX</span></td>
-        <td data-label="Alt"><span class="emu-alt">PicoDrive</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ %1000 Hız</span></td>
-        <td data-label="Tip">RetroArch core</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Dreamcast</strong><span class="sub">1998</span></td>
-        <td data-label="Emulator"><span class="emu-name">Redream</span></td>
-        <td data-label="Alt"><span class="emu-alt">Flycast</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ Smooth</span></td>
-        <td data-label="Tip">Standalone</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>PlayStation (PSX)</strong><span class="sub">1994</span></td>
-        <td data-label="Emulator"><span class="emu-name">DuckStation</span></td>
-        <td data-label="Alt"><span class="emu-alt">Beetle PSX HW (libretro)</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ 1080p+ upscale</span></td>
-        <td data-label="Tip">Standalone (en iyi)</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>PlayStation 2</strong><span class="sub">2000</span></td>
-        <td data-label="Emulator"><span class="emu-name">AetherSX2</span></td>
-        <td data-label="Alt"><span class="emu-alt">NetherSX2 fork</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-warn">⚠ Oyuna göre değişir</span></td>
-        <td data-label="Tip">Standalone</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>PSP</strong><span class="sub">2004</span></td>
-        <td data-label="Emulator"><span class="emu-name">PPSSPP</span></td>
-        <td data-label="Alt"><span class="emu-alt">—</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-good">✓ 3x upscale OK</span></td>
-        <td data-label="Tip">Standalone (en iyi)</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>PlayStation 3</strong><span class="sub">2006</span></td>
-        <td data-label="Emulator"><span class="emu-name">RPCS3 (mobile)</span></td>
-        <td data-label="Alt"><span class="emu-alt">—</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-bad">✗ Çok kısıtlı</span></td>
-        <td data-label="Tip">Düşük profil oyunlar</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Wii U</strong><span class="sub">2012</span></td>
-        <td data-label="Emulator"><span class="emu-name">Cemu (mobile)</span></td>
-        <td data-label="Alt"><span class="emu-alt">—</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-warn">⚠ Bazı oyunlar</span></td>
-        <td data-label="Tip">Deneysel</td>
-      </tr>
-      <tr>
-        <td class="system-cell" data-label="Sistem"><strong>Switch</strong><span class="sub">2017</span></td>
-        <td data-label="Emulator"><span class="emu-name">Eden</span> <span class="emu-alt">(yuzu fork)</span></td>
-        <td data-label="Alt"><span class="emu-alt">Citron, Sudachi</span></td>
-        <td data-label="Perf"><span class="perf-pill perf-bad">✗ AAA oyunlar zor</span></td>
-        <td data-label="Tip">Indie / 2D Switch oyunları</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<div id="content"><div class="loading">⏳ Yükleniyor...</div></div>
 
-<h2 class="section-title">🔬 Detaylı Açıklamalar (Yazılımcı için)</h2>
-
-<div class="deep-dive">
-  <h3>🎮 PPSSPP — PSP Emulation</h3>
-  <p>PSP emülasyonunun <strong>tartışmasız kralı.</strong> Henrik Rydgård tarafından yazılmış open-source proje. C++ ile yazılı, Vulkan/OpenGL backend'ler.</p>
-
-  <h4>Neden bu kadar iyi?</h4>
-  <p>PSP'nin <code>Allegrex CPU</code>'su MIPS R4000 tabanlı — JIT recompiler implementasyonu nispeten kolay. Henrik 14+ yıldır bu projeyi optimize ediyor; bugün <strong>3x resolution upscale</strong> ile bile çoğu oyun stabil çalışıyor.</p>
-
-  <div class="key-feature">
-    <strong>RP5'te neden tercih edilir:</strong> Native Android build var, Snapdragon 865'in Adreno 650 GPU'sunu Vulkan ile sömürür. PSP'nin 480x272 native rezolüsyonunu 1440x816'ya kadar upscale eder — RP5'in 1080p ekranında yarı-Switch kalitesi.
-  </div>
-
-  <h4>İdeal oyunlar:</h4>
-  <ul>
-    <li>God of War: Chains of Olympus / Ghost of Sparta</li>
-    <li>GTA: Liberty City Stories / Vice City Stories</li>
-    <li>Crisis Core: FF VII</li>
-    <li>Tekken: Dark Resurrection</li>
-    <li>Kingdom Hearts: Birth by Sleep</li>
-  </ul>
-</div>
-
-<div class="deep-dive">
-  <h3>⚡ DuckStation — PSX/PS1 Emulation</h3>
-  <p>Stenzek tarafından yazılmış <strong>modern PS1 emülatörü.</strong> Eski PCSX-Reloaded'ı geride bıraktı.</p>
-
-  <h4>Neden bu kadar iyi?</h4>
-  <p>İki temel innovation: (1) <strong>PGXP</strong> — PS1'in 16-bit fixed-point vertex transform pipeline'ından kaynaklanan klasik <em>"polygon jitter"</em>'ı düzeltir; vertex'leri full 32-bit float pipeline'a yükseltir. (2) <strong>True color rendering</strong> — PS1'in 15-bit color depth'i yerine 24-bit dithering ile bantlamayı yok eder.</p>
-
-  <div class="key-feature">
-    <strong>RP5'te:</strong> 1080p+ upscale ile PS1 oyunları "remaster" gibi görünür. Final Fantasy VII, Crash Bandicoot, Metal Gear Solid'in karakterleri kıvırtmaz, dümdüz hareket eder. Performance overhead minimal — Snapdragon 865 zaten %500-1000 hızda PS1 koşturur.
-  </div>
-
-  <h4>BIOS gerekir:</h4>
-  <p><code>scph5500.bin</code> (JP), <code>scph5501.bin</code> (US), <code>scph5502.bin</code> (EU). HLE BIOS opsiyonu var ama uyumsuzluk için gerçek BIOS önerilir.</p>
-</div>
-
-<div class="deep-dive">
-  <h3>🔥 AetherSX2 — PS2 Emulation</h3>
-  <p>PCSX2'nin (PC PS2 emülatörü) Android port'u. Tahir Akhlaq (Stenzek) tarafından yazılmış. <strong>Şu an aktif olarak geliştirilmiyor</strong> — 2023'te developer takedown'a maruz kaldı; ama mevcut build'i hâlâ en iyi mobil PS2 emülatörü.</p>
-
-  <h4>Mimari karmaşıklığı:</h4>
-  <p>PS2 emulasyonu zor çünkü 4 farklı işlemciyi senkronize etmek gerekiyor: <code>EE (Emotion Engine, MIPS R5900)</code>, <code>VU0/VU1 (Vector Units)</code>, <code>IOP (PS1-uyumlu sub-CPU)</code>, <code>GS (Graphics Synthesizer)</code>. Her birinin kendi clock'u, kendi memory bus'ı var.</p>
-
-  <div class="key-feature">
-    <strong>RP5'te performans:</strong> Tekken 5, FF X, Persona 4, Kingdom Hearts gibi oyunlar tertemiz. God of War, GoW 2 — vapor chamber cooling devreye girer ama 55+ FPS sabit. Demanding 3D oyunlar (DMC3, MGS3) tweaks ile playable. <strong>Gran Turismo 4, Burnout 3</strong> — zorlanır.
-  </div>
-
-  <h4>Performance setting önerileri:</h4>
-  <ul>
-    <li><strong>EE Clock Rate:</strong> 100% (default), zorlu oyunlarda 50-75% underclock denenebilir</li>
-    <li><strong>Resolution Scale:</strong> Native (1x) veya 2x — 3x çoğu oyunda framedrop</li>
-    <li><strong>Renderer:</strong> Vulkan (Snapdragon 865 için)</li>
-    <li><strong>Frame skipping:</strong> Off (visual artifact yaratır)</li>
-  </ul>
-</div>
-
-<div class="deep-dive">
-  <h3>🎯 Dolphin — GameCube / Wii Emulation</h3>
-  <p>2003'ten beri geliştirilen, dünyanın en kapsamlı emülatör projelerinden. C++17, Vulkan/OpenGL backend, JitArm64 recompiler.</p>
-
-  <h4>Neden hâlâ aktif geliştirme:</h4>
-  <p>GameCube/Wii'nin <code>Gekko/Broadway PowerPC</code> CPU'su, ARM'a transparent şekilde recompile edilebilir. PPC instruction set CISC değil, RISC-tabanlı — ARM çevirisi nispeten temiz. Dolphin'in JIT'i her release ile gelişiyor.</p>
-
-  <div class="key-feature">
-    <strong>RP5'te:</strong> Çoğu GameCube oyunu native FPS'te çalışır. Wii — sensor bar gerektiren oyunlar (Skyward Sword, Wii Sports) input mapping ile çalıştırılabilir. <strong>Wind Waker, Sunshine, Resident Evil 4, Sonic Adventure 2 Battle</strong> — full speed.
-  </div>
-
-  <h4>PrimeHack hakkında:</h4>
-  <p>Metroid Prime üçlemesi için Dolphin'in özel fork'u. Ana farklar: <strong>dual-analog FPS kontrolleri</strong>, modern aim, FOV slider. Orijinal GameCube kontrolü "tank-style" — dual stick yoktu, aim ile movement aynı anda zor. PrimeHack bunu modern shooter kontrollerine yükseltir.</p>
-</div>
-
-<div class="deep-dive">
-  <h3>🧠 Genel Optimizasyon Mantığı (Yazılımcı için)</h3>
-
-  <h4>1. JIT vs Interpreter</h4>
-  <p>Tüm modern emülatörler <strong>JIT recompiler</strong> kullanır. Source instruction stream'i basic block'lara ayırır, her block'u ARM machine code'a çevirir, cache'ler. İlk çağırma yavaş (compile overhead), sonraki çağırmalar native hızda. V8'in JavaScript çevirimi ile aynı mantık.</p>
-
-  <h4>2. GPU Renderer Seçimi</h4>
-  <p>Snapdragon 865'in <strong>Adreno 650</strong> GPU'su Vulkan'ı OpenGL'den çok daha verimli işler — Qualcomm'un Vulkan driver'ları daha yeni ve optimize. Hangi emülatörde Vulkan opsiyonu varsa <strong>her zaman onu seç.</strong></p>
-
-  <h4>3. Resolution Scale Trade-off</h4>
-  <p>Pixel pushing GPU-bound. 2x scale = 4x pixel sayısı = ~4x GPU yükü. RP5'in AMOLED'i 1080p — native + 2x scale çoğu sistem için sweet spot. 3x ve üzeri için ayar tweaking gerekir.</p>
-
-  <h4>4. Frame Pacing</h4>
-  <p>Fixed 60 FPS ≠ smooth oynanış. <strong>Frame pacing</strong> önemli — kareler düzenli aralıklarla render edilmeli. Vulkan + triple buffering bunu sağlar. Bazı emülatörlerde <code>"Wait for VSync"</code> seçeneği var — açık tut.</p>
-
-  <h4>5. Audio Sync</h4>
-  <p>Emülatörlerde audio buffer underrun = pop/cracking sesi. Çoğu emülatör <code>"Sync to Audio"</code> seçeneği sunar — bu mode'da emulation hızı audio buffer'a göre ayarlanır, framerate küçük oynamalar yapar ama ses temiz kalır.</p>
-</div>
-
-<div class="deep-dive">
-  <h3>🎨 Frontend Seçimi: Daijisho vs RetroArch</h3>
-
-  <h4>Daijisho (önerilen)</h4>
-  <p>Modern Android frontend. ROM klasörlerini scan eder, scraping yapar, <strong>standalone emülatörleri intent ile launch eder</strong>. UI Steam Deck benzeri — kapaklı, akışkan. RP5 için <em>tercih edilen</em> frontend.</p>
-
-  <h4>RetroArch</h4>
-  <p>Tüm sistemleri <strong>libretro core</strong>'lar ile tek arayüzde toplar. Avantaj: shader pipeline (CRT shader'ları, scanline efektleri), netplay, achievement entegrasyonu. Dezavantaj: standalone emülatör performansının biraz altında, UI dik öğrenme eğrisi.</p>
-
-  <div class="key-feature">
-    <strong>Hibrit yaklaşım:</strong> RP5'in popüler setup'ı — Daijisho'yu launcher olarak kullan, ama eski sistemler (NES, SNES, GBA, GB, Genesis) için RetroArch core'larını çağır (shader avantajı için), modern sistemler (PSP, PS2, GameCube) için standalone emülatörleri çağır.
-  </div>
-</div>
-
-<div class="deep-dive">
-  <h3>📁 Dosya Yapısı Önerisi</h3>
-  <p>RP5'in microSD'sinde tutarlı klasör yapısı, frontend scrape'lerini ve organizasyonu kolaylaştırır:</p>
-
-  <pre style="background:var(--code-bg);padding:14px;border-radius:8px;overflow-x:auto;font-size:0.85em;color:var(--text);"><code>/Roms/
-  /GBA/         (Pokemon, Mario & Luigi, Metroid Fusion)
-  /NDS/         (Layton, Brain Age, HG/SS, Mario Kart DS)
-  /3DS/         (Pokemon X, ALBW)
-  /N64/         (OoT, MM, Mario 64, MK64, Paper Mario)
-  /GameCube/    (Wind Waker, RE4, Sunshine, Smash Melee)
-  /Wii/         (Galaxy 1+2, NSMB Wii, MK Wii)
-  /Genesis/     (Sonic 1-3)
-  /Dreamcast/   (Sonic Adventure)
-  /PSX/         (FF7, FF9, MGS, Crash, CTR, Tekken 3)
-  /PS2/         (GTA SA, GoW, FFX, KH, RE4 alt)
-  /PSP/         (CoO, GoS, Crisis Core, Tekken DR)
-  /BIOS/        (scph5500.bin, gba_bios.bin, etc.)
-</code></pre>
-</div>
-
-<footer style="text-align:center;margin-top:40px;padding:20px;color:var(--muted);font-size:0.85rem;">
-  Retroid Pocket 5 · Emulator Matrix · Setup için <a style="color:var(--accent-2);" href="https://www.joeysretrohandhelds.com/guides/retroid-pocket-5-setup-guide/" target="_blank">Joey's Retro Handhelds Guide</a> önerilir
+<footer>
+  Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a>
 </footer>
+
+<script>
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}};
+
+async function load(){
+  const [systems,emulators]=await Promise.all([
+    fetch(`${SB}/rest/v1/systems?select=*&order=generation,name`,H).then(r=>r.json()),
+    fetch(`${SB}/rest/v1/emulators?select=*&order=name`,H).then(r=>r.json()),
+  ]);
+
+  const cont=document.getElementById('content');
+
+  // Sistem - Emülatör eşleştirme tablosu
+  let html=`<div class="section-title">📋 Sistem → Önerilen Emülatör</div>
+  <div class="table-wrap"><table>
+  <thead><tr><th>Sistem</th><th>Üretici</th><th>Nesil</th><th>Yıl</th><th>Önerilen Emülatör</th><th>Tip</th><th>Not</th></tr></thead>
+  <tbody>`;
+
+  systems.forEach(sys=>{
+    // Bu sistemi destekleyen emülatörleri bul
+    const matching=emulators.filter(e=>e.supported_systems&&e.supported_systems.includes(sys.name));
+    const best=matching[0];
+    html+=`<tr>
+      <td><strong>${sys.name}</strong></td>
+      <td style="color:var(--muted)">${sys.manufacturer||'—'}</td>
+      <td>${sys.generation?`<span class="gen-tag">${sys.generation}. Nesil</span>`:'—'}</td>
+      <td style="color:var(--muted)">${sys.release_year||'—'}</td>
+      <td style="color:var(--accent)">${best?best.name:'—'}</td>
+      <td>${best?`<span class="badge ${best.type==='standalone'?'badge-standalone':'badge-core'}">${best.type==='standalone'?'Standalone':'RetroArch Core'}</span>`:'—'}</td>
+      <td style="color:var(--muted);font-size:.8rem">${best?.notes||'—'}</td>
+    </tr>`;
+  });
+
+  html+=`</tbody></table></div>`;
+
+  // Emülatör kartları
+  html+=`<div class="section-title">🛠️ Emülatör Detayları</div><div class="grid-2">`;
+  emulators.forEach(e=>{
+    const sys=(e.supported_systems||[]).map(s=>`<span class="badge badge-sys">${s}</span>`).join('');
+    html+=`<div class="card">
+      <div class="card-title">${e.name}</div>
+      <div class="card-sub">
+        <span class="badge ${e.type==='standalone'?'badge-standalone':'badge-core'}">${e.type==='standalone'?'Standalone':'RetroArch Core'}</span>
+        ${sys}
+      </div>
+      <div class="card-note">${e.notes||'—'}</div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  cont.innerHTML=html;
+}
+
+load();
+</script>
 </body>
 </html>
