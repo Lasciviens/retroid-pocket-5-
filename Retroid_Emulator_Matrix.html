@@ -71,21 +71,20 @@ async function load(){
     fetch(`${SB}/rest/v1/emulator_systems?select=emulator_id,system_id`,H).then(r=>r.json()).catch(()=>[]),
   ]);
   allSystems=systems||[];
-  // junction tablosundan sistem isimlerini emülatöre ekle (fallback: supported_systems text[])
-  const emuMap=Object.fromEntries((emulators||[]).map(e=>[e.id,e]));
-  const sysMap=Object.fromEntries((systems||[]).map(s=>[s.id,s]));
-  if(Array.isArray(junctions)&&junctions.length>0){
-    // junction tablosu dolu — bunu kullan
-    const builtSystems={};
+  const sysMap=Object.fromEntries((systems||[]).map(s=>[s.id,s.name]));
+  // junction tablosu doluysa onu kullan, değilse supported_systems text[] fallback
+  const junctionFilled=Array.isArray(junctions)&&junctions.length>0;
+  const builtSystems={};
+  if(junctionFilled){
     junctions.forEach(j=>{
       if(!builtSystems[j.emulator_id])builtSystems[j.emulator_id]=[];
-      if(sysMap[j.system_id])builtSystems[j.emulator_id].push(sysMap[j.system_id].name);
+      if(sysMap[j.system_id])builtSystems[j.emulator_id].push(sysMap[j.system_id]);
     });
-    allEmulators=(emulators||[]).map(e=>({...e,_systems:builtSystems[e.id]||e.supported_systems||[]}));
-  } else {
-    // fallback: eski text[] kolonunu kullan
-    allEmulators=(emulators||[]).map(e=>({...e,_systems:e.supported_systems||[]}));
   }
+  allEmulators=(emulators||[]).map(e=>({
+    ...e,
+    _systems: junctionFilled ? (builtSystems[e.id]||[]) : (e.supported_systems||[])
+  }));
   render();
 }
 
@@ -136,4 +135,33 @@ function render(){
       <td>${sys.generation?`<span class="gen-tag">${sys.generation}. Nesil</span>`:'—'}</td>
       <td style="color:var(--muted)">${sys.release_year||'—'}</td>
       <td style="color:var(--accent)">${best?best.name:'—'}</td>
-      <td>${best?`<span class="badge ${best.type==='standalone'?'badge-standalone':'badge-core'}">${best.type==='standa
+      <td>${best?`<span class="badge ${best.type==='standalone'?'badge-standalone':'badge-core'}">${best.type==='standalone'?'Standalone':'RetroArch Core'}</span>`:'—'}</td>
+      <td style="color:var(--muted);font-size:.8rem">${best?.notes||'—'}</td>
+    </tr>`;
+  });
+
+  html+=`</tbody></table></div>`;
+
+  // Emülatör kartları
+  html+=`<div class="section-title">🛠️ Emülatör Detayları</div><div class="grid-2">`;
+  emulators.forEach(e=>{
+    const sys=(e._systems||[]).map(s=>`<span class="badge badge-sys">${s}</span>`).join('');
+    html+=`<div class="card">
+      <div class="card-title">${e.name}</div>
+      <div class="card-sub">
+        <span class="badge ${e.type==='standalone'?'badge-standalone':'badge-core'}">${e.type==='standalone'?'Standalone':'RetroArch Core'}</span>
+        ${sys}
+      </div>
+      <div class="card-note">${e.notes||'—'}</div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  cont.innerHTML=html;
+}
+
+load();
+
+</script>
+</body>
+</html>

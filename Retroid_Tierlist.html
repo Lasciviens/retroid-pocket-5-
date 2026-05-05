@@ -23,7 +23,7 @@ h1{font-size:1.9rem;background:linear-gradient(90deg,#ff4655,#ffb347,#2ecc71,#00
 
 /* TIER ROWS */
 .tier-board{display:flex;flex-direction:column;gap:6px;margin-bottom:24px}
-.tier-row{display:flex;align-items:stretch;min-height:90px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.tier-row{display:flex;align-items:stretch;min-height:110px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
 .tier-label{width:60px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:#fff}
 .tier-label.S{background:#ff4655}
 .tier-label.A{background:#f97316}
@@ -31,15 +31,15 @@ h1{font-size:1.9rem;background:linear-gradient(90deg,#ff4655,#ffb347,#2ecc71,#00
 .tier-label.C{background:#22c55e}
 .tier-label.D{background:#3b82f6}
 .tier-label.F{background:#6b7280}
-.tier-games{flex:1;display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:rgba(255,255,255,.03);min-height:90px}
+.tier-games{flex:1;display:flex;flex-wrap:wrap;gap:8px;padding:10px;background:rgba(255,255,255,.03);min-height:110px}
 .tier-games.drag-over{background:rgba(255,255,255,.08);outline:2px dashed var(--accent-2)}
 
 /* GAME CHIPS */
-.game-chip{width:60px;cursor:grab;transition:transform .15s;position:relative;border-radius:6px;overflow:hidden;flex-shrink:0}
+.game-chip{width:80px;cursor:grab;transition:transform .15s;position:relative;border-radius:6px;overflow:hidden;flex-shrink:0}
 .game-chip:active{cursor:grabbing;transform:scale(1.08)}
-.game-chip img{width:60px;height:82px;object-fit:cover;display:block}
-.game-chip-fb{width:60px;height:82px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;font-size:.55rem;text-align:center;color:var(--muted);padding:3px;line-height:1.2}
-.game-chip-title{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.75);font-size:.5rem;padding:2px 3px;line-height:1.2;text-align:center;display:none}
+.game-chip img{width:80px;height:110px;object-fit:cover;display:block}
+.game-chip-fb{width:80px;height:110px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;font-size:.6rem;text-align:center;color:var(--muted);padding:4px;line-height:1.3}
+.game-chip-title{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.8);font-size:.55rem;padding:3px 4px;line-height:1.3;text-align:center;display:none}
 .game-chip:hover .game-chip-title{display:block}
 
 /* UNRANKED */
@@ -160,7 +160,7 @@ function touchStart(e){
   const rect=el.getBoundingClientRect();
   touchOffX=t.clientX-rect.left;touchOffY=t.clientY-rect.top;
   touchClone=el.cloneNode(true);
-  touchClone.style.cssText=`position:fixed;z-index:9999;width:60px;opacity:.85;pointer-events:none;left:${rect.left}px;top:${rect.top}px;`;
+  touchClone.style.cssText=`position:fixed;z-index:9999;width:80px;opacity:.85;pointer-events:none;left:${rect.left}px;top:${rect.top}px;`;
   document.body.appendChild(touchClone);
   el.style.opacity='.3';
   e.preventDefault();
@@ -171,6 +171,11 @@ function touchMove(e){
   const t=e.touches[0];
   touchClone.style.left=(t.clientX-touchOffX)+'px';
   touchClone.style.top=(t.clientY-touchOffY)+'px';
+  // Ekranın kenarına yaklaşınca otomatik scroll
+  const edge=80;
+  const speed=8;
+  if(t.clientY<edge)window.scrollBy(0,-speed);
+  else if(t.clientY>window.innerHeight-edge)window.scrollBy(0,speed);
 }
 function touchEnd(e){
   if(!touchClone)return;
