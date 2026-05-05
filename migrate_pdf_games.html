@@ -27,11 +27,14 @@ const T=(sys,title)=>`https://raw.githubusercontent.com/libretro-thumbnails/${sy
 function log(m,c=''){const el=document.getElementById('log');el.innerHTML+=`<div class="${c}">${m}</div>`;el.scrollTop=9999;}
 
 async function api(ep,method='GET',body=null){
-  const opts={...H,method};
+  const headers={...H.headers};
+  if(method==='POST'||method==='PATCH')headers['Prefer']='return=representation';
+  const opts={method,headers};
   if(body)opts.body=JSON.stringify(body);
   const r=await fetch(`${SB}/rest/v1/${ep}`,opts);
+  if(!r.ok){const e=await r.text();throw new Error(e);}
   const t=await r.text();
-  return t?JSON.parse(t):null;
+  return t?JSON.parse(t):[];
 }
 
 // ── Lookup maps ──────────────────────────────────────────────
