@@ -182,10 +182,13 @@ async function submitGame(e){
 
   try{
     // Insert game
+    // İlk platform cover'ını primary olarak kullan
+    const firstCoverInput=document.querySelector('[name^="cover-"]');
+    const firstCover=firstCoverInput?.value?.trim()||null;
     const [game]=await api('games','POST',[{
       title,release_year:year||null,developer:dev||null,series_id:seriesId,
       rating:rating||null,is_coop:coop,is_iconic:iconic,coop_notes:coopNotes||null,
-      description:desc||null,play_status:'backlog'
+      description:desc||null,play_status:'backlog',primary_cover_url:firstCover
     }]);
     if(!game?.id)throw new Error('Oyun kaydedilemedi');
 
@@ -227,7 +230,7 @@ function resetForm(){
 }
 
 async function loadList(){
-  const games=await api('games?select=id,title,release_year,is_iconic,play_status,series(name),game_platforms(cover_url,systems(name))&order=title');
+  const games=await api('games?select=id,title,release_year,is_iconic,play_status,primary_cover_url,series(name),game_platforms(systems(name))&order=title');
   ALL_GAMES=games;
   renderList(games);
 }
@@ -236,7 +239,7 @@ function renderList(list){
   const el=document.getElementById('game-list');
   if(!list.length){el.innerHTML='<div class="loading">Oyun bulunamadı.</div>';return;}
   el.innerHTML=list.map(g=>{
-    const cover=g.game_platforms?.[0]?.cover_url||'';
+    const cover=g.primary_cover_url||'';
     const sys=g.game_platforms?.map(p=>p.systems?.name).filter(Boolean).join(', ')||'?';
     return`<div class="game-item">
       ${cover?`<img src="${cover}" onerror="this.style.display='none'">`:'<div style="width:40px;height:55px;background:var(--bg-3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🎮</div>'}

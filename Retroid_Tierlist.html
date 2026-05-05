@@ -103,7 +103,7 @@ async function api(ep,method='GET',body=null){
 }
 
 async function load(){
-  ALL=await api('games?select=id,title,tier,game_platforms(cover_url)&order=title');
+  ALL=await api('games?select=id,title,tier,primary_cover_url&order=title');
   render();
 }
 
@@ -128,7 +128,7 @@ function render(){
 }
 
 function chip(g){
-  const cover=g.game_platforms?.[0]?.cover_url||'';
+  const cover=g.primary_cover_url||'';
   return`<div class="game-chip" draggable="true" data-id="${g.id}"
     ondragstart="dragStart(event,'${g.id}')"
     ondragend="dragEnd(event)">

@@ -190,11 +190,12 @@ async function patch(ep,body){await fetch(`${SB}/rest/v1/${ep}`,{method:'PATCH',
 let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,sort:'title'};
 
 async function load(){
-  const games=await sb('games?select=id,title,release_year,is_coop,coop_notes,play_status,rating,is_iconic,description,play_notes,game_log,tier,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,systems(name),emulators(name))&order=title');
+  const games=await sb('games?select=id,title,release_year,is_coop,coop_notes,play_status,rating,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,systems(name),emulators(name))&order=title');
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,coop:g.is_coop,coopNotes:g.coop_notes,
     status:g.play_status||'backlog',rating:g.rating,iconic:g.is_iconic,desc:g.description,
     playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',
+    cover:g.primary_cover_url||null,
     series:g.series?.name||null,
     genres:(g.game_genres||[]).map(gg=>gg.genres?.name).filter(Boolean),
     platforms:(g.game_platforms||[]).map(p=>({id:p.id,system:p.systems?.name,emulator:p.emulators?.name,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing'}))
@@ -239,7 +240,7 @@ function render(){
   const grid=document.getElementById('grid');
   if(!list.length){grid.innerHTML='<div class="empty">Filtreyle eşleşen oyun bulunamadı.</div>';return;}
   grid.innerHTML=list.map(g=>{
-    const cover=g.platforms[0]?.cover||'';
+    const cover=g.cover||'';
     const sys=g.platforms.map(p=>p.system).filter(Boolean).join(', ');
     const perf=g.platforms[0]?.perf||'good';
     const perfLabel=perf==='good'?'✓ Smooth':perf==='warn'?'⚠ Tweak':'✗ Sorunlu';

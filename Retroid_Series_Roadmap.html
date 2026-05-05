@@ -77,7 +77,7 @@ const ICONS={'Grand Theft Auto':'🚗','God of War':'⚔️','Pokemon':'🔴','S
 async function load(){
   const [seriesData, gamesData]=await Promise.all([
     fetch(`${SB}/rest/v1/series?select=id,name,description&order=name`,H).then(r=>r.json()),
-    fetch(`${SB}/rest/v1/games?select=id,title,release_year,rating,is_iconic,is_coop,play_status,series_id,game_platforms(cover_url,systems(name))&order=release_year`,H).then(r=>r.json()),
+    fetch(`${SB}/rest/v1/games?select=id,title,release_year,rating,is_iconic,is_coop,play_status,series_id,primary_cover_url,game_platforms(systems(name))&order=release_year`,H).then(r=>r.json()),
   ]);
 
   const cont=document.getElementById('content');
@@ -91,7 +91,7 @@ async function load(){
     const games=gamesData.filter(g=>g.series_id===s.id).sort((a,b)=>(a.release_year||9999)-(b.release_year||9999));
     const icon=ICONS[s.name]||'🎮';
     const gamesHtml=games.map(g=>{
-      const cover=g.game_platforms?.[0]?.cover_url||'';
+      const cover=g.primary_cover_url||'';
       const sys=g.game_platforms?.map(p=>p.systems?.name).filter(Boolean).join('/');
       const statusBadge=g.play_status==='playing'?'<span class="chip-badge chip-status-playing">Oynuyor</span>':
                         g.play_status==='completed'?'<span class="chip-badge chip-status-completed">Bitti</span>':
