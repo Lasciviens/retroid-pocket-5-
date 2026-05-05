@@ -344,11 +344,28 @@ function openModal(id){
         </div>
       </div>
       ${g.coop&&g.coopNotes?`<div class="modal-section"><h4>👫 Co-op Detay</h4><p>${g.coopNotes}</p></div>`:''}
+      <div class="modal-section" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="addToQueue('${g.id}')" style="background:var(--gold);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">🎮 Oynama Sırasına Ekle</button>
+        <button onclick="window.location.href='Retroid_Queue.html'" style="background:var(--bg-3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer">Sıraya Git →</button>
+      </div>
     </div>`;
   document.getElementById('modal').classList.add('active');
 }
 
 function closeModal(){document.getElementById('modal').classList.remove('active');}
+
+async function addToQueue(gameId){
+  // Mevcut en yüksek play_order'ı bul
+  const queued=await fetch(`${SB}/rest/v1/games?select=play_order&play_order=not.is.null&order=play_order.desc&limit=1`,H).then(r=>r.json());
+  const nextOrder=(queued[0]?.play_order||0)+1;
+  await patch(`games?id=eq.${gameId}`,{play_order:nextOrder});
+  // Bildir
+  const g=ALL.find(x=>x.id===gameId);
+  const btn=event.target;
+  btn.textContent='✓ Eklendi!';
+  btn.style.background='var(--good)';
+  setTimeout(()=>{btn.textContent='🎮 Oynama Sırasına Ekle';btn.style.background='var(--gold)';},1500);
+}
 
 document.getElementById('search').addEventListener('input',e=>{filters.search=e.target.value;render();});
 document.getElementById('f-system').addEventListener('change',e=>{filters.system=e.target.value;render();});

@@ -34,6 +34,9 @@ td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
 tr:hover td{background:var(--bg-3)}
 footer{text-align:center;margin-top:36px;padding:16px;color:var(--muted);font-size:.8rem}
 footer a{color:var(--accent);text-decoration:none}
+.sbtn{background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted);font-size:.75rem;cursor:pointer;transition:all .2s;font-weight:600}
+.sbtn:hover{border-color:var(--accent);color:var(--accent)}
+.sbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
 </style>
 </head>
 <body>
@@ -59,16 +62,51 @@ const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
 const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}};
 
+let allSystems=[], allEmulators=[], sortSys='generation', sortEmu='name';
+
 async function load(){
   const [systems,emulators]=await Promise.all([
-    fetch(`${SB}/rest/v1/systems?select=*&order=generation,name`,H).then(r=>r.json()),
-    fetch(`${SB}/rest/v1/emulators?select=*&order=name`,H).then(r=>r.json()),
+    fetch(`${SB}/rest/v1/systems?select=*`,H).then(r=>r.json()),
+    fetch(`${SB}/rest/v1/emulators?select=*`,H).then(r=>r.json()),
   ]);
+  allSystems=systems||[];
+  allEmulators=emulators||[];
+  render();
+}
 
+function sortedSystems(){
+  return [...allSystems].sort((a,b)=>{
+    if(sortSys==='generation')return(a.generation||99)-(b.generation||99)||a.name.localeCompare(b.name);
+    if(sortSys==='year')return(a.release_year||9999)-(b.release_year||9999);
+    if(sortSys==='manufacturer')return(a.manufacturer||'').localeCompare(b.manufacturer||'');
+    return a.name.localeCompare(b.name);
+  });
+}
+function sortedEmulators(){
+  return [...allEmulators].sort((a,b)=>{
+    if(sortEmu==='type')return(a.type||'').localeCompare(b.type||'')||a.name.localeCompare(b.name);
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function render(){
+  const systems=sortedSystems();
+  const emulators=sortedEmulators();
   const cont=document.getElementById('content');
 
-  // Sistem - Emülatör eşleştirme tablosu
-  let html=`<div class="section-title">📋 Sistem → Önerilen Emülatör</div>
+  // Sort controls
+  let html=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <span style="font-size:.8rem;color:var(--muted)">Sistem sırala:</span>
+    <button onclick="sortSys='generation';render()" class="sbtn${sortSys==='generation'?' active':''}">Nesil</button>
+    <button onclick="sortSys='name';render()" class="sbtn${sortSys==='name'?' active':''}">A-Z</button>
+    <button onclick="sortSys='year';render()" class="sbtn${sortSys==='year'?' active':''}">Yıl</button>
+    <button onclick="sortSys='manufacturer';render()" class="sbtn${sortSys==='manufacturer'?' active':''}">Üretici</button>
+    <span style="font-size:.8rem;color:var(--muted);margin-left:12px">Emülatör sırala:</span>
+    <button onclick="sortEmu='name';render()" class="sbtn${sortEmu==='name'?' active':''}">A-Z</button>
+    <button onclick="sortEmu='type';render()" class="sbtn${sortEmu==='type'?' active':''}">Tip</button>
+  </div>`;
+
+  html+=`<div class="section-title">📋 Sistem → Önerilen Emülatör</div>
   <div class="table-wrap"><table>
   <thead><tr><th>Sistem</th><th>Üretici</th><th>Nesil</th><th>Yıl</th><th>Önerilen Emülatör</th><th>Tip</th><th>Not</th></tr></thead>
   <tbody>`;
@@ -109,6 +147,7 @@ async function load(){
 }
 
 load();
+
 </script>
 </body>
 </html>

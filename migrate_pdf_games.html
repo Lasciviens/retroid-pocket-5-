@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>PDF Migration Tool</title>
+<style>
+body{font-family:monospace;background:#0a0e1a;color:#e8eaf0;padding:30px}
+button{background:#ff4655;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:14px;cursor:pointer;margin:4px}
+button.sec{background:#1c2238;border:1px solid #2a3149}
+#log{background:#131829;border:1px solid #2a3149;border-radius:8px;padding:20px;margin-top:16px;max-height:600px;overflow-y:auto;line-height:1.9;font-size:12px}
+.ok{color:#2ecc71}.err{color:#e74c3c}.info{color:#00d4ff}.warn{color:#f39c12}
+</style>
+</head>
+<body>
+<h2>📄 PDF Oyun Migration + Bilgi Kupürleri</h2>
+<button onclick="runAll()">▶ Hepsini Çalıştır</button>
+<button class="sec" onclick="runGames()">🎮 Sadece Yeni Oyunlar</button>
+<button class="sec" onclick="runPerfNotes()">⚙️ Sadece Perf Notları</button>
+<button class="sec" onclick="runTips()">💡 Sadece Bilgi Kupürleri</button>
+<div id="log"></div>
+<script>
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'}};
+const T=(sys,title)=>`https://raw.githubusercontent.com/libretro-thumbnails/${sys}/master/Named_Boxarts/${encodeURIComponent(title)}.png`;
+
+function log(m,c=''){const el=document.getElementById('log');el.innerHTML+=`<div class="${c}">${m}</div>`;el.scrollTop=9999;}
+
+async function api(ep,method='GET',body=null){
+  const opts={...H,method};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(`${SB}/rest/v1/${ep}`,opts);
+  const t=await r.text();
+  return t?JSON.parse(t):null;
+}
+
+// ── Lookup maps ──────────────────────────────────────────────
+async function getMaps(){
+  const [sys,gen,ser,emu]=await Promise.all([
+    api('systems?select=id,name'),
+    api('genres?select=id,name'),
+    api('series?select=id,name'),
+    api('emulators?select=id,name'),
+  ]);
+  const sysMap={},genMap={},serMap={},emuMap={};
+  sys.forEach(s=>sysMap[s.name]=s.id);
+  gen.forEach(g=>genMap[g.name]=g.id);
+  ser.forEach(s=>serMap[s.name]=s.id);
+  emu.forEach(e=>emuMap[e.name]=e.id);
+  return{sysMap,genMap,serMap,emuMap};
+}
+
+// ── Yeni oyunlar ─────────────────────────────────────────────
+const NEW_GAMES=[
+  {
+    title:'Need for Speed: Most Wanted',
+    series:'Need for Speed',
+    genres:['Racing'],
+    year:2005,coop:false,iconic:true,rating:9,
+    desc:'PS2\'nin en iyi yarış oyunlarından. 2x Upscale ile sabit 60 FPS. Açık dünya polisli kovalamaçalar.',
+    platforms:[{system:'PS2',emulator:'AetherSX2',perf:'good',perfNotes:'2x Upscale. Sabit 60 FPS.',cover:T('Sony_-_PlayStation_2','Need for Speed - Most Wanted (USA)')}]
+  },
+  {
+    title:'Pokémon Omega Ruby',
+    series:'Pokemon',
+    genres:['RPG'],
+    year:2014,coop:false,iconic:true,rating:9,
+    desc:'GBA klasiklerinin tam 3D modern remakeleri. Hoenn bölgesinin en güzel versiyonu.',
+    platforms:[{system:'3DS',emulator:'Citra',perf:'warn',perfNotes:'2x-3x Resolution. Citra ile çalışır.',cover:T('Nintendo_-_Nintendo_3DS','Pokemon Omega Ruby (USA)')}]
+  },
+  {
+    title:'Pokémon Alpha Sapphire',
+    series:'Pokemon',
+    genres:['RPG'],
+    year:2014,coop:false,iconic:false,rating:9,
+    desc:'Omega Ruby\'nin eşi. Hoenn bölgesi, tam 3D.',
+    platforms:[{system:'3DS',emulator:'Citra',perf:'warn',perfNotes:'2x-3x Resolution.',cover:T('Nintendo_-_Nintendo_3DS','Pokemon Alpha Sapphire (USA)')}]
+  },
+  {
+    title:'Pokémon Ultra Sun',
+    series:'Pokemon',
+    genres:['RPG'],
+    year:2017,coop:false,iconic:false,rating:8,
+    desc:'Serinin en gelişmiş grafik ve animasyonları. Alola bölgesinin genişletilmiş versiyonu.',
+    platforms:[{system:'3DS',emulator:'Citra',perf:'warn',perfNotes:'2x Resolution (Stabilite için).',cover:T('Nintendo_-_Nintendo_3DS','Pokemon Ultra Sun (USA)')}]
+  },
+  {
+    title:'Pokémon Ultra Moon',
+    series:'Pokemon',
+    genres:['RPG'],
+    year:2017,coop:false,iconic:false,rating:8,
+    desc:'Ultra Sun\'ın eşi.',
+    platforms:[{system:'3DS',emulator:'Citra',perf:'warn',perfNotes:'2x Resolution (Stabilite için).',cover:T('Nintendo_-_Nintendo_3DS','Pokemon Ultra Moon (USA)')}]
+  },
+  {
+    title:'Sonic Colors',
+    series:'Sonic the Hedgehog',
+    genres:['Platformer'],
+    year:2010,coop:false,iconic:true,rating:8,
+    desc:'Wii\'nin en iyi Sonic oyunu. Renk patlaması, mükemmel performans. Wisps sistemi.',
+    platforms:[{system:'Wii',emulator:'Dolphin',perf:'good',perfNotes:'3x (1080p). Mükemmel performans.',cover:T('Nintendo_-_Wii','Sonic Colors (USA)')}]
+  },
+  {
+    title:'Sonic Unleashed',
+    series:'Sonic the Hedgehog',
+    genres:['Platformer'],
+    year:2008,coop:false,iconic:false,rating:7,
+    desc:'Gündüz bölümleri inanılmaz hızlı. Werehog geceleri dövüş mekaniği. PS2 versiyonu önerilir.',
+    platforms:[{system:'PS2',emulator:'AetherSX2',perf:'good',perfNotes:'2x Upscale. Gündüz bölümleri çok akıcı.',cover:T('Sony_-_PlayStation_2','Sonic Unleashed (USA)')}]
+  },
+  {
+    title:'Sonic Riders',
+    series:'Sonic the Hedgehog',
+    genres:['Racing'],
+    year:2006,coop:true,coopNotes:'2P versus modu',iconic:false,rating:7,
+    desc:'Gelecek temalı hoverboard yarışı. GameCube versiyonu en iyi performansı sunar.',
+    platforms:[{system:'GameCube',emulator:'Dolphin',perf:'good',perfNotes:'3x (1080p).',cover:T('Nintendo_-_GameCube','Sonic Riders (USA)')}]
+  },
+  {
+    title:'Fable Anniversary',
+    series:null,
+    genres:['Action-RPG'],
+    year:2014,coop:false,iconic:true,rating:8,
+    desc:'PC oyunu, Winlator ile RP5\'te oynanabilir. Topluluk doğrulamalı. Winlator Ludashi/Gamehub Lite + Turnip Mesa v25.2.0 + 960x544 + Camera Wobble Fix + Color & Clarity Fix modu gerekli.',
+    platforms:[{system:'PC',emulator:'Winlator',perf:'warn',perfNotes:'Winlator Ludashi/Gamehub Lite. Turnip Mesa v25.2.0. 960x544. Camera Wobble Fix + Color & Clarity Fix modu şart.',cover:''}]
+  },
+];
+
+// ── Perf notları güncellenecek mevcut oyunlar ────────────────
+const PERF_UPDATES=[
+  {title:'God of War',perfNotes:'2x-3x Upscale (1080p). Kusursuz akıcılık.'},
+  {title:'God of War II',perfNotes:'2x-3x Upscale (1080p). Kusursuz akıcılık.'},
+  {title:'Final Fantasy X',perfNotes:'3x Upscale. AMOLED ekranda renkler harika.'},
+  {title:'Devil May Cry 3: Dante\'s Awakening',perfNotes:'3x Upscale. Çok akıcı.'},
+  {title:'Resident Evil 4',perfNotes:'3x Upscale (1080p). En stabil sürüm GameCube\'dür.'},
+  {title:'Sonic Adventure 2: Battle',perfNotes:'3x + Geniş Ekran Hack. 60 FPS kilitli.'},
+  {title:'Sonic Heroes',perfNotes:'2.5x veya 3x Upscale.'},
+  {title:'Pokémon X',perfNotes:'3x Resolution. İlk tam 3D Pokémon.'},
+];
+
+// ── Bilgi kupürleri ──────────────────────────────────────────
+const TIPS=[
+  {
+    title:'🏆 GameCube vs PS2: Hangisini Seç?',
+    content:'Aynı oyun her iki sistemde de varsa her zaman GameCube sürümünü tercih et. Dolphin emülatörü AetherSX2\'den daha stabil ve daha yüksek upscale sunar. Resident Evil 4 buna en güzel örnektir.',
+    category:'tip'
+  },
+  {
+    title:'🔵 Dreamcast Avantajı',
+    content:'3D Arcade oyunları (Tekken, SoulCalibur) için Dreamcast (Redream/Flycast emülatörü) her zaman en hafif ve en keskin çözümü sunar. 1080p\'ye kadar upscale edilebilir, sistem gereksinimleri çok düşük.',
+    category:'tip'
+  },
+  {
+    title:'📱 PSP Upscale Gücü',
+    content:'PSP oyunlarını (God of War serisi dahil) 4x çözünürlüğe kadar upscale edebilirsin, RP5\'in Snapdragon 865\'i hiç zorlanmaz. PPSSPP standalone önerilir.',
+    category:'tip'
+  },
+  {
+    title:'🎮 Fable Anniversary — Winlator Ayarları',
+    content:'Gerekli yazılım: Winlator Ludashi veya Gamehub Lite. Grafik sürücüsü: Turnip (Mesa) v25.2.0 veya üzeri. Çözünürlük: 960x544. Kritik modlar: Camera Wobble Fix (koşu sırasındaki ekran sallanmasını siler) + Color & Clarity Fix (AMOLED için renk düzeltmesi). Topluluk tarafından doğrulanmıştır.',
+    category:'tip'
+  },
+  {
+    title:'⬆️ AetherSX2 Upscale Rehberi',
+    content:'PS2 oyunları için önerilen upscale değerleri: God of War 1&2 → 2x-3x (1080p). Final Fantasy X → 3x. Devil May Cry 3 → 3x. NFS Most Wanted → 2x (60 FPS için). Daha yüksek upscale daha güzel görüntü ama daha fazla GPU yükü demektir.',
+    category:'tip'
+  },
+];
+
+// ── Çalıştırma fonksiyonları ─────────────────────────────────
+async function runGames(){
+  log('<b>🎮 Yeni oyunlar ekleniyor...</b>','info');
+  const {sysMap,genMap,serMap,emuMap}=await getMaps();
+
+  // PC sistemini yoksa ekle
+  if(!sysMap['PC']){
+    const [s]=await api('systems','POST',[{name:'PC',full_name:'Personal Computer',manufacturer:'Various',generation:null,release_year:null}]);
+    sysMap['PC']=s.id;
+    log('✓ PC sistemi eklendi','ok');
+  }
+  // Winlator emülatörünü yoksa ekle
+  if(!emuMap['Winlator']){
+    const [e]=await api('emulators','POST',[{name:'Winlator',type:'standalone',supported_systems:['PC'],notes:'Windows emulator for Android. Requires Turnip Mesa driver.'}]);
+    emuMap['Winlator']=e.id;
+    log('✓ Winlator emülatörü eklendi','ok');
+  }
+  // Need for Speed seri yoksa ekle
+  if(!serMap['Need for Speed']){
+    const [s]=await api('series','POST',[{name:'Need for Speed',description:'EA racing series'}]);
+    serMap['Need for Speed']=s.id;
+    log('✓ Need for Speed serisi eklendi','ok');
+  }
+
+  // Mevcut oyunları kontrol et
+  const existing=await api('games?select=title');
+  const existingTitles=new Set((existing||[]).map(g=>g.title.toLowerCase()));
+
+  let added=0,skipped=0;
+  for(const g of NEW_GAMES){
+    if(existingTitles.has(g.title.toLowerCase())){
+      log(`⏭ Zaten var: ${g.title}`,'warn');
+      skipped++;
+      continue;
+    }
+    try{
+      const [game]=await api('games','POST',[{
+        title:g.title,
+        series_id:g.series?serMap[g.series]||null:null,
+        release_year:g.year,
+        description:g.desc,
+        is_coop:g.coop||false,
+        coop_notes:g.coopNotes||null,
+        is_iconic:g.iconic||false,
+        rating:g.rating||null,
+        play_status:'backlog'
+      }]);
+      // Genres
+      const gids=g.genres.map(gn=>genMap[gn]).filter(Boolean);
+      if(gids.length)await api('game_genres','POST',gids.map(gid=>({game_id:game.id,genre_id:gid})));
+      // Platforms
+      for(const p of g.platforms){
+        const sysId=sysMap[p.system];
+        const emuId=emuMap[p.emulator]||null;
+        if(!sysId){log(`  ⚠ Sistem bulunamadı: ${p.system}`,'warn');continue;}
+        await api('game_platforms','POST',[{
+          game_id:game.id,system_id:sysId,emulator_id:emuId,
+          performance:p.perf,performance_notes:p.perfNotes,
+          cover_url:p.cover||null,region:'USA'
+        }]);
+      }
+      log(`✓ Eklendi: ${g.title}`,'ok');
+      added++;
+    }catch(e){log(`✗ Hata: ${g.title} — ${e.message}`,'err');}
+    await new Promise(r=>setTimeout(r,100));
+  }
+  log(`<b>Tamamlandı: ${added} eklendi, ${skipped} atlandı</b>`,added>0?'ok':'warn');
+}
+
+async function runPerfNotes(){
+  log('<b>⚙️ Perf notları güncelleniyor...</b>','info');
+  for(const u of PERF_UPDATES){
+    // game bul
+    const games=await api(`games?select=id,title,game_platforms(id)&title=ilike.*${encodeURIComponent(u.title)}*`);
+    if(!games||!games.length){log(`⚠ Bulunamadı: ${u.title}`,'warn');continue;}
+    const game=games[0];
+    if(!game.game_platforms?.length){log(`⚠ Platform yok: ${u.title}`,'warn');continue;}
+    for(const p of game.game_platforms){
+      await api(`game_platforms?id=eq.${p.id}`,'PATCH',{performance_notes:u.perfNotes});
+    }
+    log(`✓ Güncellendi: ${game.title}`,'ok');
+    await new Promise(r=>setTimeout(r,80));
+  }
+  log('<b>Perf notları tamamlandı</b>','ok');
+}
+
+async function runTips(){
+  log('<b>💡 Bilgi kupürleri ekleniyor...</b>','info');
+  for(const t of TIPS){
+    // Duplicate kontrolü
+    const ex=await api(`notes?title=ilike.*${encodeURIComponent(t.title.replace(/[🏆🔵📱🎮⬆️]/g,'').trim())}*`);
+    if(ex&&ex.length){log(`⏭ Zaten var: ${t.title}`,'warn');continue;}
+    await api('notes','POST',[{title:t.title,content:t.content,category:t.category}]);
+    log(`✓ Eklendi: ${t.title}`,'ok');
+    await new Promise(r=>setTimeout(r,80));
+  }
+  log('<b>Bilgi kupürleri tamamlandı</b>','ok');
+}
+
+async function runAll(){
+  document.querySelectorAll('button').forEach(b=>b.disabled=true);
+  await runGames();
+  await runPerfNotes();
+  await runTips();
+  document.querySelectorAll('button').forEach(b=>b.disabled=false);
+  log('<b>✅ TÜM İŞLEMLER TAMAMLANDI</b>','ok');
+}
+</script>
+</body>
+</html>

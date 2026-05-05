@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Bilgi Kupürleri — Retroid RP5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#00d4ff;--accent-2:#ff4655;--gold:#ffb347;--good:#2ecc71;--warn:#f39c12;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);min-height:100vh;padding:20px;line-height:1.6}
+header{text-align:center;margin-bottom:24px;padding:22px 20px;background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(255,179,71,.1));border:1px solid var(--border);border-radius:16px}
+h1{font-size:1.9rem;background:linear-gradient(90deg,var(--accent),var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;letter-spacing:-1px}
+.subtitle{color:var(--muted);font-size:.9rem}
+.quick-links{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
+.quick-links a:hover{border-color:var(--accent)}
+.add-section{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:18px}
+.add-section h3{font-size:.88rem;font-weight:700;color:var(--accent);margin-bottom:10px}
+.add-row{display:flex;gap:8px;flex-wrap:wrap}
+input,textarea{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.88rem;font-family:inherit}
+input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+textarea{resize:vertical;min-height:70px;flex:1}
+.btn{background:var(--accent);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700;align-self:flex-end;white-space:nowrap}
+.btn:hover{opacity:.85}
+.search-box{width:100%;max-width:400px;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:.88rem;margin-bottom:16px}
+.search-box:focus{outline:none;border-color:var(--accent)}
+.tips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.tip-card{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .2s;position:relative}
+.tip-card:hover{border-color:var(--accent)}
+.tip-title{font-size:.95rem;font-weight:700;margin-bottom:8px;color:var(--text);padding-right:32px}
+.tip-content{font-size:.85rem;color:var(--muted);line-height:1.7}
+.tip-del{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;opacity:.4;transition:all .2s}
+.tip-del:hover{opacity:1;color:var(--accent-2)}
+.tip-date{font-size:.68rem;color:var(--border);margin-top:10px}
+.empty{text-align:center;padding:50px;color:var(--muted)}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+footer{text-align:center;margin-top:32px;padding:14px;color:var(--muted);font-size:.8rem}
+footer a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>💡 BİLGİ KUPÜRLERI</h1>
+  <p class="subtitle">Optimizasyon ipuçları, emülasyon altın kuralları ve notlar.</p>
+  <div class="quick-links">
+    <a href="index.html">🏠 Hub</a>
+    <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
+    <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatörler</a>
+    <a href="Retroid_Glossary.html">📖 Glossary</a>
+  </div>
+</header>
+
+<div class="add-section">
+  <h3>➕ Yeni Not Ekle</h3>
+  <div class="add-row">
+    <input type="text" id="f-title" placeholder="Başlık..." style="flex:1;min-width:200px">
+  </div>
+  <div class="add-row" style="margin-top:8px">
+    <textarea id="f-content" placeholder="Not içeriği..."></textarea>
+    <button class="btn" onclick="addTip()">Ekle</button>
+  </div>
+</div>
+
+<input type="text" class="search-box" id="search" placeholder="🔍 Ara...">
+
+<div class="tips-grid" id="grid"><div class="loading">⏳ Yükleniyor...</div></div>
+
+<footer>Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a></footer>
+
+<script>
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'}};
+
+let ALL=[], searchQ='';
+
+async function api(ep,method='GET',body=null){
+  const opts={...H,method};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(`${SB}/rest/v1/${ep}`,opts);
+  const t=await r.text();
+  return t?JSON.parse(t):null;
+}
+
+async function load(){
+  ALL=await api('notes?select=*&category=eq.tip&order=created_at.desc')||[];
+  render();
+}
+
+function render(){
+  const list=searchQ?ALL.filter(t=>(t.title+' '+(t.content||'')).toLowerCase().includes(searchQ)):ALL;
+  const grid=document.getElementById('grid');
+  if(!list.length){grid.innerHTML='<div class="empty">Henüz not yok. Yukarıdan ekle!</div>';return;}
+  grid.innerHTML=list.map(t=>`
+    <div class="tip-card">
+      <div class="tip-title">${t.title}</div>
+      <div class="tip-content">${(t.content||'').replace(/\n/g,'<br>')}</div>
+      <div class="tip-date">${new Date(t.created_at).toLocaleDateString('tr-TR')}</div>
+      <button class="tip-del" onclick="deleteTip('${t.id}')" title="Sil">✕</button>
+    </div>`).join('');
+}
+
+async function addTip(){
+  const title=document.getElementById('f-title').value.trim();
+  const content=document.getElementById('f-content').value.trim();
+  if(!title)return;
+  await api('notes','POST',[{title,content,category:'tip'}]);
+  document.getElementById('f-title').value='';
+  document.getElementById('f-content').value='';
+  load();
+}
+
+async function deleteTip(id){
+  if(!confirm('Bu not silinsin mi?'))return;
+  await api(`notes?id=eq.${id}`,'DELETE');
+  ALL=ALL.filter(t=>t.id!==id);
+  render();
+}
+
+document.getElementById('search').addEventListener('input',e=>{searchQ=e.target.value.toLowerCase();render();});
+document.getElementById('f-title').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.ctrlKey)addTip();});
+
+load();
+</script>
+</body>
+</html>
