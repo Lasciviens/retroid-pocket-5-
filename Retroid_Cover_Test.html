@@ -74,9 +74,10 @@ h1{font-size:1.6rem;font-weight:800;color:var(--accent);margin-bottom:4px}
   <div class="panel">
     <div class="panel-title">Oyunlar <span id="count" style="color:var(--accent)"></span></div>
     <input class="search-input" id="search" placeholder="🔍 Ara..." oninput="filterList()">
-    <div class="filter-row" style="display:flex;gap:6px;margin-bottom:8px">
+    <div class="filter-row" style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
       <button class="btn btn-clear" style="flex:0;font-size:.7rem;padding:4px 10px" onclick="showAll()">Tümü</button>
-      <button class="btn btn-clear" style="flex:0;font-size:.7rem;padding:4px 10px;color:var(--bad)" onclick="showMissing()">⚠️ Eksik</button>
+      <button class="btn btn-clear" style="flex:0;font-size:.7rem;padding:4px 10px;color:var(--bad)" onclick="showMissing()">⚠️ Cover Eksik</button>
+      <button class="btn btn-clear" style="flex:0;font-size:.7rem;padding:4px 10px;color:var(--warn)" onclick="showGameLog()">📝 Game Log Dolu</button>
     </div>
     <div class="game-list" id="game-list"></div>
   </div>
@@ -119,7 +120,7 @@ const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'appli
 let ALL=[], filtered=[], selected=null, imgReady=false;
 
 async function load(){
-  const r=await fetch(`${SB}/rest/v1/games?select=id,title,primary_cover_url,game_platforms(systems(name))&order=title`,{headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}});
+  const r=await fetch(`${SB}/rest/v1/games?select=id,title,primary_cover_url,game_log,game_platforms(systems(name))&order=title`,{headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}});
   ALL=await r.json();
   filtered=[...ALL];
   renderList();
@@ -138,7 +139,7 @@ function renderList(){
         :`<div class="game-row-fb">?</div>`}
       <div class="game-row-info">
         <div class="game-row-title">${g.title}</div>
-        <div class="game-row-sys">${sys}</div>
+        <div class="game-row-sys">${sys}${g.game_log?` · <span style="color:var(--warn)">${g.game_log}</span>`:''}</div>
       </div>
       <div class="${hasCover?'has-cover-dot':'no-cover-dot'}"></div>
     </div>`;
@@ -152,6 +153,7 @@ function filterList(){
 }
 function showAll(){filtered=[...ALL];document.getElementById('search').value='';renderList();}
 function showMissing(){filtered=ALL.filter(g=>!g.primary_cover_url);document.getElementById('search').value='';renderList();}
+function showGameLog(){filtered=ALL.filter(g=>g.game_log&&g.game_log.trim()!=='');document.getElementById('search').value='';renderList();}
 
 function selectGame(id){
   selected=ALL.find(g=>g.id===id);
