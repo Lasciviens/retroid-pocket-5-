@@ -2,377 +2,257 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Retroid Co-op Hub — Eşinle Oturum</title>
+<title>Co-op Hub — Retroid RP5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  :root {
-    --bg-1: #0a0e1a;
-    --bg-2: #131829;
-    --bg-3: #1c2238;
-    --accent: #2ecc71;
-    --accent-2: #ff4655;
-    --gold: #ffb347;
-    --text: #e8eaf0;
-    --muted: #8c93a8;
-    --border: #2a3149;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 20px;
-  }
-  header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 36px 20px;
-    background: linear-gradient(135deg, rgba(46,204,113,0.15), rgba(255,179,71,0.1));
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    position: relative;
-    overflow: hidden;
-  }
-  h1 {
-    font-size: 2.6rem;
-    background: linear-gradient(90deg, var(--accent), var(--gold));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 8px;
-    letter-spacing: -1px;
-  }
-  .subtitle { color: var(--muted); font-size: 1rem; }
-  .back-link {
-    display: inline-block;
-    margin-top: 16px;
-    color: var(--accent-2);
-    text-decoration: none;
-    font-size: 0.85rem;
-  }
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#ff4655;--accent-2:#00d4ff;--gold:#ffb347;--good:#2ecc71;--warn:#f39c12;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);min-height:100vh;padding:20px}
+header{text-align:center;margin-bottom:24px;padding:24px 20px;background:linear-gradient(135deg,rgba(255,70,85,.1),rgba(46,204,113,.1));border:1px solid var(--border);border-radius:16px}
+h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--good));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px;margin-bottom:6px}
+.subtitle{color:var(--muted);font-size:.9rem}
+.quick-links{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
+.quick-links a:hover{border-color:var(--accent-2)}
 
-  /* TONIGHTS PICK */
-  .tonights-pick {
-    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
-    border: 2px solid var(--accent);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 30px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 12px 32px rgba(46,204,113,0.2);
-  }
-  .tonights-pick::before {
-    content: 'BU AKŞAM ÖNERİSİ';
-    position: absolute;
-    top: 12px; right: 16px;
-    color: var(--accent);
-    font-size: 0.7rem;
-    letter-spacing: 2px;
-    font-weight: 700;
-  }
-  .pick-content {
-    display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 24px;
-    align-items: center;
-  }
-  .pick-art {
-    width: 180px; height: 240px;
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    object-fit: cover;
-  }
-  .pick-info h2 {
-    font-size: 1.8rem;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
-  .pick-info .pick-meta {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-  }
-  .pick-info p {
-    color: var(--text);
-    line-height: 1.6;
-    margin-bottom: 14px;
-  }
-  .reroll-btn {
-    background: var(--accent);
-    color: var(--bg-1);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: transform 0.2s;
-  }
-  .reroll-btn:hover { transform: scale(1.05); }
+/* RANDOM HERO */
+.random-hero{background:var(--bg-2);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:22px;display:flex;gap:20px;align-items:center}
+.random-cover{width:100px;height:136px;border-radius:10px;object-fit:cover;background:var(--bg-3);flex-shrink:0}
+.random-cover-fb{width:100px;height:136px;border-radius:10px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;font-size:2.5rem;flex-shrink:0}
+.random-info{flex:1}
+.random-label{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--good);font-weight:700;margin-bottom:6px}
+.random-title{font-size:1.4rem;font-weight:800;margin-bottom:6px;line-height:1.2}
+.random-meta{font-size:.85rem;color:var(--muted);margin-bottom:10px}
+.random-desc{font-size:.88rem;color:var(--text);line-height:1.5;margin-bottom:14px}
+.random-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700;transition:all .2s}
+.btn-reroll{background:var(--bg-3);border:1px solid var(--border);color:var(--text)}
+.btn-reroll:hover{border-color:var(--accent-2)}
+.btn-play{background:var(--good);color:#fff}
+.btn-play:hover{opacity:.85}
 
-  /* CATEGORIES */
-  .category {
-    margin-bottom: 30px;
-  }
-  .category-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 14px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--border);
-  }
-  .category-header h3 {
-    font-size: 1.4rem;
-    color: var(--text);
-  }
-  .category-header .icon { font-size: 1.6rem; }
-  .category-header .count {
-    background: var(--bg-3);
-    color: var(--muted);
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    margin-left: auto;
-  }
+/* FILTERS */
+.controls{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.search-box{flex:1;min-width:180px;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:.88rem}
+.search-box:focus{outline:none;border-color:var(--accent-2)}
+.fbtn{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.8rem;cursor:pointer;font-weight:500;transition:all .2s}
+.fbtn:hover{border-color:var(--accent-2)}
+.fbtn.active{background:var(--good);border-color:var(--good);color:#fff}
 
-  /* GRID */
-  .game-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 14px;
-  }
-  .game-card {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    transition: all 0.25s;
-    cursor: pointer;
-    position: relative;
-  }
-  .game-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--accent);
-    box-shadow: 0 8px 20px rgba(46,204,113,0.2);
-  }
-  .boxart-wrapper {
-    position: relative;
-    width: 100%;
-    padding-top: 140%;
-    background: linear-gradient(135deg, var(--bg-3), var(--bg-1));
-    overflow: hidden;
-  }
-  .boxart {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-  }
-  .boxart-fallback {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 12px;
-    background: linear-gradient(135deg, var(--bg-3), var(--bg-1));
-  }
-  .boxart-fallback .fb-system {
-    font-size: 1.6rem;
-    color: var(--accent-2);
-    font-weight: 700;
-  }
-  .boxart-fallback .fb-title {
-    font-size: 0.8rem;
-    color: var(--text);
-    margin-top: 6px;
-  }
-  .iconic-corner {
-    position: absolute;
-    top: 6px; right: 6px;
-    background: var(--gold);
-    color: var(--bg-1);
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    font-weight: 700;
-    z-index: 2;
-  }
-  .card-body { padding: 10px 12px; }
-  .card-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.3;
-    margin-bottom: 6px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    min-height: 2.4em;
-  }
-  .card-system {
-    font-size: 0.7rem;
-    color: var(--accent);
-    font-weight: 600;
-  }
+/* STATS */
+.stats{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.stat-pill{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:.78rem;color:var(--muted)}
+.stat-pill span{font-weight:700;color:var(--good)}
 
-  .badge {
-    font-size: 0.7rem;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  .badge-system { background: var(--bg-3); color: var(--accent); border: 1px solid var(--border); }
-  .badge-genre { background: rgba(255,70,85,0.2); color: var(--accent-2); border: 1px solid rgba(255,70,85,0.3); }
-  .badge-year { background: var(--bg-3); color: var(--muted); border: 1px solid var(--border); }
-
-  footer {
-    text-align: center;
-    margin-top: 40px;
-    padding: 20px;
-    color: var(--muted);
-    font-size: 0.85rem;
-  }
+/* GRID */
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.game-card{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s;display:flex;flex-direction:column}
+.game-card:hover{transform:translateY(-3px);border-color:var(--good);box-shadow:0 8px 20px rgba(46,204,113,.15)}
+.boxart-wrap{position:relative;width:100%;padding-top:133%;background:var(--bg-3);overflow:hidden}
+.boxart{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.game-card:hover .boxart{transform:scale(1.05)}
+.boxart-fb{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center}
+.boxart-fb .sys{font-size:1.6rem;color:var(--accent-2);font-weight:700}
+.boxart-fb .ttl{font-size:.75rem;color:var(--text);margin-top:4px;line-height:1.3}
+.coop-badge{position:absolute;top:6px;left:6px;background:var(--good);color:#fff;padding:2px 7px;border-radius:4px;font-size:.6rem;font-weight:700;text-transform:uppercase;z-index:2}
+.iconic-badge{position:absolute;top:6px;right:6px;background:linear-gradient(135deg,var(--gold),#ff8c00);color:var(--bg-1);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;z-index:2}
+.perf-badge{position:absolute;bottom:6px;right:6px;padding:2px 6px;border-radius:4px;font-size:.6rem;font-weight:700;text-transform:uppercase;z-index:2;backdrop-filter:blur(4px)}
+.perf-badge.good{background:rgba(46,204,113,.85);color:#fff}
+.perf-badge.warn{background:rgba(243,156,18,.85);color:#fff}
+.card-body{padding:10px 12px 12px;flex:1;display:flex;flex-direction:column}
+.card-title{font-size:.85rem;font-weight:700;margin-bottom:5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.2em}
+.card-meta{font-size:.7rem;color:var(--muted);margin-bottom:4px}
+.card-coop-note{font-size:.72rem;color:var(--good);line-height:1.3;margin-top:auto;padding-top:6px;border-top:1px solid var(--border)}
+.status-btns{display:flex;gap:3px;margin-top:6px}
+.sbtn{flex:1;background:var(--bg-3);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 2px;font-size:.55rem;cursor:pointer;transition:all .2s;text-transform:uppercase;font-weight:700}
+.sbtn.active.playing{background:var(--warn);color:#fff;border-color:var(--warn)}
+.sbtn.active.completed{background:var(--good);color:#fff;border-color:var(--good)}
+.empty{text-align:center;padding:60px;color:var(--muted);grid-column:1/-1}
+.loading{text-align:center;padding:60px;color:var(--muted);grid-column:1/-1}
+footer{text-align:center;margin-top:32px;padding:14px;color:var(--muted);font-size:.8rem}
+footer a{color:var(--accent-2);text-decoration:none}
 </style>
 </head>
 <body>
 <header>
-  <h1>🎮 CO-OP HUB</h1>
-  <p class="subtitle">Eşinle oynayabileceğin tüm oyunlar — split-screen, party, versus</p>
-  <a href="Retroid_Library_Dashboard.html" class="back-link">← Ana kütüphaneye dön</a>
+  <h1>👫 CO-OP HUB</h1>
+  <p class="subtitle">Eşinle bu akşam ne oynayacaksın?</p>
+  <div class="quick-links">
+    <a href="index.html">🏠 Hub</a>
+    <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
+    <a href="Retroid_Queue.html">🎮 Oynama Sırası</a>
+  </div>
 </header>
 
-<div class="tonights-pick" id="tonights-pick"></div>
+<!-- RANDOM HERO -->
+<div class="random-hero" id="hero">
+  <div class="random-cover-fb" id="hero-cover-fb">👫</div>
+  <div class="random-info">
+    <div class="random-label">🎲 Bu Akşam Önerisi</div>
+    <div class="random-title" id="hero-title">Yükleniyor...</div>
+    <div class="random-meta" id="hero-meta"></div>
+    <div class="random-desc" id="hero-desc"></div>
+    <div class="random-actions">
+      <button class="btn btn-reroll" onclick="reroll()">🎲 Başka Öneri</button>
+      <button class="btn btn-play" onclick="markHeroPlaying()">▶ Oynuyor</button>
+    </div>
+  </div>
+</div>
 
-<div id="categories"></div>
+<div class="stats" id="stats"></div>
 
-<footer>
-  <p>Boxart: <a style="color:var(--accent-2);" href="https://github.com/libretro-thumbnails" target="_blank">libretro-thumbnails</a></p>
-</footer>
+<div class="controls">
+  <input type="text" class="search-box" id="search" placeholder="🔍 Oyun ara...">
+  <select class="fbtn" id="f-sys"><option value="">Tüm Sistemler</option></select>
+  <select class="fbtn" id="f-genre"><option value="">Tüm Türler</option></select>
+  <select class="fbtn" id="f-status">
+    <option value="">Tüm Durumlar</option>
+    <option value="backlog">Backlog</option>
+    <option value="playing">Oynuyor</option>
+    <option value="completed">Bitti</option>
+  </select>
+  <button class="fbtn" id="f-reset" onclick="resetFilters()">↺ Sıfırla</button>
+</div>
+
+<div class="game-grid" id="grid"><div class="loading">⏳ Yükleniyor...</div></div>
+
+<footer>Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a></footer>
 
 <script>
-const T = (system, title) =>
-  `https://raw.githubusercontent.com/libretro-thumbnails/${system}/master/Named_Boxarts/${encodeURIComponent(title)}.png`;
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}};
 
-const coopGames = [
-  // Co-op Adventure / RPG
-  { title: "New Super Mario Bros. Wii", system: "Wii", genre: "Platformer", year: 2009, iconic: true, players: "2-4P", category: "platform", img: T("Nintendo_-_Wii", "New Super Mario Bros. Wii (USA)"), info: "TOP TIER co-op. Eşinle aynı ekranda zıplayarak ilerlersin. Birbirini almak/atmak çok eğlenceli. Klasik Mario formülü, modern co-op." },
-  { title: "The Legend of Zelda: Four Swords Adventures", system: "GameCube", genre: "Adventure", year: 2004, iconic: false, players: "2-4P", category: "adventure", img: T("Nintendo_-_GameCube", "Legend of Zelda, The - Four Swords Adventures (USA)"), info: "Co-op Zelda — nadir bir Zelda formülü. Birlikte bulmaca çözer, savaşırsınız." },
-  { title: "Pikmin 2", system: "GameCube", genre: "Strategy", year: 2004, iconic: true, players: "2P", category: "strategy", img: T("Nintendo_-_GameCube", "Pikmin 2 (USA)"), info: "Olimar ve Louie — iki başkahraman, daha derin mekanikler. Co-op mode ekstra eğlenceli." },
+let ALL=[], heroGame=null, filters={search:'',sys:'',genre:'',status:''};
 
-  // Racing
-  { title: "Mario Kart: Double Dash!!", system: "GameCube", genre: "Racing", year: 2003, iconic: true, players: "2P kart", category: "racing", img: T("Nintendo_-_GameCube", "Mario Kart - Double Dash!! (USA)"), info: "Tek karta iki karakter — biri sürer, biri item atar. EŞSİZ co-op deneyimi, başka hiçbir MK'da yok." },
-  { title: "Mario Kart Wii", system: "Wii", genre: "Racing", year: 2008, iconic: true, players: "2P split", category: "racing", img: T("Nintendo_-_Wii", "Mario Kart Wii (USA)"), info: "Bisiklet/motor, 12 yarışçı. Split-screen 2P çok smooth." },
-  { title: "Mario Kart 64", system: "N64", genre: "Racing", year: 1996, iconic: true, players: "2P split", category: "racing", img: T("Nintendo_-_Nintendo_64", "Mario Kart 64 (USA)"), info: "Klasik MK. Battle Mode efsane." },
-  { title: "Mario Kart DS", system: "DS", genre: "Racing", year: 2005, iconic: false, players: "2P wireless", category: "racing", img: T("Nintendo_-_Nintendo_DS", "Mario Kart DS (USA)"), info: "DS'in lokal multiplayer'ı RP5'te emulation tek cihazda kısıtlı, ama bazı emülatörler destekler." },
-  { title: "Crash Team Racing", system: "PS1", genre: "Racing", year: 1999, iconic: true, players: "2P split", category: "racing", img: T("Sony_-_PlayStation", "Crash Team Racing (USA)"), info: "PS1'in en iyi kart yarışı — Mario Kart'ı zorlayan tek seri. Eşinle ZORUNLU." },
-
-  // Fighting
-  { title: "Tekken 3", system: "PS1", genre: "Fighting", year: 1998, iconic: true, players: "2P versus", category: "fighting", img: T("Sony_-_PlayStation", "Tekken 3 (USA)"), info: "Tüm zamanların en iyi dövüşü. PS1'in zirvesi." },
-  { title: "Tekken 5", system: "PS2", genre: "Fighting", year: 2005, iconic: true, players: "2P versus", category: "fighting", img: T("Sony_-_PlayStation_2", "Tekken 5 (USA)"), info: "PS2 Tekken'in zirvesi, RP5'te smooth." },
-  { title: "Tekken: Dark Resurrection", system: "PSP", genre: "Fighting", year: 2006, iconic: true, players: "2P versus", category: "fighting", img: T("Sony_-_PlayStation_Portable", "Tekken - Dark Resurrection (USA)"), info: "PSP dövüşünün şampiyonu." },
-  { title: "Smash Bros Melee", system: "GameCube", genre: "Fighting", year: 2001, iconic: true, players: "2-4P", category: "fighting", img: T("Nintendo_-_GameCube", "Super Smash Bros. Melee (USA) (En,Ja)"), info: "Smash'in altın standardı. 4P local — eşinle bayağı eğlenir." },
-  { title: "Soulcalibur II", system: "GameCube", genre: "Fighting", year: 2003, iconic: true, players: "2P versus", category: "fighting", img: T("Nintendo_-_GameCube", "SoulCalibur II (USA)"), info: "GameCube'da Link karakteri var. Silahlı dövüşün zirvesi." },
-
-  // Party
-  { title: "Mario Party 7", system: "GameCube", genre: "Party", year: 2005, iconic: false, players: "2-8P", category: "party", img: T("Nintendo_-_GameCube", "Mario Party 7 (USA)"), info: "8 player'a kadar. Mini-game cenneti. Eşinle takım modu var." },
-  { title: "Mario Party 4", system: "GameCube", genre: "Party", year: 2002, iconic: false, players: "2-4P", category: "party", img: T("Nintendo_-_GameCube", "Mario Party 4 (USA)"), info: "İlk GameCube Mario Party. Klasik, sade." },
-  { title: "42 All-Time Classics", system: "DS", genre: "Party", year: 2005, iconic: true, players: "2-8P wireless", category: "party", img: T("Nintendo_-_Nintendo_DS", "42 All-Time Classics (Europe) (En,Fr,De,Es,It)"), info: "Satranç, Mahjong, Bowling — 42 oyun. Eşinle her tip oyun." },
-
-  // FPS / Sports
-  { title: "TimeSplitters 2", system: "PS2", genre: "FPS", year: 2002, iconic: true, players: "2-4P split", category: "fps", img: T("Sony_-_PlayStation_2", "TimeSplitters 2 (USA)"), info: "Split-screen FPS multiplayer'ın en iyilerinden. Bot ekleyebilirsin." },
-  { title: "Tony Hawk's Pro Skater 3", system: "PS2", genre: "Sports", year: 2001, iconic: true, players: "2P split", category: "sports", img: T("Sony_-_PlayStation_2", "Tony Hawk's Pro Skater 3 (USA)"), info: "Soundtrack efsane. HORSE modu rekabetli, eğlenceli." },
-
-  // Sonic Battle
-  { title: "Sonic Adventure 2: Battle", system: "GameCube", genre: "Platformer", year: 2001, iconic: true, players: "2P", category: "platform", img: T("Nintendo_-_GameCube", "Sonic Adventure 2 Battle (USA)"), info: "Battle modu özel — kartopu, yarış, dövüş mini-oyunları + Chao Garden." },
-  { title: "Sonic the Hedgehog 2", system: "Genesis", genre: "Platformer", year: 1992, iconic: true, players: "2P co-op/versus", category: "platform", img: T("Sega_-_Mega_Drive_-_Genesis", "Sonic The Hedgehog 2 (World) (Rev A)"), info: "Sonic + Tails co-op, ya da split-screen versus yarış." },
-];
-
-// Categories
-const categories = [
-  { id: 'racing', icon: '🏎️', name: 'Yarış (Racing)' },
-  { id: 'fighting', icon: '🥊', name: 'Dövüş (Fighting)' },
-  { id: 'platform', icon: '🍄', name: 'Platformer' },
-  { id: 'party', icon: '🎉', name: 'Parti (Party Games)' },
-  { id: 'adventure', icon: '⚔️', name: 'Macera (Adventure)' },
-  { id: 'strategy', icon: '🧠', name: 'Strateji' },
-  { id: 'fps', icon: '🎯', name: 'FPS' },
-  { id: 'sports', icon: '⚽', name: 'Spor' },
-];
-
-// Tonight's Pick (random from iconic co-op)
-function pickTonight() {
-  const candidates = coopGames.filter(g => g.iconic);
-  const pick = candidates[Math.floor(Math.random() * candidates.length)];
-  document.getElementById('tonights-pick').innerHTML = `
-    <div class="pick-content">
-      <img class="pick-art" src="${pick.img}" alt="${pick.title}" onerror="this.style.opacity='0.2'">
-      <div class="pick-info">
-        <h2>🎲 ${pick.title}</h2>
-        <div class="pick-meta">
-          <span class="badge badge-system">${pick.system}</span>
-          <span class="badge badge-genre">${pick.genre}</span>
-          <span class="badge badge-year">${pick.year}</span>
-          <span class="badge" style="background:var(--accent);color:var(--bg-1);">${pick.players}</span>
-        </div>
-        <p>${pick.info}</p>
-        <button class="reroll-btn" onclick="pickTonight()">🎲 Başka bir öneri</button>
-      </div>
-    </div>
-  `;
+async function api(ep,method='GET',body=null){
+  const opts={...H,method,headers:{...H.headers,'Content-Type':'application/json'}};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(`${SB}/rest/v1/${ep}`,opts);
+  const t=await r.text();
+  return t?JSON.parse(t):null;
 }
 
-// Render categories
-function renderCategories() {
-  document.getElementById('categories').innerHTML = categories.map(cat => {
-    const games = coopGames.filter(g => g.category === cat.id);
-    if (games.length === 0) return '';
-    return `
-      <div class="category">
-        <div class="category-header">
-          <span class="icon">${cat.icon}</span>
-          <h3>${cat.name}</h3>
-          <span class="count">${games.length} oyun</span>
-        </div>
-        <div class="game-grid">
-          ${games.map(g => `
-            <div class="game-card" title="${g.info.replace(/"/g, '&quot;')}">
-              <div class="boxart-wrapper">
-                <img class="boxart" src="${g.img}" alt="${g.title}" loading="lazy"
-                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                <div class="boxart-fallback">
-                  <div class="fb-system">${g.system}</div>
-                  <div class="fb-title">${g.title}</div>
-                </div>
-                ${g.iconic ? '<div class="iconic-corner">★</div>' : ''}
-              </div>
-              <div class="card-body">
-                <div class="card-title">${g.title}</div>
-                <div class="card-system">${g.system} · ${g.players}</div>
-              </div>
-            </div>
-          `).join('')}
+async function load(){
+  const games=await api('games?select=id,title,release_year,is_coop,coop_notes,play_status,rating,is_iconic,description,series(name),game_genres(genres(name)),game_platforms(cover_url,performance,systems(name))&is_coop=eq.true&order=title');
+  ALL=(games||[]).map(g=>({
+    id:g.id,title:g.title,year:g.release_year,coopNotes:g.coop_notes,
+    status:g.play_status||'backlog',rating:g.rating,iconic:g.is_iconic,desc:g.description,
+    series:g.series?.name||null,
+    genres:(g.game_genres||[]).map(gg=>gg.genres?.name).filter(Boolean),
+    platforms:(g.game_platforms||[]).map(p=>({system:p.systems?.name,perf:p.performance,cover:p.cover_url}))
+  }));
+
+  // Populate filters
+  const fSys=document.getElementById('f-sys');
+  const fGen=document.getElementById('f-genre');
+  [...new Set(ALL.flatMap(g=>g.platforms.map(p=>p.system)).filter(Boolean))].sort().forEach(s=>fSys.innerHTML+=`<option value="${s}">${s}</option>`);
+  [...new Set(ALL.flatMap(g=>g.genres))].sort().forEach(g=>fGen.innerHTML+=`<option value="${g}">${g}</option>`);
+
+  // Stats
+  document.getElementById('stats').innerHTML=`
+    <div class="stat-pill">Co-op oyun: <span>${ALL.length}</span></div>
+    <div class="stat-pill">Oynandı: <span>${ALL.filter(g=>g.status==='completed').length}</span></div>
+    <div class="stat-pill">Sırada: <span>${ALL.filter(g=>g.status==='playing').length}</span></div>`;
+
+  reroll();
+  render();
+}
+
+function getFiltered(){
+  return ALL.filter(g=>{
+    if(filters.search&&!g.title.toLowerCase().includes(filters.search))return false;
+    if(filters.sys&&!g.platforms.some(p=>p.system===filters.sys))return false;
+    if(filters.genre&&!g.genres.includes(filters.genre))return false;
+    if(filters.status&&g.status!==filters.status)return false;
+    return true;
+  });
+}
+
+function reroll(){
+  const pool=getFiltered().filter(g=>g.status!=='completed');
+  if(!pool.length)return;
+  heroGame=pool[Math.floor(Math.random()*pool.length)];
+  const cover=heroGame.platforms[0]?.cover||'';
+  const sys=heroGame.platforms.map(p=>p.system).filter(Boolean).join(' / ');
+  const heroEl=document.getElementById('hero');
+  heroEl.querySelector('.random-cover-fb')?.remove();
+  heroEl.querySelector('img')?.remove();
+  if(cover){
+    const img=document.createElement('img');
+    img.className='random-cover';
+    img.src=cover;
+    img.onerror=()=>{img.style.display='none'};
+    heroEl.prepend(img);
+  }else{
+    const fb=document.createElement('div');
+    fb.className='random-cover-fb';
+    fb.textContent='👫';
+    heroEl.prepend(fb);
+  }
+  document.getElementById('hero-title').textContent=heroGame.title+(heroGame.iconic?' ★':'');
+  document.getElementById('hero-meta').textContent=`${sys}${heroGame.year?' · '+heroGame.year:''}${heroGame.series?' · '+heroGame.series:''}`;
+  document.getElementById('hero-desc').textContent=heroGame.coopNotes||heroGame.desc||'';
+}
+
+async function markHeroPlaying(){
+  if(!heroGame)return;
+  heroGame.status='playing';
+  await api(`games?id=eq.${heroGame.id}`,'PATCH',{play_status:'playing'});
+  render();
+}
+
+function render(){
+  const list=getFiltered();
+  const grid=document.getElementById('grid');
+  if(!list.length){grid.innerHTML='<div class="empty">Co-op oyun bulunamadı.</div>';return;}
+  grid.innerHTML=list.map(g=>{
+    const cover=g.platforms[0]?.cover||'';
+    const sys=g.platforms.map(p=>p.system).filter(Boolean).join(', ');
+    const perf=g.platforms[0]?.perf||'good';
+    return`<div class="game-card" onclick="">
+      <div class="boxart-wrap">
+        ${cover?`<img class="boxart" src="${cover}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="boxart-fb" style="display:none"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`:`<div class="boxart-fb" style="display:flex"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`}
+        <div class="coop-badge">2P</div>
+        ${g.iconic?'<div class="iconic-badge">★</div>':''}
+        <div class="perf-badge ${perf}">${perf==='good'?'✓ Smooth':'⚠ Tweak'}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${g.title}</div>
+        <div class="card-meta">${sys}${g.year?' · '+g.year:''}</div>
+        ${g.coopNotes?`<div class="card-coop-note">👫 ${g.coopNotes}</div>`:''}
+        <div class="status-btns" onclick="event.stopPropagation()">
+          <button class="sbtn${g.status==='playing'?' active playing':''}" onclick="setStatus('${g.id}','playing')">Oynuyor</button>
+          <button class="sbtn${g.status==='completed'?' active completed':''}" onclick="setStatus('${g.id}','completed')">Bitti</button>
         </div>
       </div>
-    `;
+    </div>`;
   }).join('');
 }
 
-pickTonight();
-renderCategories();
+async function setStatus(id,status){
+  const g=ALL.find(x=>x.id===id);
+  if(!g)return;
+  g.status=status;
+  render();
+  await api(`games?id=eq.${id}`,'PATCH',{play_status:status});
+}
+
+function resetFilters(){
+  filters={search:'',sys:'',genre:'',status:''};
+  document.getElementById('search').value='';
+  document.getElementById('f-sys').value='';
+  document.getElementById('f-genre').value='';
+  document.getElementById('f-status').value='';
+  render();
+}
+
+document.getElementById('search').addEventListener('input',e=>{filters.search=e.target.value.toLowerCase();render();});
+document.getElementById('f-sys').addEventListener('change',e=>{filters.sys=e.target.value;render();});
+document.getElementById('f-genre').addEventListener('change',e=>{filters.genre=e.target.value;render();});
+document.getElementById('f-status').addEventListener('change',e=>{filters.status=e.target.value;render();});
+
+load();
 </script>
 </body>
 </html>

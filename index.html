@@ -12,6 +12,7 @@
     --accent: #ff4655;
     --accent-2: #00d4ff;
     --gold: #ffb347;
+    --good: #2ecc71;
     --text: #e8eaf0;
     --muted: #8c93a8;
     --border: #2a3149;
@@ -33,7 +34,6 @@
     overflow: hidden;
   }
 
-  /* Animated background grid */
   body::before {
     content: '';
     position: fixed;
@@ -46,7 +46,6 @@
     pointer-events: none;
   }
 
-  /* Glow orbs */
   .orb {
     position: fixed;
     border-radius: 50%;
@@ -62,17 +61,14 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 860px;
+    max-width: 900px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 40px;
+    gap: 32px;
   }
 
-  /* Header */
-  header {
-    text-align: center;
-  }
+  header { text-align: center; }
 
   .logo {
     display: flex;
@@ -83,173 +79,93 @@
   }
 
   .logo-icon {
-    width: 52px;
-    height: 52px;
+    width: 52px; height: 52px;
     background: linear-gradient(135deg, var(--accent), #ff6b35);
     border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-size: 26px;
     box-shadow: 0 0 24px rgba(255,70,85,0.4);
   }
 
-  h1 {
-    font-size: clamp(22px, 4vw, 34px);
-    font-weight: 800;
-    letter-spacing: -0.5px;
-  }
-
+  h1 { font-size: clamp(22px, 4vw, 34px); font-weight: 800; letter-spacing: -0.5px; }
   h1 span {
     background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .subtitle { color: var(--muted); font-size: 14px; letter-spacing: 0.5px; }
+
+  .device-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(90deg, rgba(255,70,85,0.1), rgba(0,212,255,0.1));
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 999px; padding: 6px 16px;
+    font-size: 12px; color: var(--accent-2); font-weight: 600;
+    margin-top: 10px;
   }
 
-  .subtitle {
-    color: var(--muted);
-    font-size: 14px;
-    letter-spacing: 0.5px;
+  /* Live stats bar */
+  .status-bar {
+    display: flex; align-items: center; gap: 20px;
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 22px;
+    width: 100%; flex-wrap: wrap; justify-content: center;
   }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .stat-num {
+    font-size: 22px; font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    min-width: 32px; text-align: center;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .divider { width: 1px; height: 32px; background: var(--border); }
 
-  /* Cards grid */
+  /* Nav grid */
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    width: 100%;
+    gap: 14px; width: 100%;
   }
 
   .card {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px;
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer;
   }
-
   .card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: linear-gradient(135deg, var(--card-color, var(--accent)) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    border-radius: inherit;
+    opacity: 0; transition: opacity 0.2s ease; border-radius: inherit;
   }
-
   .card:hover {
     border-color: var(--card-color, var(--accent));
     transform: translateY(-3px);
     box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--card-color, var(--accent));
   }
-
   .card:hover::before { opacity: 0.06; }
 
-  .card-icon {
-    font-size: 28px;
-    line-height: 1;
-  }
-
-  .card-title {
-    font-size: 16px;
-    font-weight: 700;
-  }
-
-  .card-desc {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
+  .card-icon { font-size: 26px; line-height: 1; }
+  .card-title { font-size: 15px; font-weight: 700; }
+  .card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; flex: 1; }
   .card-badge {
-    margin-top: auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--card-color, var(--accent));
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
+    margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600; color: var(--card-color, var(--accent));
+    letter-spacing: 0.5px; text-transform: uppercase;
   }
+  .card-badge::after { content: '→'; }
 
-  .card-badge::after {
-    content: '→';
+  /* Section labels */
+  .section-label {
+    width: 100%; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--muted); padding: 0 4px;
+    display: flex; align-items: center; gap: 10px;
   }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* Status bar */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 22px;
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .stat-num {
-    font-size: 22px;
-    font-weight: 800;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .stat-label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .divider {
-    width: 1px;
-    height: 32px;
-    background: var(--border);
-  }
-
-  /* RP5 badge */
-  .device-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: linear-gradient(90deg, rgba(255,70,85,0.1), rgba(0,212,255,0.1));
-    border: 1px solid rgba(0,212,255,0.2);
-    border-radius: 999px;
-    padding: 6px 16px;
-    font-size: 12px;
-    color: var(--accent-2);
-    font-weight: 600;
-  }
-
-  footer {
-    color: var(--muted);
-    font-size: 11px;
-    text-align: center;
-    margin-top: 8px;
-  }
+  footer { color: var(--muted); font-size: 11px; text-align: center; }
+  footer a { color: var(--accent-2); text-decoration: none; }
 
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; }
@@ -269,104 +185,132 @@
       <div class="logo-icon">🎮</div>
       <h1>Retroid Pocket 5 <span>Hub</span></h1>
     </div>
-    <div class="device-badge">⚡ Furkan's Elite Gaming Library</div>
-    <p class="subtitle" style="margin-top:10px">Tüm araçlar, bir arada.</p>
+    <p class="subtitle">Elite Retro Gaming Library</p>
+    <div class="device-badge">⚡ Furkan's Personal Collection</div>
   </header>
 
-  <!-- Stats -->
+  <!-- Live stats from Supabase -->
   <div class="status-bar">
-    <div class="stat">
-      <span class="stat-num">95+</span>
-      <span class="stat-label">Oyun</span>
-    </div>
+    <div class="stat"><span class="stat-num" id="s-total">—</span><span class="stat-label">Oyun</span></div>
     <div class="divider"></div>
-    <div class="stat">
-      <span class="stat-num">19</span>
-      <span class="stat-label">Co-op</span>
-    </div>
+    <div class="stat"><span class="stat-num" id="s-coop" style="background:linear-gradient(90deg,var(--good),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">—</span><span class="stat-label">Co-op</span></div>
     <div class="divider"></div>
-    <div class="stat">
-      <span class="stat-num">10</span>
-      <span class="stat-label">Seri</span>
-    </div>
+    <div class="stat"><span class="stat-num" id="s-playing" style="background:linear-gradient(90deg,var(--gold),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">—</span><span class="stat-label">Oynuyor</span></div>
     <div class="divider"></div>
-    <div class="stat">
-      <span class="stat-num">17</span>
-      <span class="stat-label">Sistem</span>
-    </div>
+    <div class="stat"><span class="stat-num" id="s-done" style="background:linear-gradient(90deg,var(--good),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">—</span><span class="stat-label">Bitti</span></div>
     <div class="divider"></div>
-    <div class="stat">
-      <span class="stat-num">12</span>
-      <span class="stat-label">Terim</span>
-    </div>
+    <div class="stat"><span class="stat-num" id="s-wish" style="background:linear-gradient(90deg,#a855f7,var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">—</span><span class="stat-label">İstek</span></div>
+    <div class="divider"></div>
+    <div class="stat"><span class="stat-num" id="s-series">—</span><span class="stat-label">Seri</span></div>
   </div>
 
-  <!-- Nav cards -->
+  <!-- Kütüphane -->
+  <div class="section-label">Kütüphane</div>
   <div class="grid">
 
     <a class="card" href="Retroid_Library_Dashboard.html" style="--card-color: #ff4655;">
       <div class="card-icon">📚</div>
       <div class="card-title">Ana Kütüphane</div>
-      <div class="card-desc">95+ oyun, boxart, filtre, arama ve oynanma durumu takibi.</div>
+      <div class="card-desc">Tüm oyunlar. Filtrele, sırala, durumunu takip et. Supabase senkronize.</div>
       <div class="card-badge">Aç</div>
     </a>
 
-    <a class="card" href="Retroid_Coop_Dashboard.html" style="--card-color: #ff6b6b;">
+    <a class="card" href="Retroid_Coop_Dashboard.html" style="--card-color: #2ecc71;">
       <div class="card-icon">👫</div>
-      <div class="card-title">Co-op Seçici</div>
-      <div class="card-desc">Eşinle bu akşam ne oynayacaksın? 19 oyun, rastgele öneri.</div>
+      <div class="card-title">Co-op Hub</div>
+      <div class="card-desc">Eşinle oynayabileceğin oyunlar. Rastgele öneri, durum takibi.</div>
       <div class="card-badge">Aç</div>
     </a>
 
     <a class="card" href="Retroid_Series_Roadmap.html" style="--card-color: #f39c12;">
       <div class="card-icon">🗺️</div>
-      <div class="card-title">Seri Roadmap</div>
-      <div class="card-desc">10 efsane serinin baştan sona yol haritası. Zelda, Mario, GoW ve daha fazlası.</div>
+      <div class="card-title">Seri Yol Haritası</div>
+      <div class="card-desc">Her serinin kronolojik oyun listesi. Nereden başlamalısın?</div>
       <div class="card-badge">Aç</div>
     </a>
+
+  </div>
+
+  <!-- Takip -->
+  <div class="section-label">Takip</div>
+  <div class="grid">
+
+    <a class="card" href="Retroid_Queue.html" style="--card-color: #ffb347;">
+      <div class="card-icon">🎮</div>
+      <div class="card-title">Oynama Sırası</div>
+      <div class="card-desc">Sıradaki oyunlar. Kütüphaneden ekle, sürükle-bırak ile sırala.</div>
+      <div class="card-badge">Aç</div>
+    </a>
+
+    <a class="card" href="Retroid_Request_Tracker.html" style="--card-color: #a855f7;">
+      <div class="card-icon">♡</div>
+      <div class="card-title">İstek Listesi</div>
+      <div class="card-desc">Eklemek istediğin oyunlar, özellikler ve notlar. Öncelik ile takip et.</div>
+      <div class="card-badge">Aç</div>
+    </a>
+
+    <a class="card" href="admin.html" style="--card-color: #00d4ff;">
+      <div class="card-icon">➕</div>
+      <div class="card-title">Oyun Ekle</div>
+      <div class="card-desc">Kütüphaneye yeni oyun ekle, mevcut oyunları düzenle veya sil.</div>
+      <div class="card-badge">Aç</div>
+    </a>
+
+  </div>
+
+  <!-- Referans -->
+  <div class="section-label">Referans</div>
+  <div class="grid">
 
     <a class="card" href="Retroid_Emulator_Matrix.html" style="--card-color: #00d4ff;">
       <div class="card-icon">⚙️</div>
       <div class="card-title">Emülatör Matrisi</div>
-      <div class="card-desc">17 sistem için en iyi emülatör. JIT, Vulkan, core vs standalone detayları.</div>
+      <div class="card-desc">Hangi sistem için hangi emülatör? Standalone vs RetroArch core.</div>
       <div class="card-badge">Aç</div>
     </a>
 
     <a class="card" href="Retroid_Glossary.html" style="--card-color: #a855f7;">
       <div class="card-icon">📖</div>
       <div class="card-title">Teknik Sözlük</div>
-      <div class="card-desc">ROM, BIOS, JIT, Scraping... 12 terim, yazılımcı mantığıyla detaylı açıklamalar.</div>
+      <div class="card-desc">ROM, BIOS, JIT, Scraping... Yazılımcı mantığıyla detaylı açıklamalar.</div>
       <div class="card-badge">Aç</div>
     </a>
 
     <a class="card" href="ROM_Folder_Guide.md" style="--card-color: #2ecc71;">
       <div class="card-icon">📁</div>
       <div class="card-title">ROM Klasör Rehberi</div>
-      <div class="card-desc">Hangi oyun hangi klasöre, hangi emülatörle açılır. Format ve BIOS notları.</div>
-      <div class="card-badge">Aç</div>
-    </a>
-
-    <a class="card" href="Retroid_Request_Tracker.html" style="--card-color: #00d4ff;">
-      <div class="card-icon">📋</div>
-      <div class="card-title">İstek Takibi</div>
-      <div class="card-desc">Eklemek istediğin oyunlar, emülatör ayarları ve özellikler. Öncelik ve kategori ile takip et.</div>
-      <div class="card-badge">Aç</div>
-    </a>
-
-    <a class="card" href="Retroid_Queue.html" style="--card-color: #ffb347;">
-      <div class="card-icon">🎮</div>
-      <div class="card-title">Oynama Sırası</div>
-      <div class="card-desc">Sıradaki oyunların listesi. Sürükle-bırak ile sırala, kütüphaneden veya aramadan ekle.</div>
+      <div class="card-desc">Hangi oyun hangi klasöre gider? Format, BIOS ve emülatör notları.</div>
       <div class="card-badge">Aç</div>
     </a>
 
   </div>
 
   <footer>
-    Son güncelleme: Mayıs 2026 &nbsp;·&nbsp; Retroid Pocket 5 &nbsp;·&nbsp; Snapdragon 865
+    <a href="https://github.com/Lasciviens/retroid-pocket-5-" target="_blank">GitHub</a>
+    &nbsp;·&nbsp; Retroid Pocket 5 · Snapdragon 865
   </footer>
 
 </div>
+
+<script>
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}};
+
+async function loadStats(){
+  const [games,series]=await Promise.all([
+    fetch(`${SB}/rest/v1/games?select=id,is_coop,play_status`,H).then(r=>r.json()),
+    fetch(`${SB}/rest/v1/series?select=id`,H).then(r=>r.json()),
+  ]);
+  document.getElementById('s-total').textContent=games.length;
+  document.getElementById('s-coop').textContent=games.filter(g=>g.is_coop).length;
+  document.getElementById('s-playing').textContent=games.filter(g=>g.play_status==='playing').length;
+  document.getElementById('s-done').textContent=games.filter(g=>g.play_status==='completed').length;
+  document.getElementById('s-wish').textContent=games.filter(g=>g.play_status==='wishlist').length;
+  document.getElementById('s-series').textContent=series.length;
+}
+loadStats();
+</script>
 
 </body>
 </html>
