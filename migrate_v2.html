@@ -557,36 +557,36 @@ async function runMigration() {
   logEl.innerHTML = '';
 
   try {
-    // STEP 1: Systems
-    log('<span class="step">═══ ADIM 1/5: Sistemler ═══</span>');
-    const sysResult = await api('systems', 'POST', SYSTEMS);
+    // STEP 1: Systems — sadece oku, yükleme yok
+    log('<span class="step">═══ ADIM 1/5: Sistemler okunuyor ═══</span>');
+    const sysResult = await api('systems?select=id,name');
     const sysMap = {};
     sysResult.forEach(s => { sysMap[s.name] = s.id; });
-    log(`✓ ${sysResult.length} sistem yüklendi`, 'ok');
+    log(`✓ ${sysResult.length} sistem bulundu`, 'ok');
     setProgress(10);
 
-    // STEP 2: Genres
-    log('<span class="step">═══ ADIM 2/5: Türler ═══</span>');
-    const genResult = await api('genres', 'POST', GENRES);
+    // STEP 2: Genres — sadece oku
+    log('<span class="step">═══ ADIM 2/5: Türler okunuyor ═══</span>');
+    const genResult = await api('genres?select=id,name');
     const genMap = {};
     genResult.forEach(g => { genMap[g.name] = g.id; });
-    log(`✓ ${genResult.length} tür yüklendi`, 'ok');
+    log(`✓ ${genResult.length} tür bulundu`, 'ok');
     setProgress(20);
 
-    // STEP 3: Series
-    log('<span class="step">═══ ADIM 3/5: Seriler ═══</span>');
-    const serResult = await api('series', 'POST', SERIES);
+    // STEP 3: Series — sadece oku
+    log('<span class="step">═══ ADIM 3/5: Seriler okunuyor ═══</span>');
+    const serResult = await api('series?select=id,name');
     const serMap = {};
     serResult.forEach(s => { serMap[s.name] = s.id; });
-    log(`✓ ${serResult.length} seri yüklendi`, 'ok');
+    log(`✓ ${serResult.length} seri bulundu`, 'ok');
     setProgress(30);
 
-    // STEP 4: Emulators
-    log('<span class="step">═══ ADIM 4/5: Emülatörler ═══</span>');
-    const emuResult = await api('emulators', 'POST', EMULATORS);
+    // STEP 4: Emulators — sadece oku
+    log('<span class="step">═══ ADIM 4/5: Emülatörler okunuyor ═══</span>');
+    const emuResult = await api('emulators?select=id,name');
     const emuMap = {};
     emuResult.forEach(e => { emuMap[e.name] = e.id; });
-    log(`✓ ${emuResult.length} emülatör yüklendi`, 'ok');
+    log(`✓ ${emuResult.length} emülatör bulundu`, 'ok');
     setProgress(40);
 
     // STEP 5: Games + platforms + genres
