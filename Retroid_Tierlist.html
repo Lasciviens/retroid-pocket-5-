@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Tier List — Retroid RP5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#ff4655;--accent-2:#00d4ff;--gold:#ffb347;--good:#2ecc71;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);min-height:100vh;padding:20px}
+header{text-align:center;margin-bottom:24px;padding:20px;background:linear-gradient(135deg,rgba(255,70,85,.1),rgba(0,212,255,.1));border:1px solid var(--border);border-radius:16px}
+h1{font-size:1.9rem;background:linear-gradient(90deg,#ff4655,#ffb347,#2ecc71,#00d4ff,#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px;margin-bottom:6px}
+.subtitle{color:var(--muted);font-size:.9rem}
+.quick-links{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600}
+
+.actions{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.btn{border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700;transition:all .2s}
+.btn-export{background:var(--gold);color:var(--bg-1)}
+.btn-save{background:var(--good);color:var(--bg-1)}
+.btn-reset{background:var(--bg-3);border:1px solid var(--border);color:var(--text)}
+.save-status{font-size:.8rem;color:var(--good);display:none}
+
+/* TIER ROWS */
+.tier-board{display:flex;flex-direction:column;gap:6px;margin-bottom:24px}
+.tier-row{display:flex;align-items:stretch;min-height:90px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.tier-label{width:60px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:#fff}
+.tier-label.S{background:#ff4655}
+.tier-label.A{background:#f97316}
+.tier-label.B{background:#eab308}
+.tier-label.C{background:#22c55e}
+.tier-label.D{background:#3b82f6}
+.tier-label.F{background:#6b7280}
+.tier-games{flex:1;display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:rgba(255,255,255,.03);min-height:90px}
+.tier-games.drag-over{background:rgba(255,255,255,.08);outline:2px dashed var(--accent-2)}
+
+/* GAME CHIPS */
+.game-chip{width:60px;cursor:grab;transition:transform .15s;position:relative;border-radius:6px;overflow:hidden;flex-shrink:0}
+.game-chip:active{cursor:grabbing;transform:scale(1.08)}
+.game-chip img{width:60px;height:82px;object-fit:cover;display:block}
+.game-chip-fb{width:60px;height:82px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;font-size:.55rem;text-align:center;color:var(--muted);padding:3px;line-height:1.2}
+.game-chip-title{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.75);font-size:.5rem;padding:2px 3px;line-height:1.2;text-align:center;display:none}
+.game-chip:hover .game-chip-title{display:block}
+
+/* UNRANKED */
+.unranked-section{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:14px}
+.unranked-label{font-size:.8rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.unranked-games{display:flex;flex-wrap:wrap;gap:6px;min-height:60px}
+.unranked-games.drag-over{background:rgba(255,255,255,.05);border-radius:8px;outline:2px dashed var(--border)}
+
+.loading{text-align:center;padding:60px;color:var(--muted)}
+footer{text-align:center;margin-top:24px;padding:14px;color:var(--muted);font-size:.8rem}
+footer a{color:var(--accent-2);text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏆 TIER LIST</h1>
+  <p class="subtitle">Oyunlarını sürükle-bırak ile sırala. Otomatik kaydedilir.</p>
+  <div class="quick-links">
+    <a href="index.html">🏠 Hub</a>
+    <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
+  </div>
+</header>
+
+<div class="actions">
+  <button class="btn btn-save" onclick="saveAll()">💾 Kaydet</button>
+  <button class="btn btn-export" onclick="exportPNG()">🖼️ PNG Export</button>
+  <button class="btn btn-reset" onclick="resetAll()">↺ Sıfırla</button>
+  <span class="save-status" id="save-status">✓ Kaydedildi</span>
+</div>
+
+<div id="tier-board" class="tier-board">
+  <div class="loading">⏳ Yükleniyor...</div>
+</div>
+
+<div class="unranked-section">
+  <div class="unranked-label">📋 Sıralanmamış</div>
+  <div class="unranked-games" id="unranked"
+    ondragover="dragOver(event)"
+    ondrop="drop(event,null)"
+    ontouchover="dragOver(event)"></div>
+</div>
+
+<footer>Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a></footer>
+
+<script>
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'}};
+const TIERS=['S','A','B','C','D','F'];
+const TIER_COLORS={S:'#ff4655',A:'#f97316',B:'#eab308',C:'#22c55e',D:'#3b82f6',F:'#6b7280'};
+
+let ALL=[], dragId=null;
+// Touch
+let touchEl=null, touchClone=null, touchOffX=0, touchOffY=0;
+
+async function api(ep,method='GET',body=null){
+  const opts={method,headers:{...H.headers,Prefer:method==='PATCH'?'return=minimal':''}};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(`${SB}/rest/v1/${ep}`,opts);
+  return r.text().then(t=>t?JSON.parse(t):[]);
+}
+
+async function load(){
+  ALL=await api('games?select=id,title,tier,game_platforms(cover_url)&order=title');
+  render();
+}
+
+function render(){
+  const board=document.getElementById('tier-board');
+  board.innerHTML=TIERS.map(t=>`
+    <div class="tier-row">
+      <div class="tier-label ${t}">${t}</div>
+      <div class="tier-games" id="tier-${t}"
+        ondragover="dragOver(event)"
+        ondrop="drop(event,'${t}')">
+        ${ALL.filter(g=>g.tier===t).map(chip).join('')}
+      </div>
+    </div>`).join('');
+  document.getElementById('unranked').innerHTML=ALL.filter(g=>!g.tier).map(chip).join('');
+  // Touch events
+  document.querySelectorAll('.game-chip').forEach(el=>{
+    el.addEventListener('touchstart',touchStart,{passive:false});
+    el.addEventListener('touchmove',touchMove,{passive:false});
+    el.addEventListener('touchend',touchEnd);
+  });
+}
+
+function chip(g){
+  const cover=g.game_platforms?.[0]?.cover_url||'';
+  return`<div class="game-chip" draggable="true" data-id="${g.id}"
+    ondragstart="dragStart(event,'${g.id}')"
+    ondragend="dragEnd(event)">
+    ${cover?`<img src="${cover}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="game-chip-fb" style="display:none">${g.title}</div>`:`<div class="game-chip-fb">${g.title}</div>`}
+    <div class="game-chip-title">${g.title}</div>
+  </div>`;
+}
+
+// Mouse drag
+function dragStart(e,id){dragId=id;e.dataTransfer.effectAllowed='move';}
+function dragEnd(e){document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));}
+function dragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function drop(e,tier){
+  e.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  if(!dragId)return;
+  const g=ALL.find(x=>x.id===dragId);
+  if(g)g.tier=tier||null;
+  render();
+  dragId=null;
+}
+
+// Touch drag
+function touchStart(e){
+  const el=e.currentTarget;
+  dragId=el.dataset.id;
+  touchEl=el;
+  const t=e.touches[0];
+  const rect=el.getBoundingClientRect();
+  touchOffX=t.clientX-rect.left;touchOffY=t.clientY-rect.top;
+  touchClone=el.cloneNode(true);
+  touchClone.style.cssText=`position:fixed;z-index:9999;width:60px;opacity:.85;pointer-events:none;left:${rect.left}px;top:${rect.top}px;`;
+  document.body.appendChild(touchClone);
+  el.style.opacity='.3';
+  e.preventDefault();
+}
+function touchMove(e){
+  if(!touchClone)return;
+  e.preventDefault();
+  const t=e.touches[0];
+  touchClone.style.left=(t.clientX-touchOffX)+'px';
+  touchClone.style.top=(t.clientY-touchOffY)+'px';
+}
+function touchEnd(e){
+  if(!touchClone)return;
+  touchClone.remove();touchClone=null;
+  if(touchEl)touchEl.style.opacity='';
+  const t=e.changedTouches[0];
+  touchClone=null;
+  // Find drop target
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const tierEl=el?.closest('.tier-games')||el?.closest('.unranked-games');
+  let tier=null;
+  if(tierEl?.id?.startsWith('tier-'))tier=tierEl.id.replace('tier-','');
+  const g=ALL.find(x=>x.id===dragId);
+  if(g)g.tier=tier;
+  render();
+  dragId=null;touchEl=null;
+}
+
+async function saveAll(){
+  for(const g of ALL){
+    await api(`games?id=eq.${g.id}`,'PATCH',{tier:g.tier||null});
+    await new Promise(r=>setTimeout(r,30));
+  }
+  const s=document.getElementById('save-status');
+  s.style.display='inline';
+  setTimeout(()=>s.style.display='none',2000);
+}
+
+async function resetAll(){
+  if(!confirm('Tüm tier atamaları sıfırlansın mı?'))return;
+  ALL.forEach(g=>g.tier=null);
+  for(const g of ALL)await api(`games?id=eq.${g.id}`,'PATCH',{tier:null});
+  render();
+}
+
+async function exportPNG(){
+  // html2canvas ile export
+  const script=document.createElement('script');
+  script.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  script.onload=async()=>{
+    const board=document.getElementById('tier-board');
+    const canvas=await html2canvas(board,{backgroundColor:'#0a0e1a',scale:2});
+    const a=document.createElement('a');
+    a.download='retroid-tierlist.png';
+    a.href=canvas.toDataURL('image/png');
+    a.click();
+  };
+  document.head.appendChild(script);
+}
+
+load();
+</script>
+</body>
+</html>

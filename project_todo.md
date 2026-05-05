@@ -6,6 +6,10 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 ## 🔴 Öncelikli (High Priority)
 
+- [ ] **IGDB entegrasyonu** — Twitch dev hesabı gerekli. Client ID + Secret alındıktan sonra oyun başlığına göre rating, cover, summary otomatik çekilecek. `external_id` kolonu hazır.
+
+
+
 - [ ] **Dashboard'a release year ekle** — Her oyuna `releaseYear` variable'ı eklenmeli. Sorting için gerekli. (Furkan isteği: 2026-05-01)
 - [ ] **Dashboard'a sorting ekle** — Release year, alfabetik, sistem, rating bazlı sıralama. releaseYear variable olmadan yapılamaz, önce o.
 - [ ] **ROM klasör yapısını hazırla** — `ROM_Folder_Guide.md` dosyası oluşturuldu (bkz. aşağı). Dashboard'da her oyunun hangi klasöre gideceği görünmeli.
@@ -13,6 +17,9 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 ---
 
 ## 🟡 Orta Öncelik
+
+- [ ] **Session Log** — Oyun başına "ne zaman oynadım, kaç saat" günlüğü. Yeni tablo: `session_logs(game_id, date, duration_minutes, note)`.
+
 
 - [ ] **Dashboard'a "ROM Durumu" kolonu ekle** — Her oyun için: `[ ] Bulunamadı`, `[~] Aranıyor`, `[✓] Hazır` gibi bir status.
 - [ ] **Co-op Dashboard'u co-op filter olarak ana Dashboard'a entegre et** — Şu an ayrı dosya, birleştirilebilir.
