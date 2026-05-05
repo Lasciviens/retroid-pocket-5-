@@ -2,804 +2,215 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>İstek Takibi — RP5 Hub</title>
+<title>İstek Takibi — Retroid RP5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  :root {
-    --bg-1: #0a0e1a;
-    --bg-2: #131829;
-    --bg-3: #1c2238;
-    --accent: #ff4655;
-    --accent-2: #00d4ff;
-    --gold: #ffb347;
-    --green: #2ecc71;
-    --text: #e8eaf0;
-    --muted: #8c93a8;
-    --border: #2a3149;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg-1);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 24px;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  .orb {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.12;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .orb-1 { width: 400px; height: 400px; background: var(--accent); top: -100px; left: -100px; }
-  .orb-2 { width: 350px; height: 350px; background: var(--accent-2); bottom: -80px; right: -80px; }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 720px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
-
-  /* Header */
-  header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .back-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px 14px;
-    color: var(--muted);
-    text-decoration: none;
-    font-size: 13px;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .back-btn:hover { border-color: var(--accent-2); color: var(--accent-2); }
-
-  .header-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .header-icon {
-    width: 46px;
-    height: 46px;
-    background: linear-gradient(135deg, #00d4ff, #0099bb);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    box-shadow: 0 0 20px rgba(0,212,255,0.3);
-  }
-
-  h1 {
-    font-size: clamp(18px, 3vw, 26px);
-    font-weight: 800;
-  }
-
-  h1 span {
-    background: linear-gradient(90deg, var(--accent-2), #7c3aed);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .subtitle { color: var(--muted); font-size: 12px; margin-top: 2px; }
-
-  /* Stats bar */
-  .stats-bar {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .stat-pill {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 6px 14px;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .stat-pill .num {
-    font-weight: 800;
-    font-size: 15px;
-  }
-
-  .stat-pill.total .num { color: var(--accent-2); }
-  .stat-pill.open .num { color: var(--gold); }
-  .stat-pill.done .num { color: var(--green); }
-
-  /* Add form */
-  .add-form {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .form-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .input-row {
-    display: flex;
-    gap: 10px;
-  }
-
-  input[type="text"], textarea, select {
-    background: var(--bg-3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 14px;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-
-  input[type="text"]:focus,
-  textarea:focus,
-  select:focus { border-color: var(--accent-2); }
-
-  textarea { resize: vertical; min-height: 70px; }
-
-  select { cursor: pointer; }
-  select option { background: var(--bg-3); }
-
-  .form-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .form-row > * { flex: 1; min-width: 140px; }
-
-  .add-btn {
-    background: linear-gradient(135deg, var(--accent-2), #0099bb);
-    border: none;
-    border-radius: 10px;
-    color: #000;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 10px 24px;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-    white-space: nowrap;
-  }
-  .add-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-  .add-btn:active { transform: translateY(0); }
-
-  /* Filters */
-  .filters {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .filter-btn {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .filter-btn.active { border-color: var(--accent-2); color: var(--accent-2); background: rgba(0,212,255,0.08); }
-  .filter-btn:hover:not(.active) { border-color: var(--muted); color: var(--text); }
-
-  /* Request list */
-  .list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--muted);
-    font-size: 14px;
-    background: var(--bg-2);
-    border: 1px dashed var(--border);
-    border-radius: 16px;
-  }
-  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
-
-  .request-item {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    transition: border-color 0.2s, opacity 0.2s;
-    animation: slideIn 0.25s ease;
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .request-item.done {
-    opacity: 0.55;
-    border-color: rgba(46,204,113,0.25);
-  }
-
-  .check-btn {
-    width: 22px;
-    height: 22px;
-    min-width: 22px;
-    border-radius: 6px;
-    border: 2px solid var(--border);
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    transition: all 0.2s;
-    margin-top: 1px;
-  }
-  .check-btn:hover { border-color: var(--green); }
-  .request-item.done .check-btn {
-    background: var(--green);
-    border-color: var(--green);
-  }
-
-  .item-body { flex: 1; min-width: 0; }
-
-  .item-title {
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.4;
-  }
-  .request-item.done .item-title {
-    text-decoration: line-through;
-    color: var(--muted);
-  }
-
-  .item-note {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 4px;
-    line-height: 1.5;
-  }
-
-  .item-meta {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-top: 8px;
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .tag-oyun    { background: rgba(255,70,85,0.15); color: #ff4655; }
-  .tag-emülatör { background: rgba(0,212,255,0.15); color: #00d4ff; }
-  .tag-donanim  { background: rgba(255,179,71,0.15); color: #ffb347; }
-  .tag-diger    { background: rgba(140,147,168,0.15); color: #8c93a8; }
-
-  .prio-tag {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .prio-yüksek { background: rgba(255,70,85,0.15); color: #ff4655; }
-  .prio-orta   { background: rgba(255,179,71,0.15); color: #ffb347; }
-  .prio-düşük  { background: rgba(46,204,113,0.15); color: #2ecc71; }
-
-  .item-date {
-    font-size: 11px;
-    color: var(--muted);
-    margin-left: auto;
-  }
-
-  .del-btn {
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    font-size: 16px;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
-    transition: color 0.2s, background 0.2s;
-    line-height: 1;
-    margin-top: -2px;
-  }
-  .del-btn:hover { color: var(--accent); background: rgba(255,70,85,0.1); }
-
-  footer {
-    text-align: center;
-    color: var(--muted);
-    font-size: 11px;
-    padding-bottom: 8px;
-  }
-
-  /* === OYUN ARAMA PANELİ (Sıraya oyun eklemek için) === */
-  .queue-search-panel {
-    background: var(--bg-2);
-    border: 1px solid rgba(255,179,71,0.25);
-    border-radius: 16px;
-    padding: 18px;
-    position: relative;
-  }
-  .queue-search-title {
-    font-size: 12px; font-weight: 700;
-    color: var(--gold); text-transform: uppercase;
-    letter-spacing: 0.5px; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .queue-search-title a {
-    margin-left: auto; font-size: 11px;
-    color: var(--gold); text-decoration: none;
-    opacity: 0.7; transition: opacity 0.2s;
-  }
-  .queue-search-title a:hover { opacity: 1; }
-
-  /* Arama sonuçları açılır kutusu */
-  .q-search-results {
-    position: absolute; left: 18px; right: 18px;
-    background: var(--bg-3); border: 1px solid var(--gold);
-    border-radius: 10px; margin-top: 4px;
-    z-index: 50; overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    display: none;
-  }
-  .q-result-item {
-    padding: 10px 14px; cursor: pointer;
-    font-size: 13px; display: flex;
-    align-items: center; gap: 10px;
-    transition: background 0.15s;
-  }
-  .q-result-item:hover { background: rgba(255,179,71,0.08); }
-  .q-result-item .r-sys {
-    font-size: 10px; font-weight: 700;
-    color: var(--gold); background: rgba(255,179,71,0.1);
-    padding: 2px 6px; border-radius: 4px; white-space: nowrap;
-  }
-  .q-result-item .r-ttl { flex: 1; }
-  .q-result-item .r-yr { color: var(--muted); font-size: 11px; }
-  .q-no-results { padding: 12px 14px; color: var(--muted); font-size: 13px; }
-
-  /* Toast animasyonları */
-  @keyframes toastIn  { from { opacity:0; transform:translateX(-50%) translateY(16px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
-  @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
-
-  /* === MOBİL BREAKPOINT 480px === */
-  @media (max-width: 480px) {
-    body { padding: 12px; }
-    .container { gap: 18px; }
-
-    /* Form alanları dikey dizilir */
-    .input-row { flex-direction: column; }
-    .add-btn { width: 100%; }
-    .add-form { padding: 14px; }
-
-    /* Form-row dikey — seçiciler alt alta */
-    .form-row { flex-direction: column; }
-    .form-row > * { min-width: unset; }
-
-    /* Filtre butonları: kaydırılabilir yatay şerit
-       Mobilde flex-wrap taşma yerine scroll ile çözülür */
-    .filters {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 4px;
-      scrollbar-width: none;
-    }
-    .filters::-webkit-scrollbar { display: none; }
-    .filter-btn {
-      white-space: nowrap; flex-shrink: 0;
-      min-height: 40px; /* Dokunuş hedefi büyük tut */
-    }
-
-    /* İstek öğeleri daha sıkı padding */
-    .request-item { padding: 12px 12px; gap: 10px; }
-    .item-title { font-size: 14px; }
-
-    /* Stats bar kaydırılabilir */
-    .stats-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .stat-pill { flex-shrink: 0; }
-
-    /* Header simgesi biraz küçülür */
-    .header-icon { width: 38px; height: 38px; font-size: 18px; }
-  }
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#00d4ff;--gold:#ffb347;--good:#2ecc71;--warn:#f39c12;--bad:#e74c3c;--purple:#a855f7;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);min-height:100vh;padding:20px}
+header{text-align:center;margin-bottom:24px;padding:22px 20px;background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(168,85,247,.1));border:1px solid var(--border);border-radius:16px}
+h1{font-size:1.9rem;background:linear-gradient(90deg,var(--accent),var(--purple));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;letter-spacing:-1px}
+.subtitle{color:var(--muted);font-size:.9rem}
+.quick-links{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
+.quick-links a:hover{border-color:var(--accent)}
+.add-section{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px}
+.add-section h3{font-size:.9rem;font-weight:700;color:var(--accent);margin-bottom:12px}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+input,select{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:.88rem;font-family:inherit}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+.btn{background:var(--accent);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.88rem;cursor:pointer;font-weight:700;transition:all .2s;white-space:nowrap}
+.btn:hover{opacity:.85}
+.stats{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.stat-pill{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:.78rem;color:var(--muted)}
+.stat-pill span{font-weight:700;color:var(--accent)}
+.filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.fbtn{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:7px 11px;color:var(--muted);font-size:.78rem;cursor:pointer;font-weight:500;transition:all .2s}
+.fbtn:hover,.fbtn.active{border-color:var(--accent);color:var(--accent)}
+.search-inp{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:.85rem;width:180px}
+.search-inp:focus{outline:none;border-color:var(--accent)}
+.wish-list{display:flex;flex-direction:column;gap:8px}
+.wish-item{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:13px 15px;display:flex;align-items:center;gap:12px;transition:border-color .2s}
+.wish-item:hover{border-color:var(--accent)}
+.wish-item.is-done{opacity:.45}
+.wish-icon{width:40px;height:40px;border-radius:8px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.wish-info{flex:1;min-width:0}
+.wish-title{font-size:.92rem;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wish-note{font-size:.78rem;color:var(--muted);margin-bottom:4px}
+.wish-badges{display:flex;gap:3px;flex-wrap:wrap}
+.badge{font-size:.6rem;padding:2px 6px;border-radius:4px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.b-game{background:rgba(0,212,255,.15);color:var(--accent);border:1px solid rgba(0,212,255,.2)}
+.b-emulator{background:rgba(243,156,18,.15);color:var(--warn);border:1px solid rgba(243,156,18,.2)}
+.b-feature{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.b-other{background:var(--bg-3);color:var(--muted);border:1px solid var(--border)}
+.b-done{background:rgba(46,204,113,.15);color:var(--good);border:1px solid rgba(46,204,113,.2)}
+.b-high{background:rgba(231,76,60,.15);color:var(--bad);border:1px solid rgba(231,76,60,.2)}
+.b-medium{background:rgba(243,156,18,.12);color:var(--warn);border:1px solid rgba(243,156,18,.2)}
+.b-low{background:var(--bg-3);color:var(--muted);border:1px solid var(--border)}
+.wish-actions{display:flex;gap:5px;flex-shrink:0}
+.ibt{background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:.8rem;color:var(--text);transition:all .2s}
+.ibt:hover{border-color:var(--accent)}
+.ibt.del:hover{border-color:var(--bad);color:var(--bad)}
+.ibt.done{color:var(--good)}
+.empty{text-align:center;padding:50px;color:var(--muted)}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+footer{text-align:center;margin-top:32px;padding:14px;color:var(--muted);font-size:.8rem}
+footer a{color:var(--accent);text-decoration:none}
 </style>
 </head>
 <body>
-
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-
-<div class="container">
-
-  <header>
-    <a class="back-btn" href="index.html">← Hub</a>
-    <div class="header-title">
-      <div class="header-icon">📋</div>
-      <div>
-        <h1>İstek <span>Takibi</span></h1>
-        <p class="subtitle">Eklemek istediğin oyunlar, ayarlar ve özellikler</p>
-      </div>
-    </div>
-    <!-- Oynama sırası kısa yolu -->
-    <a href="Retroid_Queue.html"
-       style="margin-left:auto;background:rgba(255,179,71,0.1);border:1px solid rgba(255,179,71,0.3);
-              border-radius:10px;padding:8px 14px;color:var(--gold);text-decoration:none;
-              font-size:12px;font-weight:700;white-space:nowrap;transition:all 0.2s;"
-       onmouseover="this.style.borderColor='var(--gold)'"
-       onmouseout="this.style.borderColor='rgba(255,179,71,0.3)'">
-      🎮 Sıra →
-    </a>
-  </header>
-
-  <!-- Stats -->
-  <div class="stats-bar" id="statsBar">
-    <div class="stat-pill total"><span class="num" id="statTotal">0</span> Toplam</div>
-    <div class="stat-pill open"><span class="num" id="statOpen">0</span> Bekliyor</div>
-    <div class="stat-pill done"><span class="num" id="statDone">0</span> Tamamlandı</div>
+<header>
+  <h1>♡ İSTEK TAKİBİ</h1>
+  <p class="subtitle">Eklemek istediğin oyunlar, emülatör ayarları ve özellikler.</p>
+  <div class="quick-links">
+    <a href="index.html">🏠 Hub</a>
+    <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
+    <a href="Retroid_Queue.html">🎮 Oynama Sırası</a>
+    <a href="admin.html">➕ Oyun Ekle</a>
   </div>
+</header>
 
-  <!-- Add Form -->
-  <div class="add-form">
-    <div class="form-title">+ Yeni İstek</div>
-    <div class="input-row">
-      <input type="text" id="titleInput" placeholder="İstek başlığı (örn: Zelda: Tears of the Kingdom ekle)" maxlength="120" />
-    </div>
-    <textarea id="noteInput" placeholder="Not / açıklama (isteğe bağlı)..." maxlength="400"></textarea>
-    <div class="form-row">
-      <select id="catSelect">
-        <option value="oyun">🎮 Oyun</option>
-        <option value="emülatör">⚙️ Emülatör</option>
-        <option value="donanım">🔧 Donanım</option>
-        <option value="diğer">💬 Diğer</option>
-      </select>
-      <select id="prioSelect">
-        <option value="yüksek">🔴 Yüksek Öncelik</option>
-        <option value="orta" selected>🟡 Orta Öncelik</option>
-        <option value="düşük">🟢 Düşük Öncelik</option>
-      </select>
-      <button class="add-btn" onclick="addRequest()">Ekle</button>
-    </div>
+<div class="add-section">
+  <h3>➕ Yeni İstek Ekle</h3>
+  <div class="form-row">
+    <input type="text" id="f-title" placeholder="Oyun adı, özellik, not..." style="flex:2;min-width:200px">
+    <select id="f-cat">
+      <option value="game">🎮 Oyun</option>
+      <option value="emulator">⚙️ Emülatör</option>
+      <option value="feature">✨ Özellik</option>
+      <option value="other">📝 Diğer</option>
+    </select>
+    <select id="f-prio">
+      <option value="high">🔴 Yüksek</option>
+      <option value="medium" selected>🟡 Orta</option>
+      <option value="low">🟢 Düşük</option>
+    </select>
+    <input type="text" id="f-note" placeholder="Not (opsiyonel)" style="flex:1;min-width:140px">
+    <button class="btn" onclick="addItem()">Ekle</button>
   </div>
-
-  <!-- Oynama sırasına oyun arama + ekleme paneli -->
-  <div class="queue-search-panel">
-    <div class="queue-search-title">
-      🎮 Sıraya Oyun Ekle
-      <a href="Retroid_Queue.html">Sırayı Aç →</a>
-    </div>
-    <div style="position:relative;">
-      <input type="text" id="qSearchInput"
-             placeholder="🔍 Oyun adı ara ve sıraya ekle..."
-             autocomplete="off" />
-      <!-- Arama sonuçları JS ile oluşturulur -->
-      <div class="q-search-results" id="qSearchResults"></div>
-    </div>
-  </div>
-
-  <!-- Filters -->
-  <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('hepsi', this)">Hepsi</button>
-    <button class="filter-btn" onclick="setFilter('bekliyor', this)">Bekliyor</button>
-    <button class="filter-btn" onclick="setFilter('tamamlandı', this)">Tamamlandı</button>
-    <button class="filter-btn" onclick="setFilter('oyun', this)">Oyun</button>
-    <button class="filter-btn" onclick="setFilter('emülatör', this)">Emülatör</button>
-    <button class="filter-btn" onclick="setFilter('donanım', this)">Donanım</button>
-    <button class="filter-btn" onclick="setFilter('diğer', this)">Diğer</button>
-  </div>
-
-  <!-- List -->
-  <div class="list" id="requestList"></div>
-
-  <footer>Veriler bu tarayıcıda yerel olarak saklanır · Retroid Pocket 5 Hub</footer>
-
 </div>
 
+<div class="stats" id="stats"></div>
+
+<div class="filters">
+  <input type="text" class="search-inp" id="search" placeholder="🔍 Ara...">
+  <button class="fbtn active" onclick="setFilter('all',this)">Tümü</button>
+  <button class="fbtn" onclick="setFilter('game',this)">🎮 Oyun</button>
+  <button class="fbtn" onclick="setFilter('emulator',this)">⚙️ Emülatör</button>
+  <button class="fbtn" onclick="setFilter('feature',this)">✨ Özellik</button>
+  <button class="fbtn" onclick="setFilter('done',this)">✓ Tamamlanan</button>
+</div>
+
+<div class="wish-list" id="list"><div class="loading">⏳ Yükleniyor...</div></div>
+
+<footer>Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a></footer>
+
 <script>
-  const STORAGE_KEY = 'rp5_requests';
-  let currentFilter = 'hepsi';
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'}};
 
-  function load() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  }
+let ALL=[], activeFilter='all', searchQ='';
 
-  function save(data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }
+async function api(ep,method='GET',body=null){
+  const opts={...H,method};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(`${SB}/rest/v1/${ep}`,opts);
+  const t=await r.text();
+  return t?JSON.parse(t):null;
+}
 
-  function addRequest() {
-    const title = document.getElementById('titleInput').value.trim();
-    if (!title) {
-      document.getElementById('titleInput').focus();
-      return;
-    }
-
-    const requests = load();
-    requests.unshift({
-      id: Date.now(),
-      title,
-      note: document.getElementById('noteInput').value.trim(),
-      category: document.getElementById('catSelect').value,
-      priority: document.getElementById('prioSelect').value,
-      done: false,
-      date: new Date().toLocaleDateString('tr-TR')
-    });
-    save(requests);
-
-    document.getElementById('titleInput').value = '';
-    document.getElementById('noteInput').value = '';
-    render();
-  }
-
-  function toggleDone(id) {
-    const requests = load();
-    const item = requests.find(r => r.id === id);
-    if (item) item.done = !item.done;
-    save(requests);
-    render();
-  }
-
-  function deleteRequest(id) {
-    const requests = load().filter(r => r.id !== id);
-    save(requests);
-    render();
-  }
-
-  function setFilter(filter, btn) {
-    currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    render();
-  }
-
-  function render() {
-    const requests = load();
-    const total = requests.length;
-    const done  = requests.filter(r => r.done).length;
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statOpen').textContent  = total - done;
-    document.getElementById('statDone').textContent  = done;
-
-    let filtered = requests;
-    if (currentFilter === 'bekliyor')    filtered = requests.filter(r => !r.done);
-    else if (currentFilter === 'tamamlandı') filtered = requests.filter(r => r.done);
-    else if (['oyun','emülatör','donanım','diğer'].includes(currentFilter))
-      filtered = requests.filter(r => r.category === currentFilter);
-
-    const list = document.getElementById('requestList');
-
-    if (filtered.length === 0) {
-      list.innerHTML = `
-        <div class="empty-state">
-          <div class="icon">📭</div>
-          ${total === 0 ? 'Henüz istek yok. Yukarıdan ilk isteğini ekle!' : 'Bu filtre için sonuç yok.'}
-        </div>`;
-      return;
-    }
-
-    const catClass = { oyun: 'tag-oyun', 'emülatör': 'tag-emülatör', donanım: 'tag-donanim', diğer: 'tag-diger' };
-    const prioClass = { yüksek: 'prio-yüksek', orta: 'prio-orta', düşük: 'prio-düşük' };
-    const catLabel  = { oyun: '🎮 Oyun', 'emülatör': '⚙️ Emülatör', donanım: '🔧 Donanım', diğer: '💬 Diğer' };
-    const prioLabel = { yüksek: '🔴 Yüksek', orta: '🟡 Orta', düşük: '🟢 Düşük' };
-
-    list.innerHTML = filtered.map(r => `
-      <div class="request-item ${r.done ? 'done' : ''}">
-        <button class="check-btn" onclick="toggleDone(${r.id})" title="${r.done ? 'Geri al' : 'Tamamlandı olarak işaretle'}">
-          ${r.done ? '✓' : ''}
-        </button>
-        <div class="item-body">
-          <div class="item-title">${escHtml(r.title)}</div>
-          ${r.note ? `<div class="item-note">${escHtml(r.note)}</div>` : ''}
-          <div class="item-meta">
-            <span class="tag ${catClass[r.category] || 'tag-diger'}">${catLabel[r.category] || r.category}</span>
-            <span class="prio-tag ${prioClass[r.priority] || 'prio-orta'}">${prioLabel[r.priority] || r.priority}</span>
-            <span class="item-date">${r.date}</span>
-          </div>
-        </div>
-        <button class="del-btn" onclick="deleteRequest(${r.id})" title="Sil">✕</button>
-      </div>
-    `).join('');
-  }
-
-  function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // Enter ile ekle
-  document.getElementById('titleInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') addRequest();
-  });
-
+async function load(){
+  // notes tablosunu istek takibi için kullanıyoruz
+  // category: game | emulator | feature | other | done
+  // content: "not metni || prio:high"
+  ALL=await api('notes?select=*&order=created_at.desc');
+  if(!ALL)ALL=[];
   render();
+}
 
-  /* === COMPACT OYUN İNDEKSİ (sadece başlık + sistem + yıl + resim)
-     rp5_queue'ye eklemek için arama yaparken kullanılır.
-     Bu liste Retroid_Queue.html'deki GAMES_INDEX ile aynıdır. */
-  const GAMES_INDEX = [
-    {title:"GTA: San Andreas",system:"PS2",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20San%20Andreas%20%28USA%29%20%28v3.00%29.png"},
-    {title:"GTA: Vice City",system:"PS2",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20Vice%20City%20%28USA%29%20%28v3.00%29.png"},
-    {title:"GTA III",system:"PS2",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Grand%20Theft%20Auto%20III%20%28USA%29%20%28v3.00%29.png"},
-    {title:"GTA: Liberty City Stories",system:"PSP",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20Liberty%20City%20Stories%20%28USA%29.png"},
-    {title:"GTA: Vice City Stories",system:"PSP",year:2006,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20Vice%20City%20Stories%20%28USA%29.png"},
-    {title:"GTA: Chinatown Wars",system:"DS",year:2009,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Grand%20Theft%20Auto%20-%20Chinatown%20Wars%20%28USA%29%20%28En%2CFr%2CDe%2CEs%2CIt%29.png"},
-    {title:"God of War: Chains of Olympus",system:"PSP",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/God%20of%20War%20-%20Chains%20of%20Olympus%20%28USA%29.png"},
-    {title:"God of War: Ghost of Sparta",system:"PSP",year:2010,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_Portable/master/Named_Boxarts/God%20of%20War%20-%20Ghost%20of%20Sparta%20%28USA%29.png"},
-    {title:"God of War",system:"PS2",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/God%20of%20War%20%28USA%29.png"},
-    {title:"God of War II",system:"PS2",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/God%20of%20War%20II%20%28USA%29.png"},
-    {title:"Pokemon FireRed",system:"GBA",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Pokemon%20-%20Fire%20Red%20Version%20%28USA%2C%20Europe%29.png"},
-    {title:"Pokemon Emerald",system:"GBA",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Pokemon%20-%20Emerald%20Version%20%28USA%2C%20Europe%29.png"},
-    {title:"Pokemon HeartGold",system:"DS",year:2009,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Pokemon%20HeartGold%20Version%20%28USA%29.png"},
-    {title:"Pokemon Platinum",system:"DS",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Pokemon%20-%20Platinum%20Version%20%28USA%29.png"},
-    {title:"Pokemon Black",system:"DS",year:2010,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Pokemon%20-%20Black%20Version%20%28USA%2C%20Europe%29.png"},
-    {title:"Super Mario 64",system:"N64",year:1996,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Super%20Mario%2064%20%28USA%29.png"},
-    {title:"Super Mario Sunshine",system:"GameCube",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Super%20Mario%20Sunshine%20%28USA%29.png"},
-    {title:"Super Mario Galaxy",system:"Wii",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii/master/Named_Boxarts/Super%20Mario%20Galaxy%20%28USA%29.png"},
-    {title:"Super Mario Galaxy 2",system:"Wii",year:2010,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii/master/Named_Boxarts/Super%20Mario%20Galaxy%202%20%28USA%29.png"},
-    {title:"Mario Kart: Double Dash!!",system:"GameCube",year:2003,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Mario%20Kart%20-%20Double%20Dash!!%20%28USA%29.png"},
-    {title:"Mario Kart Wii",system:"Wii",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii/master/Named_Boxarts/Mario%20Kart%20Wii%20%28USA%29.png"},
-    {title:"New Super Mario Bros. Wii",system:"Wii",year:2009,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Wii/master/Named_Boxarts/New%20Super%20Mario%20Bros.%20Wii%20%28USA%29.png"},
-    {title:"Paper Mario: Thousand-Year Door",system:"GameCube",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Paper%20Mario%20-%20The%20Thousand-Year%20Door%20%28USA%29.png"},
-    {title:"The Legend of Zelda: Ocarina of Time",system:"N64",year:1998,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Ocarina%20of%20Time%20%28USA%29.png"},
-    {title:"The Legend of Zelda: Majora's Mask",system:"N64",year:2000,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Majora%27s%20Mask%20%28USA%29.png"},
-    {title:"The Legend of Zelda: The Wind Waker",system:"GameCube",year:2003,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20The%20Wind%20Waker%20%28USA%29.png"},
-    {title:"The Legend of Zelda: Twilight Princess",system:"GameCube",year:2006,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20Twilight%20Princess%20%28USA%29.png"},
-    {title:"The Legend of Zelda: A Link to the Past",system:"SNES",year:1991,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Super_Nintendo_Entertainment_System/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20A%20Link%20to%20the%20Past%20%28USA%29.png"},
-    {title:"The Legend of Zelda: The Minish Cap",system:"GBA",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Legend%20of%20Zelda%2C%20The%20-%20The%20Minish%20Cap%20%28USA%29.png"},
-    {title:"Sonic the Hedgehog 2",system:"Genesis",year:1992,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sega_-_Mega_Drive_-_Genesis/master/Named_Boxarts/Sonic%20The%20Hedgehog%202%20%28World%29%20%28Rev%20A%29.png"},
-    {title:"Sonic Adventure 2: Battle",system:"GameCube",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Sonic%20Adventure%202%20Battle%20%28USA%29.png"},
-    {title:"Crash Bandicoot",system:"PS1",year:1996,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Crash%20Bandicoot%20%28USA%29.png"},
-    {title:"Crash Bandicoot 2",system:"PS1",year:1997,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Crash%20Bandicoot%202%20-%20Cortex%20Strikes%20Back%20%28USA%29.png"},
-    {title:"Crash Bandicoot 3: Warped",system:"PS1",year:1998,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Crash%20Bandicoot%203%20-%20Warped%20%28USA%29.png"},
-    {title:"Crash Team Racing",system:"PS1",year:1999,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Crash%20Team%20Racing%20%28USA%29.png"},
-    {title:"Tekken 3",system:"PS1",year:1998,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Tekken%203%20%28USA%29.png"},
-    {title:"Tekken 5",system:"PS2",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Tekken%205%20%28USA%29.png"},
-    {title:"Final Fantasy X",system:"PS2",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Final%20Fantasy%20X%20%28USA%29.png"},
-    {title:"Final Fantasy VII",system:"PS1",year:1997,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Final%20Fantasy%20VII%20%28USA%29%20%28Disc%201%29.png"},
-    {title:"Final Fantasy IX",system:"PS1",year:2000,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Final%20Fantasy%20IX%20%28USA%29%20%28Disc%201%29.png"},
-    {title:"Resident Evil 4",system:"GameCube",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Resident%20Evil%204%20%28USA%29%20%28Disc%201%29.png"},
-    {title:"Metal Gear Solid 3: Snake Eater",system:"PS2",year:2004,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Metal%20Gear%20Solid%203%20-%20Snake%20Eater%20%28USA%29.png"},
-    {title:"Metal Gear Solid",system:"PS1",year:1998,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Metal%20Gear%20Solid%20%28USA%29%20%28Disc%201%29.png"},
-    {title:"Kingdom Hearts",system:"PS2",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Kingdom%20Hearts%20%28USA%29.png"},
-    {title:"Kingdom Hearts II",system:"PS2",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Kingdom%20Hearts%20II%20%28USA%29.png"},
-    {title:"Shadow of the Colossus",system:"PS2",year:2005,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Shadow%20of%20the%20Colossus%20%28USA%29.png"},
-    {title:"Persona 4",system:"PS2",year:2008,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Shin%20Megami%20Tensei%20-%20Persona%204%20%28USA%29.png"},
-    {title:"Smash Bros Melee",system:"GameCube",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Super%20Smash%20Bros.%20Melee%20%28USA%29%20%28En%2CJa%29.png"},
-    {title:"Metroid Prime",system:"GameCube",year:2002,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_GameCube/master/Named_Boxarts/Metroid%20Prime%20%28USA%29.png"},
-    {title:"Okami",system:"PS2",year:2006,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation_2/master/Named_Boxarts/Okami%20%28USA%29.png"},
-    {title:"Castlevania: Symphony of the Night",system:"PS1",year:1997,img:"https://raw.githubusercontent.com/libretro-thumbnails/Sony_-_PlayStation/master/Named_Boxarts/Castlevania%20-%20Symphony%20of%20the%20Night%20%28USA%29.png"},
-    {title:"Professor Layton and the Curious Village",system:"DS",year:2007,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_DS/master/Named_Boxarts/Professor%20Layton%20and%20the%20Curious%20Village%20%28USA%29.png"},
-    {title:"Advance Wars",system:"GBA",year:2001,img:"https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/master/Named_Boxarts/Advance%20Wars%20%28USA%29.png"},
-  ];
+function render(){
+  const catIcon={game:'🎮',emulator:'⚙️',feature:'✨',other:'📝',done:'✓'};
+  const catLabel={game:'Oyun',emulator:'Emülatör',feature:'Özellik',other:'Diğer',done:'Tamamlandı'};
+  const prioLabel={high:'Yüksek',medium:'Orta',low:'Düşük'};
 
-  /* === OYUN ARAMA: GAMES_INDEX içinde gerçek zamanlı filtrele === */
-  const qInput   = document.getElementById('qSearchInput');
-  const qResults = document.getElementById('qSearchResults');
+  let items=ALL.filter(i=>{
+    if(activeFilter==='done')return i.category==='done';
+    if(activeFilter!=='all'&&i.category!==activeFilter)return false;
+    if(i.category==='done')return false;
+    return true;
+  });
+  if(searchQ)items=items.filter(i=>(i.title+' '+(i.content||'')).toLowerCase().includes(searchQ));
 
-  qInput.addEventListener('input', () => {
-    const q = qInput.value.trim().toLowerCase();
-    if (q.length < 1) { qResults.style.display = 'none'; return; }
+  const pending=ALL.filter(i=>i.category!=='done').length;
+  const done=ALL.filter(i=>i.category==='done').length;
+  const high=ALL.filter(i=>i.category!=='done'&&(i.content||'').includes('prio:high')).length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat-pill">Bekleyen: <span>${pending}</span></div>
+    <div class="stat-pill">Tamamlanan: <span>${done}</span></div>
+    <div class="stat-pill">🔴 Yüksek öncelik: <span>${high}</span></div>`;
 
-    /* En fazla 8 sonuç */
-    const matches = GAMES_INDEX
-      .filter(g => g.title.toLowerCase().includes(q) || g.system.toLowerCase().includes(q))
-      .slice(0, 8);
+  const list=document.getElementById('list');
+  if(!items.length){list.innerHTML='<div class="empty">Kayıt bulunamadı.</div>';return;}
 
-    if (!matches.length) {
-      qResults.innerHTML = '<div class="q-no-results">Sonuç bulunamadı</div>';
-    } else {
-      qResults.innerHTML = matches.map(g => `
-        <div class="q-result-item" onclick="qPickGame(${GAMES_INDEX.indexOf(g)})">
-          <span class="r-sys">${g.system}</span>
-          <span class="r-ttl">${escHtml(g.title)}</span>
-          <span class="r-yr">${g.year}</span>
+  list.innerHTML=items.map(i=>{
+    const prio=(i.content||'').match(/prio:(\w+)/)?.[1]||'medium';
+    const note=(i.content||'').replace(/prio:\w+/g,'').trim();
+    const isDone=i.category==='done';
+    const cat=i.category||'other';
+    return`<div class="wish-item${isDone?' is-done':''}">
+      <div class="wish-icon">${catIcon[cat]||'📝'}</div>
+      <div class="wish-info">
+        <div class="wish-title">${i.title}</div>
+        ${note?`<div class="wish-note">${note}</div>`:''}
+        <div class="wish-badges">
+          <span class="badge b-${cat}">${catLabel[cat]||cat}</span>
+          ${!isDone?`<span class="badge b-${prio}">${prioLabel[prio]||prio}</span>`:''}
         </div>
-      `).join('');
-    }
-    qResults.style.display = 'block';
-  });
+      </div>
+      <div class="wish-actions">
+        ${!isDone?`<button class="ibt done" onclick="markDone('${i.id}')" title="Tamamlandı olarak işaretle">✓</button>`:''}
+        <button class="ibt del" onclick="deleteItem('${i.id}')" title="Sil">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-  /* Kullanıcı bir oyun seçti — rp5_queue'ye ekle */
-  function qPickGame(idx) {
-    const g = GAMES_INDEX[idx];
-    const queue = JSON.parse(localStorage.getItem('rp5_queue') || '[]');
-    /* Zaten ekliyse uyarı ver */
-    if (queue.some(x => x.title === g.title)) {
-      qShowToast('Zaten sırada!', '#f39c12');
-    } else {
-      queue.push({ id: Date.now(), title: g.title, system: g.system, img: g.img, year: g.year });
-      localStorage.setItem('rp5_queue', JSON.stringify(queue));
-      qShowToast('Sıraya eklendi ✓');
-    }
-    qInput.value = '';
-    qResults.style.display = 'none';
-  }
+async function addItem(){
+  const title=document.getElementById('f-title').value.trim();
+  if(!title)return;
+  const cat=document.getElementById('f-cat').value;
+  const prio=document.getElementById('f-prio').value;
+  const note=document.getElementById('f-note').value.trim();
+  const content=`${note?note+' ':''}prio:${prio}`;
+  await api('notes','POST',[{title,category:cat,content}]);
+  document.getElementById('f-title').value='';
+  document.getElementById('f-note').value='';
+  load();
+}
 
-  /* Arama kutusunun dışına tıklanınca sonuçları kapat */
-  document.addEventListener('click', e => {
-    if (!qInput.contains(e.target) && !qResults.contains(e.target)) {
-      qResults.style.display = 'none';
-    }
-  });
+async function markDone(id){
+  await api(`notes?id=eq.${id}`,'PATCH',{category:'done'});
+  load();
+}
 
-  /* === TOAST BİLDİRİMİ === */
-  function qShowToast(msg, color = '#2ecc71') {
-    const t = document.createElement('div');
-    t.textContent = msg;
-    t.style.cssText = `
-      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
-      background:${color}; color:#000; font-weight:700;
-      padding:10px 20px; border-radius:999px; font-size:13px;
-      z-index:9999; animation:toastIn 0.2s ease, toastOut 0.3s ease 1.8s forwards;
-      pointer-events:none; white-space:nowrap;
-    `;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 2200);
-  }
+async function deleteItem(id){
+  if(!confirm('Silinsin mi?'))return;
+  await api(`notes?id=eq.${id}`,'DELETE');
+  load();
+}
+
+function setFilter(f,el){
+  activeFilter=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+document.getElementById('search').addEventListener('input',e=>{searchQ=e.target.value.toLowerCase();render();});
+document.getElementById('f-title').addEventListener('keydown',e=>{if(e.key==='Enter')addItem();});
+
+load();
 </script>
 </body>
 </html>
