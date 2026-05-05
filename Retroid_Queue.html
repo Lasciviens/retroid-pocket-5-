@@ -129,24 +129,30 @@ function renderQueue(){
       ondragstart="dragStart(event,'${g.id}')"
       ondragover="dragOver(event)"
       ondrop="drop(event,'${g.id}')"
-      ondragend="dragEnd(event)">
+      ondragend="dragEnd(event)"
+      ontouchstart="touchStart(event,'${g.id}')"
+      ontouchmove="touchMove(event)"
+      ontouchend="touchEnd(event)">
       <div class="queue-num">${i+1}</div>
       ${cover?`<img class="queue-cover" src="${cover}" loading="lazy" onerror="this.style.display='none'">`:`<div class="queue-cover-fb">🎮</div>`}
       <div class="queue-info">
         <div class="queue-title">${g.title}</div>
         <div class="queue-meta">${sys} · <span style="color:${statusColor}">${statusLabel}</span></div>
       </div>
-      <div class="drag-handle">⠿</div>
+      <div class="drag-handle" style="touch-action:none">⠿</div>
       <button class="ibt done" onclick="markPlaying('${g.id}')" title="Oynuyor yap">▶</button>
       <button class="ibt del" onclick="removeFromQueue('${g.id}')" title="Sıradan çıkar">✕</button>
     </div>`;
   }).join('');
 }
 
-// Drag & drop
+// ── Drag & Drop (Mouse + Touch) ──────────────────────────────
+let dragSrcEl=null, touchClone=null, touchOffsetX=0, touchOffsetY=0;
+
 function dragStart(e,id){
   dragSrcId=id;
-  e.target.classList.add('dragging');
+  dragSrcEl=e.currentTarget;
+  dragSrcEl.classList.add('dragging');
   e.dataTransfer.effectAllowed='move';
 }
 function dragOver(e){
@@ -158,18 +164,71 @@ function dragOver(e){
 function dragEnd(e){
   e.target.classList.remove('dragging');
   document.querySelectorAll('.queue-item').forEach(el=>el.classList.remove('drag-over'));
+  dragSrcEl=null;
 }
 async function drop(e,targetId){
   e.preventDefault();
   if(dragSrcId===targetId)return;
-  const srcIdx=QUEUE.findIndex(g=>g.id===dragSrcId);
+  await reorder(dragSrcId,targetId);
+  dragSrcId=null;
+}
+
+async function reorder(srcId,targetId){
+  const srcIdx=QUEUE.findIndex(g=>g.id===srcId);
   const tgtIdx=QUEUE.findIndex(g=>g.id===targetId);
+  if(srcIdx<0||tgtIdx<0)return;
   const [moved]=QUEUE.splice(srcIdx,1);
   QUEUE.splice(tgtIdx,0,moved);
   renderQueue();
-  // Save new order to DB
   await Promise.all(QUEUE.map((g,i)=>api(`games?id=eq.${g.id}`,'PATCH',{play_order:i+1})));
+}
+
+// Touch support
+function touchStart(e,id){
+  dragSrcId=id;
+  dragSrcEl=e.currentTarget;
+  const t=e.touches[0];
+  const rect=dragSrcEl.getBoundingClientRect();
+  touchOffsetX=t.clientX-rect.left;
+  touchOffsetY=t.clientY-rect.top;
+  // Clone for visual feedback
+  touchClone=dragSrcEl.cloneNode(true);
+  touchClone.style.cssText=`position:fixed;z-index:9999;width:${rect.width}px;opacity:0.85;pointer-events:none;border:1px solid var(--accent);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);left:${rect.left}px;top:${rect.top}px;transition:none`;
+  document.body.appendChild(touchClone);
+  dragSrcEl.style.opacity='0.3';
+  e.preventDefault();
+}
+
+function touchMove(e){
+  if(!touchClone)return;
+  e.preventDefault();
+  const t=e.touches[0];
+  touchClone.style.left=(t.clientX-touchOffsetX)+'px';
+  touchClone.style.top=(t.clientY-touchOffsetY)+'px';
+  // Find element under touch
+  touchClone.style.display='none';
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  touchClone.style.display='';
+  const target=el?.closest('.queue-item');
+  document.querySelectorAll('.queue-item').forEach(el=>el.classList.remove('drag-over'));
+  if(target&&target!==dragSrcEl)target.classList.add('drag-over');
+}
+
+async function touchEnd(e){
+  if(!touchClone)return;
+  touchClone.remove();
+  touchClone=null;
+  if(dragSrcEl)dragSrcEl.style.opacity='';
+  const t=e.changedTouches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const target=el?.closest('.queue-item');
+  document.querySelectorAll('.queue-item').forEach(el=>el.classList.remove('drag-over'));
+  if(target&&target!==dragSrcEl){
+    const targetId=target.dataset.id;
+    if(targetId&&targetId!==dragSrcId)await reorder(dragSrcId,targetId);
+  }
   dragSrcId=null;
+  dragSrcEl=null;
 }
 
 // Game search
