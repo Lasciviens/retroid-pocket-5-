@@ -109,6 +109,17 @@ textarea.field-input{resize:vertical;min-height:70px}
 
 /* LOADING */
 .loading{text-align:center;padding:60px;color:var(--muted)}
+
+/* ROM STATUS */
+.rom-row{display:flex;flex-direction:column;gap:2px}
+.rom-btns{display:flex;gap:2px}
+.rom-btn{border:none;border-radius:4px;padding:3px 5px;font-size:.58rem;cursor:pointer;font-weight:700;transition:all .2s;opacity:.28;line-height:1}
+.rom-btn:hover{opacity:.65}
+.rom-btn.active{opacity:1;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.rom-btn.installed{background:var(--good);color:#fff}
+.rom-btn.sd_card{background:#f97316;color:#fff}
+.rom-btn.found{background:#eab308;color:#000}
+.rom-btn.missing{background:var(--bad);color:#fff}
 </style>
 </head>
 <body>
@@ -163,11 +174,12 @@ textarea.field-input{resize:vertical;min-height:70px}
         <th onclick="sortBy('play_status')" id="th-play_status">Durum</th>
         <th>Özellik</th>
         <th>ROM URL</th>
+        <th>ROM Durumu</th>
         <th></th>
       </tr>
     </thead>
     <tbody id="table-body">
-      <tr><td colspan="10" class="loading">⏳ Yükleniyor...</td></tr>
+      <tr><td colspan="11" class="loading">⏳ Yükleniyor...</td></tr>
     </tbody>
   </table>
 </div>
@@ -204,7 +216,7 @@ async function del(ep){ return fetch(`${SB}/rest/v1/${ep}`,{method:'DELETE',head
 
 async function load(){
   [ALL, SYSTEMS, GENRES, SERIES, EMULATORS] = await Promise.all([
-    sb('games?select=id,title,release_year,developer,description,is_coop,coop_notes,play_status,rating,is_iconic,game_log,tier,primary_cover_url,series(id,name),game_genres(genres(id,name)),game_platforms(id,cover_url,performance,performance_notes,rom_url,region,systems(id,name),emulators(id,name))&order=title'),
+    sb('games?select=id,title,release_year,developer,description,is_coop,coop_notes,play_status,rating,is_iconic,game_log,tier,primary_cover_url,series(id,name),game_genres(genres(id,name)),game_platforms(id,cover_url,performance,performance_notes,rom_url,rom_status,region,systems(id,name),emulators(id,name))&order=title'),
     sb('systems?select=id,name&order=name'),
     sb('genres?select=id,name&order=name'),
     sb('series?select=id,name&order=name'),
@@ -257,7 +269,7 @@ function render(){
     return sortAsc?av-bv:bv-av;
   });
   const tbody=document.getElementById('table-body');
-  if(!sorted.length){tbody.innerHTML='<tr><td colspan="10" class="loading">Sonuç bulunamadı.</td></tr>';return;}
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="11" class="loading">Sonuç bulunamadı.</td></tr>';return;}
   tbody.innerHTML=sorted.map(g=>{
     const cover=g.primary_cover_url||'';
     const systems=[...new Set((g.game_platforms||[]).map(p=>p.systems?.name).filter(Boolean))];
@@ -284,6 +296,18 @@ function render(){
           :`<span class="editable" style="color:var(--muted);font-size:.75rem" onclick="editRomUrl('${g.id}',this,'${(g.game_platforms?.[0]?.id||'')}')">+ ROM ekle</span>`
         }
       </td>
+      <td onclick="event.stopPropagation()">
+        <div class="rom-row">${(g.game_platforms||[]).map(p=>{
+          const rs=p.rom_status||'missing';
+          const pid=p.id;
+          return '<div class="rom-btns">'+
+            '<button class="rom-btn installed'+(rs==='installed'?' active':'')+'" onclick="setRomStatus(\''+pid+'\',\'installed\')" title="📲 Cihaza yüklendi">📲</button>'+
+            '<button class="rom-btn sd_card'+(rs==='sd_card'?' active':'')+'" onclick="setRomStatus(\''+pid+'\',\'sd_card\')" title="💾 SD kartta">💾</button>'+
+            '<button class="rom-btn found'+(rs==='found'?' active':'')+'" onclick="setRomStatus(\''+pid+'\',\'found\')" title="📁 Bulundu">📁</button>'+
+            '<button class="rom-btn missing'+(rs==='missing'?' active':'')+'" onclick="setRomStatus(\''+pid+'\',\'missing\')" title="❌ ROM yok">❌</button>'+
+          '</div>';
+        }).join('')}</div>
+      </td>
       <td class="action-cell">
         <button class="icon-btn" onclick="copyTitle('${g.title.replace(/'/g,"\\'")}')">📋</button>
         <button class="icon-btn" onclick="openDrawer('${g.id}')">✏️</button>
@@ -291,6 +315,14 @@ function render(){
       </td>
     </tr>`;
   }).join('');
+}
+
+// ── ROM STATUS ──
+async function setRomStatus(platformId, romStatus){
+  ALL.forEach(g=>g.game_platforms?.forEach(p=>{if(p.id===platformId)p.rom_status=romStatus;}));
+  render();
+  await patch(`game_platforms?id=eq.${platformId}`,{rom_status:romStatus});
+  toast('ROM durumu güncellendi');
 }
 
 // ── INLINE ROM URL EDİT ──
