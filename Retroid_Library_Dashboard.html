@@ -251,6 +251,10 @@ function render(){
         ${g.iconic?'<div class="corner-star">★</div>':''}
         ${g.coop?'<div class="corner-coop">2P</div>':''}
         <div class="perf-badge ${perf}">${perfLabel}</div>
+        <button onclick="event.stopPropagation();addToQueue('${g.id}')" title="Sıraya Ekle"
+          style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:1px solid rgba(255,179,71,.5);border-radius:6px;color:var(--gold);font-size:.7rem;padding:3px 6px;cursor:pointer;backdrop-filter:blur(4px);z-index:2;transition:all .15s"
+          onmouseover="this.style.background='rgba(255,179,71,.3)'"
+          onmouseout="this.style.background='rgba(0,0,0,.7)'">🎮+</button>
       </div>
       <div class="card-body">
         <div class="card-title">${g.title}</div>
@@ -288,10 +292,31 @@ async function setStatus(id,status){
 }
 
 async function setRom(platformId,romStatus){
-  // Update in ALL
   ALL.forEach(g=>g.platforms.forEach(p=>{if(p.id===platformId)p.romStatus=romStatus;}));
   render();
   await patch(`game_platforms?id=eq.${platformId}`,{rom_status:romStatus});
+}
+
+async function setRomModal(platformId,romStatus,btn){
+  // Butonları güncelle
+  const container=btn.closest('div[style*="display:flex"]');
+  container.querySelectorAll('button[data-platform]').forEach(b=>{
+    const s=b.dataset.status;
+    const colors={installed:'#2ecc71',sd_card:'#f39c12',found:'#3b82f6',missing:'#e74c3c'};
+    const active=s===romStatus;
+    b.style.border=`1px solid ${active?colors[s]:'var(--border)'}`;
+    b.style.background=active?`${colors[s]}22`:'var(--bg-3)';
+    b.style.color=active?colors[s]:'var(--muted)';
+    b.style.fontWeight=active?'700':'400';
+  });
+  ALL.forEach(g=>g.platforms.forEach(p=>{if(p.id===platformId)p.romStatus=romStatus;}));
+  render();
+  await patch(`game_platforms?id=eq.${platformId}`,{rom_status:romStatus});
+}
+
+async function setRomUrl(platformId,url){
+  ALL.forEach(g=>g.platforms.forEach(p=>{if(p.id===platformId)p.romUrl=url;}));
+  await patch(`game_platforms?id=eq.${platformId}`,{rom_url:url||null});
 }
 
 function showRandom(){
@@ -335,14 +360,35 @@ function openModal(id){
       ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p>${g.desc}</p></div>`:''}
       ${g.series?`<div class="modal-section"><h4>🎮 Seri</h4><p>${g.series}</p></div>`:''}
       <div class="modal-section">
-        <h4>🖥️ Platformlar & Emülatörler</h4>
+        <h4>🖥️ Platformlar & ROM Durumu</h4>
         <div class="platform-list">
-          ${g.platforms.map(p=>`<div class="platform-row">
-            <span class="platform-sys">${p.system||'?'}</span>
-            <span class="platform-emu">${p.emulator||'—'}</span>
-            <span class="perf-badge ${p.perf||'good'}" style="position:static">${p.perf==='good'?'Smooth':p.perf==='warn'?'Tweak':'Sorunlu'}</span>
-            ${p.perfNotes?`<span style="color:var(--muted);font-size:.75rem">${p.perfNotes}</span>`:''}
-          </div>`).join('')}
+          ${g.platforms.map(p=>{
+            const romColors={installed:'#2ecc71',sd_card:'#f39c12',found:'#3b82f6',missing:'#e74c3c'};
+            const romLabels={installed:'📲 Cihazda',sd_card:'💾 SD Kartta',found:'📁 Bulundu',missing:'❌ Yok'};
+            return`<div class="platform-row" style="flex-wrap:wrap;gap:6px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+              <div style="display:flex;align-items:center;gap:8px;width:100%">
+                <span class="platform-sys">${p.system||'?'}</span>
+                <span class="platform-emu">${p.emulator||'—'}</span>
+                <span class="perf-badge ${p.perf||'good'}" style="position:static">${p.perf==='good'?'Smooth':p.perf==='warn'?'Tweak':'Sorunlu'}</span>
+                ${p.perfNotes?`<span style="color:var(--muted);font-size:.75rem">${p.perfNotes}</span>`:''}
+              </div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+                <span style="font-size:.72rem;color:var(--muted);margin-right:2px">ROM:</span>
+                ${['installed','sd_card','found','missing'].map(s=>`
+                  <button onclick="setRomModal('${p.id}','${s}',this)"
+                    style="font-size:.72rem;padding:3px 8px;border-radius:6px;border:1px solid ${p.romStatus===s?romColors[s]:'var(--border)'};background:${p.romStatus===s?`${romColors[s]}22`:'var(--bg-3)'};color:${p.romStatus===s?romColors[s]:'var(--muted)'};cursor:pointer;font-weight:${p.romStatus===s?'700':'400'}"
+                    data-platform="${p.id}" data-status="${s}">
+                    ${romLabels[s]}
+                  </button>`).join('')}
+              </div>
+              <div style="width:100%;display:flex;align-items:center;gap:6px;margin-top:2px">
+                <span style="font-size:.72rem;color:var(--muted);flex-shrink:0">ROM URL:</span>
+                <input id="rom-url-${p.id}" value="${p.romUrl||''}" placeholder="/storage/ROMs/... veya https://..."
+                  style="flex:1;background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:.75rem;font-family:monospace"
+                  onchange="setRomUrl('${p.id}',this.value)">
+              </div>
+            </div>`;
+          }).join('')}
         </div>
       </div>
       ${g.coop&&g.coopNotes?`<div class="modal-section"><h4>👫 Co-op Detay</h4><p>${g.coopNotes}</p></div>`:''}
