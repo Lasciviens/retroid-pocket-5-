@@ -14,6 +14,7 @@ h1{font-size:1.9rem;background:linear-gradient(90deg,var(--accent),var(--accent-
 .quick-links{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
 .quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
 .quick-links a:hover{border-color:var(--accent-2)}
+.helper-note{margin-top:10px;font-size:.78rem;color:var(--muted)}
 
 /* Search & add from library */
 .add-section{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px}
@@ -32,6 +33,9 @@ h1{font-size:1.9rem;background:linear-gradient(90deg,var(--accent),var(--accent-
 .stats{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .stat-pill{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:.78rem;color:var(--muted)}
 .stat-pill span{font-weight:700;color:var(--accent)}
+.queue-tools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.tool-btn{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.78rem;color:var(--text);cursor:pointer}
+.tool-btn:hover{border-color:var(--accent);color:var(--accent)}
 
 /* Queue */
 .queue-list{display:flex;flex-direction:column;gap:8px}
@@ -69,6 +73,7 @@ footer a{color:var(--accent);text-decoration:none}
     <a href="Retroid_Request_Tracker.html">♡ İstek Takibi</a>
   </div>
   <div data-auth-mount></div>
+  <div class="helper-note">Misafir olarak sirayi gorebilirsin. Ekleme, silme ve siralama icin log in yeterli.</div>
 </header>
 
 <div class="add-section">
@@ -80,6 +85,10 @@ footer a{color:var(--accent);text-decoration:none}
 </div>
 
 <div class="stats" id="stats"></div>
+<div class="queue-tools">
+  <button class="tool-btn" type="button" onclick="clearSearch()">Aramayi Temizle</button>
+  <button class="tool-btn" type="button" onclick="reloadQueue()">Listeyi Yenile</button>
+</div>
 
 <div class="queue-list" id="queue"><div class="loading">⏳ Yükleniyor...</div></div>
 
@@ -116,9 +125,11 @@ function renderQueue(){
   const el=document.getElementById('queue');
   const done=QUEUE.filter(g=>g.play_status==='completed').length;
   const playing=QUEUE.filter(g=>g.play_status==='playing').length;
+  const backlog=QUEUE.filter(g=>g.play_status!=='playing'&&g.play_status!=='completed').length;
   document.getElementById('stats').innerHTML=`
     <div class="stat-pill">Sırada: <span>${QUEUE.length}</span></div>
     <div class="stat-pill">Oynuyor: <span>${playing}</span></div>
+    <div class="stat-pill">Backlog: <span>${backlog}</span></div>
     <div class="stat-pill">Bitti: <span>${done}</span></div>`;
 
   if(!QUEUE.length){el.innerHTML='<div class="empty">Sıra boş. Yukarıdan oyun ekle!</div>';return;}
@@ -262,6 +273,16 @@ async function addToQueue(id){
   await api(`games?id=eq.${id}`,'PATCH',{play_order:nextOrder});
   document.getElementById('game-search').value='';
   document.getElementById('suggestions').style.display='none';
+  load();
+}
+
+function clearSearch(){
+  document.getElementById('game-search').value='';
+  document.getElementById('suggestions').style.display='none';
+}
+
+function reloadQueue(){
+  clearSearch();
   load();
 }
 

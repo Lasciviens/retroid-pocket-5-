@@ -13,6 +13,7 @@ h1{font-size:1.9rem;background:linear-gradient(90deg,#ff4655,#ffb347,#2ecc71,#00
 .subtitle{color:var(--muted);font-size:.9rem}
 .quick-links{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
 .quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600}
+.helper-note{margin-top:10px;font-size:.78rem;color:var(--muted)}
 
 .actions{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
 .btn{border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700;transition:all .2s}
@@ -20,6 +21,7 @@ h1{font-size:1.9rem;background:linear-gradient(90deg,#ff4655,#ffb347,#2ecc71,#00
 .btn-save{background:var(--good);color:var(--bg-1)}
 .btn-reset{background:var(--bg-3);border:1px solid var(--border);color:var(--text)}
 .save-status{font-size:.8rem;color:var(--good);display:none}
+.dirty-status{font-size:.8rem;color:var(--warn);display:none}
 
 /* TIER ROWS */
 .tier-board{display:flex;flex-direction:column;gap:6px;margin-bottom:24px}
@@ -58,18 +60,20 @@ footer a{color:var(--accent-2);text-decoration:none}
 <body>
 <header>
   <h1>🏆 TIER LIST</h1>
-  <p class="subtitle">Oyunlarını sürükle-bırak ile sırala. Otomatik kaydedilir.</p>
+  <p class="subtitle">Oyunlarini surukle-birak ile sirala. Sonra kaydet.</p>
   <div class="quick-links">
     <a href="index.html">🏠 Hub</a>
     <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
   </div>
   <div data-auth-mount></div>
+  <div class="helper-note">Misafir olarak tier gorunur. Kaydetme ve sifirlama icin log in gerekir.</div>
 </header>
 
 <div class="actions">
   <button class="btn btn-save" onclick="saveAll()">💾 Kaydet</button>
   <button class="btn btn-export" onclick="exportPNG()">🖼️ PNG Export</button>
   <button class="btn btn-reset" onclick="resetAll()">↺ Sıfırla</button>
+  <span class="dirty-status" id="dirty-status">● Kaydedilmemis degisiklik var</span>
   <span class="save-status" id="save-status">✓ Kaydedildi</span>
 </div>
 
@@ -95,6 +99,7 @@ const TIERS=['S','A','B','C','D','F'];
 const TIER_COLORS={S:'#ff4655',A:'#f97316',B:'#eab308',C:'#22c55e',D:'#3b82f6',F:'#6b7280'};
 
 let ALL=[], dragId=null;
+let dirty=false;
 // Touch
 let touchEl=null, touchClone=null, touchOffX=0, touchOffY=0;
 
@@ -107,7 +112,21 @@ async function api(ep,method='GET',body=null){
 
 async function load(){
   ALL=await api('games?select=id,title,tier,primary_cover_url&order=title');
+  dirty=false;
+  updateStatus();
   render();
+}
+
+function updateStatus(saved){
+  const dirtyEl=document.getElementById('dirty-status');
+  const savedEl=document.getElementById('save-status');
+  dirtyEl.style.display=dirty?'inline':'none';
+  if(saved){
+    savedEl.style.display='inline';
+    setTimeout(()=>savedEl.style.display='none',2000);
+  }else if(!dirty){
+    savedEl.style.display='none';
+  }
 }
 
 function render(){
@@ -150,6 +169,8 @@ function drop(e,tier){
   if(!dragId)return;
   const g=ALL.find(x=>x.id===dragId);
   if(g)g.tier=tier||null;
+  dirty=true;
+  updateStatus();
   render();
   dragId=null;
 }
@@ -193,6 +214,8 @@ function touchEnd(e){
   if(tierEl?.id?.startsWith('tier-'))tier=tierEl.id.replace('tier-','');
   const g=ALL.find(x=>x.id===dragId);
   if(g)g.tier=tier;
+  dirty=true;
+  updateStatus();
   render();
   dragId=null;touchEl=null;
 }
@@ -203,9 +226,8 @@ async function saveAll(){
     await api(`games?id=eq.${g.id}`,'PATCH',{tier:g.tier||null});
     await new Promise(r=>setTimeout(r,30));
   }
-  const s=document.getElementById('save-status');
-  s.style.display='inline';
-  setTimeout(()=>s.style.display='none',2000);
+  dirty=false;
+  updateStatus(true);
 }
 
 async function resetAll(){
@@ -213,6 +235,8 @@ async function resetAll(){
   if(!confirm('Tüm tier atamaları sıfırlansın mı?'))return;
   ALL.forEach(g=>g.tier=null);
   for(const g of ALL)await api(`games?id=eq.${g.id}`,'PATCH',{tier:null});
+  dirty=false;
+  updateStatus(true);
   render();
 }
 
