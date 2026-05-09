@@ -250,7 +250,7 @@ async function loadSuggestions(){
       matched:!!game.external_id
     }));
     const featured=libraryGames.slice(0,18);
-    document.getElementById('suggestions').innerHTML=featured.map(game=>`<button class="chip" onclick="selectedCandidate=null;runSearch(${JSON.stringify(game.title)})">${game.iconic?'★ ':''}${game.title}</button>`).join('');
+    document.getElementById('suggestions').innerHTML=featured.map(game=>`<button class="chip" data-title="${game.title.replace(/"/g,'&quot;')}" onclick="selectedCandidate=null;runSearch(this.dataset.title)">${game.iconic?'★ ':''}${game.title}</button>`).join('');
 
     const unmatched=libraryGames.filter(game=>!game.matched);
     document.getElementById('candidate-stats').innerHTML=`
@@ -258,7 +258,7 @@ async function loadSuggestions(){
       <span class="pill warn">Eslesmemis ${unmatched.length}</span>
       <span class="pill good">Eslesmis ${libraryGames.length-unmatched.length}</span>`;
     document.getElementById('candidate-chips').innerHTML=unmatched.slice(0,24).map(game=>`
-      <button class="chip" data-title="${game.title}" onclick="pickCandidate(${JSON.stringify(game.title)})">
+      <button class="chip" data-title="${game.title.replace(/"/g,'&quot;')}" onclick="pickCandidate(this.dataset.title)">
         ${game.iconic?'★ ':''}${game.title}${game.releaseYear?` (${game.releaseYear})`:''}
       </button>`).join('');
   }catch(error){
