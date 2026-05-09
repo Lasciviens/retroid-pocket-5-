@@ -1,7 +1,7 @@
 # 🎮 Retroid Pocket 5 — Elite Gaming Library
 
 > A personal retro gaming library tracker built for the Retroid Pocket 5 handheld.  
-> Live at **[lasciviens.netlify.app](https://lasciviens.netlify.app)**
+> Live at **[lasciviens.github.io/retroid-pocket-5-](https://lasciviens.github.io/retroid-pocket-5-/)**
 
 ---
 
@@ -9,7 +9,7 @@
 
 A fully dynamic web app to manage, track, and explore a curated retro game collection — synced across all devices via Supabase.
 
-**Built with:** Vanilla HTML/CSS/JS + Supabase (PostgreSQL) + Netlify
+**Built with:** Vanilla HTML/CSS/JS + Supabase (PostgreSQL) + GitHub Pages
 
 No frameworks. No build step. Every page talks directly to the Supabase REST API.
 
@@ -35,7 +35,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 ```
 Frontend (Static HTML) ──► Supabase REST API ──► PostgreSQL
         │
-        └── Netlify (auto-deploy from GitHub)
+        └── GitHub Pages (auto-deploy from GitHub)
 ```
 
 ### Database Schema
@@ -59,13 +59,17 @@ All play status updates sync in real-time across devices — phone, tablet, PC, 
 
 ## Deployment
 
-Push to `main` → Netlify auto-deploys in ~30 seconds.
+Push to `main` → GitHub Pages deploys the static site from the repository root.
 
 ```bash
 git add .
 git commit -m "your change"
 git push
 ```
+
+GitHub Pages deploy workflow: `.github/workflows/pages.yml`
+
+Migration notes: `GITHUB_PAGES_MIGRATION.md`
 
 ---
 

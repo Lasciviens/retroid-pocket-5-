@@ -4,7 +4,7 @@
 
 Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok. Her HTML dosyası doğrudan Supabase REST API'sine bağlanır.
 
-**Canlı Site:** https://illustrious-liger-fbd40d.netlify.app  
+**Canlı Site:** https://lasciviens.github.io/retroid-pocket-5-/  
 **GitHub:** https://github.com/Lasciviens/retroid-pocket-5-  
 **Supabase:** https://bniqmxbtvgwkaoswugds.supabase.co
 
@@ -98,13 +98,17 @@ Dosyaya `- Oyun Adı | Sistem | Not` formatında yaz. Sonraki session'da Claude 
 
 ## Deployment
 
-GitHub → Netlify otomatik deploy. Push yaptıktan sonra ~30 saniye içinde canlıya geçer.
+GitHub → GitHub Pages otomatik deploy. Push yaptıktan sonra Pages workflow statik dosyaları yayınlar.
 
 ```bash
 git add .
 git commit -m "değişiklik açıklaması"
 git push
 ```
+
+GitHub Pages workflow: `.github/workflows/pages.yml`
+
+Migration log: `GITHUB_PAGES_MIGRATION.md`
 
 ---
 
