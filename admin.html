@@ -10,7 +10,11 @@
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-1);color:var(--text);min-height:100vh;padding:24px}
 h1{font-size:1.6rem;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
 .nav{margin-bottom:24px}
+.nav{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.nav-links{display:flex;gap:8px;flex-wrap:wrap}
 .nav a{color:var(--accent-2);text-decoration:none;font-size:.85rem}
+.nav-links a{padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-2)}
+.page-note{color:var(--muted);font-size:.8rem;max-width:540px;line-height:1.5}
 .tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:0}
 .tab{padding:10px 18px;background:none;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
 .tab.active{color:var(--accent-2);border-bottom-color:var(--accent-2)}
@@ -51,7 +55,17 @@ textarea{resize:vertical;min-height:80px}
 <script src="rp5_auth.js"></script>
 </head>
 <body>
-<div class="nav"><a href="Retroid_Library_Dashboard.html">← Kütüphaneye Dön</a></div>
+<div class="nav">
+  <div>
+    <div class="nav-links">
+      <a href="index.html">🏠 Hub</a>
+      <a href="Retroid_Library_Dashboard.html">📚 Kutuphane</a>
+      <a href="Retroid_Database.html">🗄️ Database</a>
+    </div>
+    <p class="page-note" style="margin-top:10px">Yonetim alani. Giris aciksa oturum hatirlanir; bu yuzden tekrar tekrar sifre sormaz.</p>
+  </div>
+  <div data-auth-mount></div>
+</div>
 <h1>🎮 Admin Panel</h1>
 <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px">Oyun ekle, düzenle veya sil.</p>
 
