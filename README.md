@@ -35,7 +35,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 ```
 Frontend (Static HTML) ──► Supabase REST API ──► PostgreSQL
         │
-        └── GitHub Pages (auto-deploy from GitHub)
+        └── GitHub Pages (published from gh-pages branch)
 ```
 
 ### Database Schema
@@ -59,7 +59,7 @@ All play status updates sync in real-time across devices — phone, tablet, PC, 
 
 ## Deployment
 
-Push to `main` → GitHub Pages deploys the static site from the repository root.
+GitHub Pages is published from the `gh-pages` branch.
 
 ```bash
 git add .
@@ -67,7 +67,11 @@ git commit -m "your change"
 git push
 ```
 
-GitHub Pages deploy workflow: `.github/workflows/pages.yml`
+To publish the current static site to GitHub Pages:
+
+```bash
+git push origin main:gh-pages
+```
 
 Migration notes: `GITHUB_PAGES_MIGRATION.md`
 

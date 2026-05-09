@@ -98,7 +98,7 @@ Dosyaya `- Oyun Adı | Sistem | Not` formatında yaz. Sonraki session'da Claude 
 
 ## Deployment
 
-GitHub → GitHub Pages otomatik deploy. Push yaptıktan sonra Pages workflow statik dosyaları yayınlar.
+GitHub Pages yayını `gh-pages` branch üzerinden çalışır.
 
 ```bash
 git add .
@@ -106,7 +106,11 @@ git commit -m "değişiklik açıklaması"
 git push
 ```
 
-GitHub Pages workflow: `.github/workflows/pages.yml`
+Canlıya yayınlamak için:
+
+```bash
+git push origin main:gh-pages
+```
 
 Migration log: `GITHUB_PAGES_MIGRATION.md`
 

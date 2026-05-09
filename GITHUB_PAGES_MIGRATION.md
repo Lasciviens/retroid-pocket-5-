@@ -59,7 +59,6 @@ Previously added recommendation games confirmed present:
 
 Added:
 
-- `.github/workflows/pages.yml` - GitHub Actions workflow for GitHub Pages deployment.
 - `.nojekyll` - disables Jekyll processing so static files are served as-is.
 - `GITHUB_PAGES_MIGRATION.md` - this migration log for future AI/human maintainers.
 
@@ -72,6 +71,7 @@ Updated:
 
 ```text
 GitHub repository
+  -> gh-pages branch
   -> GitHub Pages static hosting
   -> browser loads HTML/CSS/JS
   -> Supabase REST API
@@ -79,6 +79,16 @@ GitHub repository
 ```
 
 There is no frontend build step. The root `index.html` is the app entry point.
+
+## Publishing Command
+
+Use this after committing to `main`:
+
+```bash
+git push origin main:gh-pages
+```
+
+The first GitHub Actions workflow attempt failed at the `Configure Pages` step because Pages was not yet configured for Actions deployment. Publishing a `gh-pages` branch triggered GitHub's built-in Pages build successfully.
 
 ## Important Follow-up
 
@@ -90,4 +100,3 @@ Security cleanup should happen next:
 - Move or remove one-time migration HTML pages from public navigation/deployment.
 - Protect admin/write pages with Supabase Auth (authentication -- login/user identity).
 - Re-check CORS (Cross-Origin Resource Sharing -- browser rule for calls between different domains) if GitHub Pages cannot call Supabase.
-
