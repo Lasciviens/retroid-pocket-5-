@@ -14,6 +14,7 @@ h1{font-size:1.9rem;background:linear-gradient(90deg,var(--accent),var(--purple)
 .quick-links{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
 .quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
 .quick-links a:hover{border-color:var(--accent)}
+.helper-note{margin-top:10px;font-size:.78rem;color:var(--muted)}
 .add-section{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px}
 .add-section h3{font-size:.9rem;font-weight:700;color:var(--accent);margin-bottom:12px}
 .form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
@@ -29,6 +30,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .fbtn:hover,.fbtn.active{border-color:var(--accent);color:var(--accent)}
 .search-inp{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:.85rem;width:180px}
 .search-inp:focus{outline:none;border-color:var(--accent)}
+.utility-btn{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:7px 11px;color:var(--text);font-size:.78rem;cursor:pointer}
+.utility-btn:hover{border-color:var(--accent);color:var(--accent)}
 .wish-list{display:flex;flex-direction:column;gap:8px}
 .wish-item{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:13px 15px;display:flex;align-items:center;gap:12px;transition:border-color .2s}
 .wish-item:hover{border-color:var(--accent)}
@@ -71,6 +74,7 @@ footer a{color:var(--accent);text-decoration:none}
     <a href="admin.html" data-auth-required-link>➕ Oyun Ekle</a>
   </div>
   <div data-auth-mount></div>
+  <div class="helper-note">Listeyi misafir olarak gorebilirsin. Ekleme, tamamlama ve silme icin log in gerekir.</div>
 </header>
 
 <div class="add-section">
@@ -102,6 +106,7 @@ footer a{color:var(--accent);text-decoration:none}
   <button class="fbtn" onclick="setFilter('emulator',this)">⚙️ Emülatör</button>
   <button class="fbtn" onclick="setFilter('feature',this)">✨ Özellik</button>
   <button class="fbtn" onclick="setFilter('done',this)">✓ Tamamlanan</button>
+  <button class="utility-btn" onclick="clearSearch()">Aramayi Temizle</button>
 </div>
 
 <div class="wish-list" id="list"><div class="loading">⏳ Yükleniyor...</div></div>
@@ -210,6 +215,12 @@ function setFilter(f,el){
   activeFilter=f;
   document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
+  render();
+}
+
+function clearSearch(){
+  document.getElementById('search').value='';
+  searchQ='';
   render();
 }
 
