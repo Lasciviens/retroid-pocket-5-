@@ -14,6 +14,8 @@ h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--good));-w
 .quick-links{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
 .quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
 .quick-links a:hover{border-color:var(--accent-2)}
+.helper-note{max-width:920px;margin:14px auto 0;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:rgba(19,24,41,.72);color:var(--muted);font-size:.85rem;line-height:1.45}
+.helper-note strong{color:var(--text)}
 
 /* RANDOM HERO */
 .random-hero{background:var(--bg-2);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:22px;display:flex;gap:20px;align-items:center}
@@ -85,6 +87,7 @@ footer a{color:var(--accent-2);text-decoration:none}
     <a href="Retroid_Queue.html">🎮 Oynama Sırası</a>
   </div>
   <div data-auth-mount></div>
+  <div class="helper-note"><strong>Misafir modu:</strong> Co-op listesini gezebilir, filtreleyebilir ve öneri alabilirsin. Durum güncellemek için sağ üstten log in yeterli.</div>
 </header>
 
 <!-- RANDOM HERO -->
@@ -114,6 +117,8 @@ footer a{color:var(--accent-2);text-decoration:none}
     <option value="playing">Oynuyor</option>
     <option value="completed">Bitti</option>
   </select>
+  <button class="fbtn" id="f-clear-search" onclick="clearSearch()">Aramayı Temizle</button>
+  <button class="fbtn" id="f-reroll" onclick="reroll()">Listeye Göre Öner</button>
   <button class="fbtn" id="f-reset" onclick="resetFilters()">↺ Sıfırla</button>
 </div>
 
@@ -153,14 +158,17 @@ async function load(){
   [...new Set(ALL.flatMap(g=>g.platforms.map(p=>p.system)).filter(Boolean))].sort().forEach(s=>fSys.innerHTML+=`<option value="${s}">${s}</option>`);
   [...new Set(ALL.flatMap(g=>g.genres))].sort().forEach(g=>fGen.innerHTML+=`<option value="${g}">${g}</option>`);
 
-  // Stats
-  document.getElementById('stats').innerHTML=`
-    <div class="stat-pill">Co-op oyun: <span>${ALL.length}</span></div>
-    <div class="stat-pill">Oynandı: <span>${ALL.filter(g=>g.status==='completed').length}</span></div>
-    <div class="stat-pill">Sırada: <span>${ALL.filter(g=>g.status==='playing').length}</span></div>`;
-
+  renderStats();
   reroll();
   render();
+}
+
+function renderStats(){
+  document.getElementById('stats').innerHTML=`
+    <div class="stat-pill">Co-op oyun: <span>${ALL.length}</span></div>
+    <div class="stat-pill">Backlog: <span>${ALL.filter(g=>g.status==='backlog').length}</span></div>
+    <div class="stat-pill">Oynandı: <span>${ALL.filter(g=>g.status==='completed').length}</span></div>
+    <div class="stat-pill">Sırada: <span>${ALL.filter(g=>g.status==='playing').length}</span></div>`;
 }
 
 function getFiltered(){
@@ -202,8 +210,15 @@ function reroll(){
 async function markHeroPlaying(){
   if(!heroGame)return;
   if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Co-op oyun durumunu guncellemek icin yonetici oturumu acik olmali.'})))return;
+  const btn=document.querySelector('.btn-play');
   heroGame.status='playing';
   await api(`games?id=eq.${heroGame.id}`,'PATCH',{play_status:'playing'});
+  if(btn){
+    const original=btn.textContent;
+    btn.textContent='✓ İşaretlendi';
+    setTimeout(()=>{btn.textContent=original;},1400);
+  }
+  renderStats();
   render();
 }
 
@@ -240,8 +255,15 @@ async function setStatus(id,status){
   if(!g)return;
   if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Co-op oyun durumunu guncellemek icin yonetici oturumu acik olmali.'})))return;
   g.status=status;
+  renderStats();
   render();
   await api(`games?id=eq.${id}`,'PATCH',{play_status:status});
+}
+
+function clearSearch(){
+  filters.search='';
+  document.getElementById('search').value='';
+  render();
 }
 
 function resetFilters(){
@@ -250,6 +272,7 @@ function resetFilters(){
   document.getElementById('f-sys').value='';
   document.getElementById('f-genre').value='';
   document.getElementById('f-status').value='';
+  reroll();
   render();
 }
 
