@@ -16,6 +16,7 @@ Apply RLS (Row Level Security -- row-based access control) so that:
 - authenticated users can write
 
 That change must be applied in Supabase SQL editor or migration flow.
+For this project, the ready-to-run script is `supabase_rls_hardening.sql`.
 
 ## Recommended Auth Setup
 
