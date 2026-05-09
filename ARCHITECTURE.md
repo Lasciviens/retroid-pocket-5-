@@ -8,6 +8,13 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 **GitHub:** https://github.com/Lasciviens/retroid-pocket-5-  
 **Supabase:** https://bniqmxbtvgwkaoswugds.supabase.co
 
+## Erişim Modeli
+
+- Site login olmadan okunabilir.
+- Yazma yapan butonlar ve yönetim sayfaları Supabase Auth oturumu ister.
+- Oturum tarayıcıda saklanır; her ziyarette yeniden giriş gerekmez.
+- Gerçek server-side koruma için `supabase_rls_hardening.sql` dosyasındaki RLS adımları sıradaki güvenlik işidir.
+
 ---
 
 ## Database Schema (v3 — Mayıs 2026)

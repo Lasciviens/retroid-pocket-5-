@@ -72,6 +72,8 @@ h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--good));-w
 footer{text-align:center;margin-top:32px;padding:14px;color:var(--muted);font-size:.8rem}
 footer a{color:var(--accent-2);text-decoration:none}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
 </head>
 <body>
 <header>
@@ -82,6 +84,7 @@ footer a{color:var(--accent-2);text-decoration:none}
     <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
     <a href="Retroid_Queue.html">🎮 Oynama Sırası</a>
   </div>
+  <div data-auth-mount></div>
 </header>
 
 <!-- RANDOM HERO -->
@@ -116,7 +119,7 @@ footer a{color:var(--accent-2);text-decoration:none}
 
 <div class="game-grid" id="grid"><div class="loading">⏳ Yükleniyor...</div></div>
 
-<footer>Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a></footer>
+<footer>Retroid Pocket 5 · <a href="https://lasciviens.github.io/retroid-pocket-5-/">lasciviens.github.io/retroid-pocket-5-/</a></footer>
 
 <script>
 const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
@@ -198,6 +201,7 @@ function reroll(){
 
 async function markHeroPlaying(){
   if(!heroGame)return;
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Co-op oyun durumunu guncellemek icin yonetici oturumu acik olmali.'})))return;
   heroGame.status='playing';
   await api(`games?id=eq.${heroGame.id}`,'PATCH',{play_status:'playing'});
   render();
@@ -234,6 +238,7 @@ function render(){
 async function setStatus(id,status){
   const g=ALL.find(x=>x.id===id);
   if(!g)return;
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Co-op oyun durumunu guncellemek icin yonetici oturumu acik olmali.'})))return;
   g.status=status;
   render();
   await api(`games?id=eq.${id}`,'PATCH',{play_status:status});

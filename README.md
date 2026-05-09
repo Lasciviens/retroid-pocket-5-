@@ -28,6 +28,13 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 | 📖 **Glossary** | Technical terms (ROM, BIOS, JIT...) explained for developers |
 | ➕ **Admin Panel** | Add/edit/delete games with full form UI |
 
+## Access Model
+
+- Public visitors can browse the site without logging in.
+- Write actions and admin pages use a remembered Supabase Auth session.
+- The browser keeps your admin session so you are not asked on every visit.
+- Server-side RLS hardening is prepared in `supabase_rls_hardening.sql` and should be applied in Supabase next.
+
 ---
 
 ## Architecture
@@ -74,6 +81,7 @@ git push origin main:gh-pages
 ```
 
 Migration notes: `GITHUB_PAGES_MIGRATION.md`
+Security follow-up: `SECURITY_NEXT_STEPS.md`
 
 ---
 

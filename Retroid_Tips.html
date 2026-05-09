@@ -37,6 +37,8 @@ textarea{resize:vertical;min-height:70px;flex:1}
 footer{text-align:center;margin-top:32px;padding:14px;color:var(--muted);font-size:.8rem}
 footer a{color:var(--accent);text-decoration:none}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
 </head>
 <body>
 <header>
@@ -48,6 +50,7 @@ footer a{color:var(--accent);text-decoration:none}
     <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatörler</a>
     <a href="Retroid_Glossary.html">📖 Glossary</a>
   </div>
+  <div data-auth-mount></div>
 </header>
 
 <div class="add-section">
@@ -65,7 +68,7 @@ footer a{color:var(--accent);text-decoration:none}
 
 <div class="tips-grid" id="grid"><div class="loading">⏳ Yükleniyor...</div></div>
 
-<footer>Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a></footer>
+<footer>Retroid Pocket 5 · <a href="https://lasciviens.github.io/retroid-pocket-5-/">lasciviens.github.io/retroid-pocket-5-/</a></footer>
 
 <script>
 const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
@@ -101,6 +104,7 @@ function render(){
 }
 
 async function addTip(){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Yeni not eklemek icin yonetici oturumu acik olmali.'})))return;
   const title=document.getElementById('f-title').value.trim();
   const content=document.getElementById('f-content').value.trim();
   if(!title)return;
@@ -111,6 +115,7 @@ async function addTip(){
 }
 
 async function deleteTip(id){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Not silmek icin yonetici oturumu acik olmali.'})))return;
   if(!confirm('Bu not silinsin mi?'))return;
   await api(`notes?id=eq.${id}`,'DELETE');
   ALL=ALL.filter(t=>t.id!==id);

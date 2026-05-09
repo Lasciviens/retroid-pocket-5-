@@ -52,6 +52,8 @@ h1{font-size:1.9rem;background:linear-gradient(90deg,#ff4655,#ffb347,#2ecc71,#00
 footer{text-align:center;margin-top:24px;padding:14px;color:var(--muted);font-size:.8rem}
 footer a{color:var(--accent-2);text-decoration:none}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
 </head>
 <body>
 <header>
@@ -61,6 +63,7 @@ footer a{color:var(--accent-2);text-decoration:none}
     <a href="index.html">🏠 Hub</a>
     <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
   </div>
+  <div data-auth-mount></div>
 </header>
 
 <div class="actions">
@@ -82,7 +85,7 @@ footer a{color:var(--accent-2);text-decoration:none}
     ontouchover="dragOver(event)"></div>
 </div>
 
-<footer>Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a></footer>
+<footer>Retroid Pocket 5 · <a href="https://lasciviens.github.io/retroid-pocket-5-/">lasciviens.github.io/retroid-pocket-5-/</a></footer>
 
 <script>
 const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
@@ -195,6 +198,7 @@ function touchEnd(e){
 }
 
 async function saveAll(){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Tier list kaydetmek icin yonetici oturumu acik olmali.'})))return;
   for(const g of ALL){
     await api(`games?id=eq.${g.id}`,'PATCH',{tier:g.tier||null});
     await new Promise(r=>setTimeout(r,30));
@@ -205,6 +209,7 @@ async function saveAll(){
 }
 
 async function resetAll(){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Tier atamalarini sifirlamak icin yonetici oturumu acik olmali.'})))return;
   if(!confirm('Tüm tier atamaları sıfırlansın mı?'))return;
   ALL.forEach(g=>g.tier=null);
   for(const g of ALL)await api(`games?id=eq.${g.id}`,'PATCH',{tier:null});

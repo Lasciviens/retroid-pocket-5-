@@ -56,6 +56,8 @@ h1{font-size:1.9rem;background:linear-gradient(90deg,var(--accent),var(--accent-
 footer{text-align:center;margin-top:32px;padding:14px;color:var(--muted);font-size:.8rem}
 footer a{color:var(--accent);text-decoration:none}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
 </head>
 <body>
 <header>
@@ -66,6 +68,7 @@ footer a{color:var(--accent);text-decoration:none}
     <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
     <a href="Retroid_Request_Tracker.html">♡ İstek Takibi</a>
   </div>
+  <div data-auth-mount></div>
 </header>
 
 <div class="add-section">
@@ -80,7 +83,7 @@ footer a{color:var(--accent);text-decoration:none}
 
 <div class="queue-list" id="queue"><div class="loading">⏳ Yükleniyor...</div></div>
 
-<footer>Retroid Pocket 5 · <a href="https://lasciviens.netlify.app">lasciviens.netlify.app</a></footer>
+<footer>Retroid Pocket 5 · <a href="https://lasciviens.github.io/retroid-pocket-5-/">lasciviens.github.io/retroid-pocket-5-/</a></footer>
 
 <script>
 const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
@@ -174,6 +177,7 @@ async function drop(e,targetId){
 }
 
 async function reorder(srcId,targetId){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Oynama sirasini degistirmek icin yonetici oturumu acik olmali.'})))return;
   const srcIdx=QUEUE.findIndex(g=>g.id===srcId);
   const tgtIdx=QUEUE.findIndex(g=>g.id===targetId);
   if(srcIdx<0||tgtIdx<0)return;
@@ -253,6 +257,7 @@ function searchGames(q){
 }
 
 async function addToQueue(id){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Siraya oyun eklemek icin yonetici oturumu acik olmali.'})))return;
   const nextOrder=QUEUE.length+1;
   await api(`games?id=eq.${id}`,'PATCH',{play_order:nextOrder});
   document.getElementById('game-search').value='';
@@ -261,6 +266,7 @@ async function addToQueue(id){
 }
 
 async function removeFromQueue(id){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Siradan oyun cikarmak icin yonetici oturumu acik olmali.'})))return;
   await api(`games?id=eq.${id}`,'PATCH',{play_order:null});
   // Reorder remaining
   QUEUE=QUEUE.filter(g=>g.id!==id);
@@ -269,6 +275,7 @@ async function removeFromQueue(id){
 }
 
 async function markPlaying(id){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Oyun durumunu guncellemek icin yonetici oturumu acik olmali.'})))return;
   await api(`games?id=eq.${id}`,'PATCH',{play_status:'playing'});
   const g=QUEUE.find(x=>x.id===id);
   if(g)g.play_status='playing';
