@@ -27,10 +27,18 @@ Bu yuzden GitHub Pages uzerindeki bu statik site, secret'i frontend'e koymadan c
   - proxy varsa canli sonuc gosterme
   - proxy yoksa IGDB web aramasina kopru
   - kutuphaneden query string ile acilabilme: `?title=Chrono%20Trigger`
+  - `external_id` bos olan kutuphane oyunlarini one cikarir
+  - aday sonuclarda basit eslesme skoru gosterir
+  - sonuc kartindan mapping JSON kopyalayabilir
 - `rp5_igdb.js`
   - proxy URL'yi tarayici localStorage'da saklar
   - farkli proxy response formatlarini normalize eder
   - IGDB sayfasina ve fallback web aramasina link uretir
+  - basit title/year eslesme skoru hesaplar
+- `supabase/functions/igdb-search/index.ts`
+  - Supabase Edge Function icin deploy edilebilir proxy iskeleti
+  - Twitch token alip IGDB `games` endpoint'ine server-side istek atar
+  - browser'dan cagri icin CORS header'larini doner
 
 ## Beklenen proxy sekli
 
@@ -80,6 +88,20 @@ En pratik sonraki deployment secenekleri:
 1. Supabase Edge Function
 2. Cloudflare Worker
 3. Kucuk bir Node endpoint
+
+Bu repo su an Supabase Edge Function odakli bir scaffold da iceriyor:
+
+- `supabase/functions/igdb-search/index.ts`
+- `supabase/functions/README.md`
+
+Ornek deploy akisi, Supabase'in resmi docs akisi ile uyumludur:
+
+1. `supabase login`
+2. `supabase link --project-ref <project-ref>`
+3. `supabase secrets set TWITCH_CLIENT_ID=... TWITCH_CLIENT_SECRET=...`
+4. `supabase functions deploy igdb-search`
+5. frontend'de proxy URL olarak su adresi kullan:
+   `https://<project-ref>.supabase.co/functions/v1/igdb-search`
 
 ## Sonraki adim: DB sync
 

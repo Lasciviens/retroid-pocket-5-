@@ -17,9 +17,11 @@ h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--accent-2)
 .panel{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px}
 .panel h2{font-size:1rem;margin-bottom:10px}
 .status-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.section-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--bg-3);border:1px solid var(--border);font-size:.78rem;color:var(--muted)}
 .pill.good{border-color:rgba(46,204,113,.4);color:var(--good)}
 .pill.warn{border-color:rgba(243,156,18,.4);color:var(--warn)}
+.pill.accent{border-color:rgba(0,212,255,.35);color:var(--accent-2)}
 .controls,.config{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .search-box,.url-box{flex:1;min-width:200px;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:.9rem}
 .search-box:focus,.url-box:focus{outline:none;border-color:var(--accent-2)}
@@ -30,6 +32,7 @@ h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--accent-2)
 .suggestions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .chip{padding:7px 10px;border-radius:999px;background:var(--bg-3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer}
 .chip:hover{border-color:var(--accent-2);color:var(--text)}
+.chip.active{border-color:var(--accent-2);color:var(--text);background:rgba(0,212,255,.08)}
 .results{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
 .result-card{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
 .result-cover{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--bg-3)}
@@ -39,6 +42,9 @@ h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--accent-2)
 .summary{font-size:.85rem;line-height:1.55;color:var(--text)}
 .badge-row{display:flex;gap:6px;flex-wrap:wrap}
 .badge{font-size:.68rem;padding:4px 7px;border-radius:999px;background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2)}
+.badge.match-strong{color:var(--good);border-color:rgba(46,204,113,.35)}
+.badge.match-mid{color:var(--gold);border-color:rgba(255,179,71,.35)}
+.badge.match-low{color:var(--muted)}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
 .actions a{text-decoration:none}
 .empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:14px}
@@ -74,6 +80,15 @@ footer a{color:var(--accent-2);text-decoration:none}
 </div>
 
 <div class="panel">
+  <div class="section-head">
+    <h2>Kutuphaneden Esleme Adaylari</h2>
+    <div class="status-row" id="candidate-stats"></div>
+  </div>
+  <div class="helper-note">Buradaki liste sadece okuma yapar. `external_id` bos olan oyunlari one cikarir; boylece ileride DB esleme turu daha hizli olur.</div>
+  <div class="suggestions" id="candidate-chips"></div>
+</div>
+
+<div class="panel">
   <h2>Oyun Ara</h2>
   <div class="controls">
     <input id="search" class="search-box" placeholder="Oyun adi yaz...">
@@ -94,10 +109,17 @@ footer a{color:var(--accent-2);text-decoration:none}
 <script>
 const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+let libraryGames=[], selectedCandidate=null;
 
 function readQuery(){
   const params=new URLSearchParams(window.location.search);
   return (params.get('title') || params.get('q') || '').trim();
+}
+
+function readYear(){
+  const params=new URLSearchParams(window.location.search);
+  const raw=(params.get('year') || '').trim();
+  return raw ? Number(raw) : null;
 }
 
 function renderStatus(){
@@ -131,7 +153,22 @@ function renderResults(items,query,message){
     root.innerHTML=`<div class="empty">${message || 'Sonuc bulunamadi.'}</div>`;
     return;
   }
-  root.innerHTML=items.map(item=>`
+  root.innerHTML=items.map(item=>{
+    const score=selectedCandidate ? window.rp5IgdbBridge.scoreMatch(query,item,selectedCandidate.releaseYear) : 0;
+    const scoreBadge=selectedCandidate
+      ? `<span class="badge ${score>=90?'match-strong':score>=70?'match-mid':'match-low'}">Eslesme ${score}/100</span>`
+      : '';
+    const mappingPayload=encodeURIComponent(JSON.stringify({
+      localTitle:selectedCandidate?.title || query,
+      localYear:selectedCandidate?.releaseYear || null,
+      igdbId:item.id,
+      igdbName:item.name,
+      igdbSlug:item.slug || '',
+      igdbUrl:item.igdbUrl || '',
+      igdbYear:item.releaseYear || null,
+      igdbRating:item.rating || null
+    },null,2));
+    return `
     <div class="result-card">
       ${item.coverUrl?`<img class="result-cover" src="${item.coverUrl}" alt="${item.name}" onerror="this.style.display='none'">`:`<div class="result-cover" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">Kapak yok</div>`}
       <div class="result-body">
@@ -141,21 +178,36 @@ function renderResults(items,query,message){
           ${item.rating?`Rating: ${item.rating.toFixed ? item.rating.toFixed(1) : item.rating}<br>`:''}
           ${item.platforms.length?`Platformlar: ${item.platforms.join(', ')}`:''}
         </div>
-        ${item.genres.length?`<div class="badge-row">${item.genres.slice(0,5).map(g=>`<span class="badge">${g}</span>`).join('')}</div>`:''}
+        ${(item.genres.length || selectedCandidate)?`<div class="badge-row">${scoreBadge}${item.genres.slice(0,5).map(g=>`<span class="badge">${g}</span>`).join('')}</div>`:''}
         ${item.summary?`<div class="summary">${item.summary.slice(0,260)}${item.summary.length>260?'...':''}</div>`:''}
         <div class="actions">
           ${item.igdbUrl?`<a class="btn" href="${item.igdbUrl}" target="_blank">IGDB Sayfasi</a>`:''}
           <a class="btn" href="Retroid_Library_Dashboard.html?search=${encodeURIComponent(item.name)}">Kutuphane Ara</a>
           <a class="btn" href="${window.rp5IgdbBridge.buildFallbackUrl(item.name)}" target="_blank">Web'de Ara</a>
+          <button class="btn" data-payload="${mappingPayload}" onclick="copyMapping(this.dataset.payload, this)">JSON Kopyala</button>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+}
+
+function pickCandidate(title){
+  selectedCandidate=libraryGames.find(game=>game.title===title) || null;
+  Array.from(document.querySelectorAll('#candidate-chips .chip')).forEach(chip=>{
+    chip.classList.toggle('active', chip.dataset.title===title);
+  });
+  if(selectedCandidate){
+    document.getElementById('search').value=selectedCandidate.title;
+    runSearch(selectedCandidate.title);
+  }
 }
 
 async function runSearch(titleOverride){
   const query=(titleOverride || document.getElementById('search').value).trim();
   if(!query)return;
+  if(!selectedCandidate || selectedCandidate.title!==query){
+    selectedCandidate=libraryGames.find(game=>game.title===query) || selectedCandidate;
+  }
   document.getElementById('search').value=query;
   document.getElementById('results').innerHTML='<div class="empty">IGDB taraniyor...</div>';
   const result=await window.rp5IgdbBridge.searchGames(query);
@@ -174,16 +226,44 @@ async function runSearch(titleOverride){
   renderResults([],query,'IGDB koprusune su an ulasilamadi.');
 }
 
+async function copyMapping(payload, btn){
+  if(!payload)return;
+  const text=decodeURIComponent(payload);
+  await navigator.clipboard?.writeText(text);
+  if(btn){
+    const old=btn.textContent;
+    btn.textContent='Kopyalandi';
+    setTimeout(()=>{btn.textContent=old;},1200);
+  }
+}
+
 async function loadSuggestions(){
   try{
-    const response=await fetch(`${SB}/rest/v1/games?select=title,is_iconic&order=is_iconic.desc,title.asc&limit=18`,{
+    const response=await fetch(`${SB}/rest/v1/games?select=title,release_year,is_iconic,external_id&order=is_iconic.desc,title.asc&limit=80`,{
       headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}
     });
     const games=await response.json();
-    const root=document.getElementById('suggestions');
-    root.innerHTML=games.map(game=>`<button class="chip" onclick="runSearch(${JSON.stringify(game.title)})">${game.is_iconic?'★ ':''}${game.title}</button>`).join('');
+    libraryGames=games.map(game=>({
+      title:game.title,
+      releaseYear:game.release_year || null,
+      iconic:!!game.is_iconic,
+      matched:!!game.external_id
+    }));
+    const featured=libraryGames.slice(0,18);
+    document.getElementById('suggestions').innerHTML=featured.map(game=>`<button class="chip" onclick="selectedCandidate=null;runSearch(${JSON.stringify(game.title)})">${game.iconic?'★ ':''}${game.title}</button>`).join('');
+
+    const unmatched=libraryGames.filter(game=>!game.matched);
+    document.getElementById('candidate-stats').innerHTML=`
+      <span class="pill accent">Toplam ${libraryGames.length}</span>
+      <span class="pill warn">Eslesmemis ${unmatched.length}</span>
+      <span class="pill good">Eslesmis ${libraryGames.length-unmatched.length}</span>`;
+    document.getElementById('candidate-chips').innerHTML=unmatched.slice(0,24).map(game=>`
+      <button class="chip" data-title="${game.title}" onclick="pickCandidate(${JSON.stringify(game.title)})">
+        ${game.iconic?'★ ':''}${game.title}${game.releaseYear?` (${game.releaseYear})`:''}
+      </button>`).join('');
   }catch(error){
     document.getElementById('suggestions').innerHTML='<span class="helper-note">Kutuphane onerileri yuklenemedi.</span>';
+    document.getElementById('candidate-chips').innerHTML='<span class="helper-note">Esleme adaylari yuklenemedi.</span>';
   }
 }
 
@@ -192,6 +272,10 @@ loadSuggestions();
 const initialQuery=readQuery();
 if(initialQuery){
   document.getElementById('search').value=initialQuery;
+  const initialYear=readYear();
+  if(initialYear){
+    selectedCandidate={title:initialQuery,releaseYear:initialYear};
+  }
   runSearch(initialQuery);
 }
 </script>

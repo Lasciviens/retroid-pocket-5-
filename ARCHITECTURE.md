@@ -78,6 +78,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── Retroid_Cover_Test.html         # Yönetici aracı
 ├── rp5_igdb.js                     # IGDB bridge helper
 ├── IGDB_INTEGRATION.md             # IGDB mimari ve sonraki adımlar
+├── supabase/functions/igdb-search  # IGDB proxy scaffold
 ├── ROM_Folder_Guide.md             # ROM klasör yapısı rehberi
 ├── game_wishlist.md                # Eklenecek oyunlar listesi
 ├── project_todo.md                 # Geliştirme to-do listesi
@@ -180,4 +181,5 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - Normal kullanıcı akışı `index.html` üzerinden başlar.
 - Legacy migration araçları `legacy_tools/` altında düz metin olarak tutulur.
 - `Retroid_IGDB_Bridge.html` DB'ye yazmadan harici metadata köprüsü görevi görür.
+- `supabase/functions/igdb-search/index.ts` canlı proxy için hazır iskelet sağlar.
 - RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.

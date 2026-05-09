@@ -95,12 +95,50 @@
     }
   }
 
+  function normalizeText(value){
+    return (value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,' ')
+      .trim();
+  }
+
+  function scoreMatch(query, item, expectedYear){
+    const queryNorm=normalizeText(query);
+    const nameNorm=normalizeText(item?.name || '');
+    if(!queryNorm || !nameNorm)return 0;
+
+    let score=0;
+    if(queryNorm===nameNorm)score+=100;
+    else if(nameNorm.startsWith(queryNorm) || queryNorm.startsWith(nameNorm))score+=82;
+    else if(nameNorm.includes(queryNorm) || queryNorm.includes(nameNorm))score+=68;
+
+    const queryTokens=queryNorm.split(' ').filter(Boolean);
+    const nameTokens=new Set(nameNorm.split(' ').filter(Boolean));
+    const tokenHits=queryTokens.filter(token=>nameTokens.has(token)).length;
+    if(queryTokens.length){
+      score+=Math.round((tokenHits / queryTokens.length) * 25);
+    }
+
+    const itemYear=item?.releaseYear || null;
+    if(expectedYear && itemYear){
+      const diff=Math.abs(Number(expectedYear) - Number(itemYear));
+      if(diff===0)score+=18;
+      else if(diff===1)score+=10;
+      else if(diff<=3)score+=4;
+    }
+
+    return Math.max(0, Math.min(100, score));
+  }
+
   window.rp5IgdbBridge={
     getProxyUrl,
     setProxyUrl,
     clearProxyUrl,
     buildFallbackUrl,
     buildGameUrl,
-    searchGames
+    searchGames,
+    scoreMatch
   };
 })();

@@ -86,6 +86,7 @@ Migration notes: `GITHUB_PAGES_MIGRATION.md`
 Security follow-up: `SECURITY_NEXT_STEPS.md`
 RLS apply checklist: `SUPABASE_RLS_APPLY.md`
 IGDB bridge notes: `IGDB_INTEGRATION.md`
+Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
 
 ---
 

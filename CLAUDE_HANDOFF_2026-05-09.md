@@ -66,6 +66,8 @@ Related docs:
 - Legacy migration/import pages were archived into `legacy_tools/*.html.txt`
 - `Retroid_Legacy_Tools.html` now points to archived tool snapshots safely
 - `Retroid_IGDB_Bridge.html` and `rp5_igdb.js` were added as the non-DB IGDB integration layer
+- Bridge now reads library candidates, prioritizes titles without `external_id`, and shows simple match scores
+- `supabase/functions/igdb-search/index.ts` was added as a ready proxy scaffold for later secret-backed deployment
 
 ## Important Constraints
 
@@ -81,15 +83,16 @@ Related docs:
 3. `rp5_auth.js`
 4. `rp5_igdb.js`
 5. `IGDB_INTEGRATION.md`
-6. `supabase_rls_hardening.sql`
-7. `SECURITY_NEXT_STEPS.md`
-8. `SUPABASE_RLS_APPLY.md`
+6. `supabase/functions/igdb-search/index.ts`
+7. `supabase_rls_hardening.sql`
+8. `SECURITY_NEXT_STEPS.md`
+9. `SUPABASE_RLS_APPLY.md`
 
 ## Suggested Next Steps
 
 Small, safe next moves:
 
 1. UX polish for `Retroid_Queue.html` and `Retroid_Tierlist.html`
-2. Deploy a small IGDB proxy endpoint using Twitch / IGDB credentials
+2. Deploy the Supabase Edge Function proxy using Twitch / IGDB credentials
 3. Add approved field-level IGDB -> DB sync after proxy is live
 4. Optional stronger admin-role model later

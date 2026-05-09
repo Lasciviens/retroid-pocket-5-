@@ -6,7 +6,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 ## 🔴 Öncelikli (High Priority)
 
-- [ ] **IGDB proxy + DB sync** — Bridge sayfasi hazir. Sonraki adim Twitch/IGDB Client ID + Secret ile proxy deployment, sonra alan bazli DB esleme.
+- [ ] **IGDB proxy + DB sync** — Bridge ve Supabase function scaffold hazir. Sonraki adim Twitch/IGDB Client ID + Secret ile proxy deployment, sonra alan bazli DB esleme.
 
 
 
@@ -48,6 +48,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] game_wishlist.md sistemi kuruldu
 - [x] ROM klasör yapısı rehberi oluşturuldu
 - [x] IGDB Bridge iskeleti kuruldu (proxy-ready arama yüzeyi + kutuphaneden kopru)
+- [x] Supabase Edge Function IGDB proxy scaffold eklendi
 
 ---
 

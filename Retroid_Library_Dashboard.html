@@ -422,7 +422,7 @@ function openModal(id){
       <div class="modal-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button onclick="saveNotes('${g.id}')" style="background:var(--accent-2);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">💾 Kaydet</button>
         <button onclick="addToQueue('${g.id}', this)" style="background:var(--gold);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">🎮 Sıraya Ekle</button>
-        <a href="Retroid_IGDB_Bridge.html?title=${encodeURIComponent(g.title)}" target="_blank" style="background:var(--bg-3);color:var(--accent-2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🛰️ IGDB Koprusu</a>
+        <a href="Retroid_IGDB_Bridge.html?title=${encodeURIComponent(g.title)}${g.year?`&year=${encodeURIComponent(g.year)}`:''}" target="_blank" style="background:var(--bg-3);color:var(--accent-2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🛰️ IGDB Koprusu</a>
         <span id="save-status" style="font-size:.8rem;color:var(--good);display:none">✓ Kaydedildi</span>
       </div>
     </div>`;
