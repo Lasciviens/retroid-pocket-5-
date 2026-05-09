@@ -70,11 +70,14 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── Retroid_Tierlist.html           # Tier listesi
 ├── Retroid_Tips.html               # İpuçları (notes tablosu, category=tip)
 ├── Retroid_Request_Tracker.html    # İstekler (notes tablosu, category=request/done)
+├── Retroid_IGDB_Bridge.html        # IGDB bridge ve metadata lookup yüzeyi
 ├── admin.html                      # Oyun ekle/düzenle/sil
 ├── migration_v3.sql                # DB migration (Supabase SQL Editor'de çalıştırıldı)
-├── migrate_v2.html                 # İlk data yüklemesi (legacy bakım aracı)
-├── migrate_*.html                  # Legacy migration/import araçları
+├── Retroid_Legacy_Tools.html       # Legacy araçlar için güvenli indeks sayfası
+├── legacy_tools/*.html.txt         # Çalıştırılmayan arsiv snapshot'ları
 ├── Retroid_Cover_Test.html         # Yönetici aracı
+├── rp5_igdb.js                     # IGDB bridge helper
+├── IGDB_INTEGRATION.md             # IGDB mimari ve sonraki adımlar
 ├── ROM_Folder_Guide.md             # ROM klasör yapısı rehberi
 ├── game_wishlist.md                # Eklenecek oyunlar listesi
 ├── project_todo.md                 # Geliştirme to-do listesi
@@ -169,11 +172,12 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - [ ] emulators.supported_systems kolonunu DROP et (junction tablosu dolduktan sonra)
 - [ ] Dashboard'a v_games_full geçişi (şu an nested select ile çalışıyor, her ikisi de doğru)
 - [ ] ROM durumu takibi UI (game_platforms.rom_status kolonu hazır)
-- [ ] Harici API entegrasyonu (RAWG/IGDB — external_id kolonu hazır)
+- [ ] IGDB proxy deployment ve DB sync akışı
 - [ ] Admin'e emülatör ekleme formu
 
 ## Operasyon Notu
 
 - Normal kullanıcı akışı `index.html` üzerinden başlar.
-- `migrate_*.html` dosyaları aktif ürün akışının parçası değildir.
+- Legacy migration araçları `legacy_tools/` altında düz metin olarak tutulur.
+- `Retroid_IGDB_Bridge.html` DB'ye yazmadan harici metadata köprüsü görevi görür.
 - RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.

@@ -24,6 +24,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 | 🗺️ **Series Roadmap** | Chronological game list per series — where to start each franchise |
 | 🎮 **Play Queue** | Drag-and-drop play order, synced across devices |
 | ♡ **Wishlist** | Track games to add, emulator requests, features — with priority levels |
+| 🛰️ **IGDB Bridge** | Optional live metadata bridge, IGDB lookup, and future sync staging surface |
 | ⚙️ **Emulator Matrix** | Which emulator for which system, pulled from DB |
 | 📖 **Glossary** | Technical terms (ROM, BIOS, JIT...) explained for developers |
 | ➕ **Admin Panel** | Add/edit/delete games with full form UI |
@@ -34,6 +35,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 - Write actions and admin pages use a remembered Supabase Auth session.
 - The browser keeps your admin session so you are not asked on every visit.
 - Server-side RLS hardening is prepared in `supabase_rls_hardening.sql` and should be applied in Supabase next.
+- Legacy migration/import tools are archived and no longer part of the live product surface.
 
 ---
 
@@ -83,6 +85,7 @@ git push origin main:gh-pages
 Migration notes: `GITHUB_PAGES_MIGRATION.md`
 Security follow-up: `SECURITY_NEXT_STEPS.md`
 RLS apply checklist: `SUPABASE_RLS_APPLY.md`
+IGDB bridge notes: `IGDB_INTEGRATION.md`
 
 ---
 

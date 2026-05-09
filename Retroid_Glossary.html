@@ -73,7 +73,7 @@ const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 async function load(){
   const r=await fetch(`${SB}/rest/v1/glossary?select=*&order=term`,{headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}});
   const terms=await r.json();
-  if(!terms.length){document.getElementById('terms').innerHTML='<div class="empty-msg">Glossary boş. Önce migrate_glossary.html\'i çalıştır.</div>';return;}
+  if(!terms.length){document.getElementById('terms').innerHTML='<div class="empty-msg">Glossary bos. Legacy migration araci arsivlendi; icerik eksikse Supabase tarafini kontrol et.</div>';return;}
 
   const toc=document.getElementById('toc');
   const cont=document.getElementById('terms');

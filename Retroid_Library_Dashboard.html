@@ -122,6 +122,7 @@ footer a{color:var(--accent-2);text-decoration:none}
     <a href="Retroid_Glossary.html">📖 Terimler</a>
     <a href="Retroid_Series_Roadmap.html">🗺️ Seriler</a>
     <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatörler</a>
+    <a href="Retroid_IGDB_Bridge.html">🛰️ IGDB</a>
     <a href="admin.html" data-auth-required-link>➕ Oyun Ekle</a>
   </div>
   <div data-auth-mount></div>
@@ -211,6 +212,12 @@ async function load(){
   [...new Set(ALL.flatMap(g=>g.platforms.map(p=>p.system)).filter(Boolean))].sort().forEach(s=>fSys.innerHTML+=`<option value="${s}">${s}</option>`);
   [...new Set(ALL.flatMap(g=>g.genres))].sort().forEach(g=>fGen.innerHTML+=`<option value="${g}">${g}</option>`);
   [...new Set(ALL.map(g=>g.series).filter(Boolean))].sort().forEach(s=>fSer.innerHTML+=`<option value="${s}">${s}</option>`);
+  const params=new URLSearchParams(window.location.search);
+  const initialSearch=(params.get('search')||'').trim();
+  if(initialSearch){
+    filters.search=initialSearch;
+    document.getElementById('search').value=initialSearch;
+  }
   render();
 }
 
@@ -415,6 +422,7 @@ function openModal(id){
       <div class="modal-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button onclick="saveNotes('${g.id}')" style="background:var(--accent-2);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">💾 Kaydet</button>
         <button onclick="addToQueue('${g.id}', this)" style="background:var(--gold);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">🎮 Sıraya Ekle</button>
+        <a href="Retroid_IGDB_Bridge.html?title=${encodeURIComponent(g.title)}" target="_blank" style="background:var(--bg-3);color:var(--accent-2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🛰️ IGDB Koprusu</a>
         <span id="save-status" style="font-size:.8rem;color:var(--good);display:none">✓ Kaydedildi</span>
       </div>
     </div>`;

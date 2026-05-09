@@ -6,7 +6,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 ## 🔴 Öncelikli (High Priority)
 
-- [ ] **IGDB entegrasyonu** — Twitch dev hesabı gerekli. Client ID + Secret alındıktan sonra oyun başlığına göre rating, cover, summary otomatik çekilecek. `external_id` kolonu hazır.
+- [ ] **IGDB proxy + DB sync** — Bridge sayfasi hazir. Sonraki adim Twitch/IGDB Client ID + Secret ile proxy deployment, sonra alan bazli DB esleme.
 
 
 
@@ -47,6 +47,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] Glossary (12 terim, yazılımcı mantığıyla)
 - [x] game_wishlist.md sistemi kuruldu
 - [x] ROM klasör yapısı rehberi oluşturuldu
+- [x] IGDB Bridge iskeleti kuruldu (proxy-ready arama yüzeyi + kutuphaneden kopru)
 
 ---
 

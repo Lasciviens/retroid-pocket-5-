@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>IGDB Bridge - Retroid RP5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#ff4655;--accent-2:#00d4ff;--gold:#ffb347;--good:#2ecc71;--warn:#f39c12;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);min-height:100vh;padding:20px}
+header{text-align:center;margin-bottom:22px;padding:24px 20px;background:linear-gradient(135deg,rgba(255,70,85,.1),rgba(0,212,255,.1));border:1px solid var(--border);border-radius:16px}
+h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px;margin-bottom:6px}
+.subtitle{color:var(--muted);font-size:.9rem}
+.quick-links{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.quick-links a{background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2);padding:6px 12px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600}
+.helper-note{margin-top:10px;font-size:.8rem;color:var(--muted);line-height:1.5}
+.panel{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px}
+.panel h2{font-size:1rem;margin-bottom:10px}
+.status-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--bg-3);border:1px solid var(--border);font-size:.78rem;color:var(--muted)}
+.pill.good{border-color:rgba(46,204,113,.4);color:var(--good)}
+.pill.warn{border-color:rgba(243,156,18,.4);color:var(--warn)}
+.controls,.config{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search-box,.url-box{flex:1;min-width:200px;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:.9rem}
+.search-box:focus,.url-box:focus{outline:none;border-color:var(--accent-2)}
+.btn{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:.82rem;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--accent-2)}
+.btn.primary{background:var(--accent-2);border-color:var(--accent-2);color:#07111d}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#07111d}
+.suggestions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{padding:7px 10px;border-radius:999px;background:var(--bg-3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer}
+.chip:hover{border-color:var(--accent-2);color:var(--text)}
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.result-card{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.result-cover{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--bg-3)}
+.result-body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.result-title{font-size:1rem;font-weight:700}
+.meta{font-size:.78rem;color:var(--muted);line-height:1.5}
+.summary{font-size:.85rem;line-height:1.55;color:var(--text)}
+.badge-row{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:.68rem;padding:4px 7px;border-radius:999px;background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.actions a{text-decoration:none}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:14px}
+footer{text-align:center;margin-top:28px;color:var(--muted);font-size:.8rem}
+footer a{color:var(--accent-2);text-decoration:none}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
+<script src="rp5_igdb.js"></script>
+</head>
+<body>
+<header>
+  <h1>IGDB Bridge</h1>
+  <p class="subtitle">Canli metadata koprusu, dis kaynak baglantisi ve ileriye donuk sync hazirligi</p>
+  <div class="quick-links">
+    <a href="index.html">🏠 Hub</a>
+    <a href="Retroid_Library_Dashboard.html">📚 Kutuphane</a>
+    <a href="admin.html" data-auth-required-link>⚙️ Admin</a>
+  </div>
+  <div data-auth-mount></div>
+  <div class="helper-note">Bu sayfa DB'ye yazmaz. Su an sadece arama, metadata onizleme ve IGDB baglantisi icin hazirlandi. Tarayicidan IGDB API'ye dogrudan gidilemedigi icin canli arama proxy URL varsa calisir.</div>
+</header>
+
+<div class="panel">
+  <h2>Kopru Durumu</h2>
+  <div class="status-row" id="bridge-status"></div>
+  <div class="config" style="margin-top:12px">
+    <input id="proxy-url" class="url-box" placeholder="Proxy URL (ornek: https://.../igdb-search)">
+    <button class="btn" onclick="saveProxy()">Proxy Kaydet</button>
+    <button class="btn" onclick="clearProxy()">Temizle</button>
+  </div>
+  <div class="helper-note">Bu alana sadece proxy URL girilir. Twitch / IGDB secret buraya yazilmaz.</div>
+</div>
+
+<div class="panel">
+  <h2>Oyun Ara</h2>
+  <div class="controls">
+    <input id="search" class="search-box" placeholder="Oyun adi yaz...">
+    <button class="btn primary" onclick="runSearch()">IGDB Ara</button>
+    <button class="btn gold" onclick="openWebSearch()">Web'de Ara</button>
+  </div>
+  <div class="suggestions" id="suggestions"></div>
+</div>
+
+<div id="results" class="results">
+  <div class="empty">Bir oyun sec veya ara. Proxy hazirsa canli metadata gelir, degilse dis baglanti onerilir.</div>
+</div>
+
+<footer>
+  Retroid Pocket 5 · <a href="IGDB_INTEGRATION.md">IGDB notlari</a> · <a href="https://api-docs.igdb.com/" target="_blank">IGDB Docs</a>
+</footer>
+
+<script>
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+
+function readQuery(){
+  const params=new URLSearchParams(window.location.search);
+  return (params.get('title') || params.get('q') || '').trim();
+}
+
+function renderStatus(){
+  const proxy=window.rp5IgdbBridge.getProxyUrl();
+  document.getElementById('proxy-url').value=proxy;
+  document.getElementById('bridge-status').innerHTML=proxy
+    ? `<span class="pill good">● Proxy hazir</span><span class="pill">${proxy}</span><span class="pill">Mode: canli arama</span>`
+    : `<span class="pill warn">● Proxy yok</span><span class="pill">Mode: kopru + web arama</span><span class="pill">Canli IGDB sorgusu icin proxy URL eklenmeli</span>`;
+}
+
+function saveProxy(){
+  const value=document.getElementById('proxy-url').value;
+  window.rp5IgdbBridge.setProxyUrl(value);
+  renderStatus();
+}
+
+function clearProxy(){
+  window.rp5IgdbBridge.clearProxyUrl();
+  renderStatus();
+}
+
+function openWebSearch(){
+  const q=document.getElementById('search').value.trim();
+  if(!q)return;
+  window.open(window.rp5IgdbBridge.buildFallbackUrl(q),'_blank');
+}
+
+function renderResults(items,query,message){
+  const root=document.getElementById('results');
+  if(!items.length){
+    root.innerHTML=`<div class="empty">${message || 'Sonuc bulunamadi.'}</div>`;
+    return;
+  }
+  root.innerHTML=items.map(item=>`
+    <div class="result-card">
+      ${item.coverUrl?`<img class="result-cover" src="${item.coverUrl}" alt="${item.name}" onerror="this.style.display='none'">`:`<div class="result-cover" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">Kapak yok</div>`}
+      <div class="result-body">
+        <div class="result-title">${item.name}</div>
+        <div class="meta">
+          ${item.releaseYear?`Yil: ${item.releaseYear}<br>`:''}
+          ${item.rating?`Rating: ${item.rating.toFixed ? item.rating.toFixed(1) : item.rating}<br>`:''}
+          ${item.platforms.length?`Platformlar: ${item.platforms.join(', ')}`:''}
+        </div>
+        ${item.genres.length?`<div class="badge-row">${item.genres.slice(0,5).map(g=>`<span class="badge">${g}</span>`).join('')}</div>`:''}
+        ${item.summary?`<div class="summary">${item.summary.slice(0,260)}${item.summary.length>260?'...':''}</div>`:''}
+        <div class="actions">
+          ${item.igdbUrl?`<a class="btn" href="${item.igdbUrl}" target="_blank">IGDB Sayfasi</a>`:''}
+          <a class="btn" href="Retroid_Library_Dashboard.html?search=${encodeURIComponent(item.name)}">Kutuphane Ara</a>
+          <a class="btn" href="${window.rp5IgdbBridge.buildFallbackUrl(item.name)}" target="_blank">Web'de Ara</a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function runSearch(titleOverride){
+  const query=(titleOverride || document.getElementById('search').value).trim();
+  if(!query)return;
+  document.getElementById('search').value=query;
+  document.getElementById('results').innerHTML='<div class="empty">IGDB taraniyor...</div>';
+  const result=await window.rp5IgdbBridge.searchGames(query);
+  if(result.status==='ok'){
+    renderResults(result.results,query,result.results.length?'':`"${query}" icin sonuc bulunamadi.`);
+    return;
+  }
+  if(result.status==='unconfigured'){
+    renderResults([],query,`Canli sorgu icin proxy eksik. Ama "${query}" icin Web'de Ara butonu hazir.`);
+    return;
+  }
+  if(result.status==='http_error'){
+    renderResults([],query,`Proxy yanit verdi ama hata kodu dondu: ${result.code}.`);
+    return;
+  }
+  renderResults([],query,'IGDB koprusune su an ulasilamadi.');
+}
+
+async function loadSuggestions(){
+  try{
+    const response=await fetch(`${SB}/rest/v1/games?select=title,is_iconic&order=is_iconic.desc,title.asc&limit=18`,{
+      headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}
+    });
+    const games=await response.json();
+    const root=document.getElementById('suggestions');
+    root.innerHTML=games.map(game=>`<button class="chip" onclick="runSearch(${JSON.stringify(game.title)})">${game.is_iconic?'★ ':''}${game.title}</button>`).join('');
+  }catch(error){
+    document.getElementById('suggestions').innerHTML='<span class="helper-note">Kutuphane onerileri yuklenemedi.</span>';
+  }
+}
+
+renderStatus();
+loadSuggestions();
+const initialQuery=readQuery();
+if(initialQuery){
+  document.getElementById('search').value=initialQuery;
+  runSearch(initialQuery);
+}
+</script>
+</body>
+</html>

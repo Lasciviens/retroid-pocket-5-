@@ -63,27 +63,33 @@ Related docs:
 - Database page got a clearer management note
 - Old Netlify links were replaced with GitHub Pages links
 - Docs were updated to distinguish active product pages vs legacy migration tools
+- Legacy migration/import pages were archived into `legacy_tools/*.html.txt`
+- `Retroid_Legacy_Tools.html` now points to archived tool snapshots safely
+- `Retroid_IGDB_Bridge.html` and `rp5_igdb.js` were added as the non-DB IGDB integration layer
 
 ## Important Constraints
 
 - Do not assume service-role or raw DB credentials are available in repo
 - Do not expose secret keys in frontend
 - Supabase data is considered sensitive; avoid casual write testing
+- Do not do DB-level IGDB sync until credentials and matching rules are explicitly agreed
 
 ## Files Worth Reading First
 
 1. `README.md`
 2. `ARCHITECTURE.md`
 3. `rp5_auth.js`
-4. `supabase_rls_hardening.sql`
-5. `SECURITY_NEXT_STEPS.md`
-6. `SUPABASE_RLS_APPLY.md`
+4. `rp5_igdb.js`
+5. `IGDB_INTEGRATION.md`
+6. `supabase_rls_hardening.sql`
+7. `SECURITY_NEXT_STEPS.md`
+8. `SUPABASE_RLS_APPLY.md`
 
 ## Suggested Next Steps
 
 Small, safe next moves:
 
 1. UX polish for `Retroid_Queue.html` and `Retroid_Tierlist.html`
-2. Cleanup of legacy migration/import pages
-3. Optional stronger admin-role model later
-
+2. Deploy a small IGDB proxy endpoint using Twitch / IGDB credentials
+3. Add approved field-level IGDB -> DB sync after proxy is live
+4. Optional stronger admin-role model later

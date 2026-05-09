@@ -2,186 +2,22 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Supabase Migration Tool</title>
+<title>Archived Tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
 <style>
-  body { font-family: monospace; background: #0a0e1a; color: #e8eaf0; padding: 30px; }
-  button { background: #ff4655; color: white; border: none; padding: 14px 28px; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 10px 0; }
-  button:disabled { background: #555; cursor: not-allowed; }
-  #log { background: #131829; border: 1px solid #2a3149; border-radius: 8px; padding: 20px; margin-top: 20px; max-height: 500px; overflow-y: auto; line-height: 1.8; }
-  .ok { color: #2ecc71; }
-  .err { color: #e74c3c; }
-  .info { color: #00d4ff; }
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#e8eaf0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.box{max-width:640px;background:#131829;border:1px solid #2a3149;border-radius:16px;padding:24px}
+h1{margin:0 0 10px}
+p{color:#8c93a8;line-height:1.6}
+a{color:#00d4ff}
 </style>
 </head>
 <body>
-<h2>🚀 Supabase Migration Tool</h2>
-<p>Bu araç tüm oyunları Supabase'e yükler. <strong>Sadece bir kere çalıştır.</strong></p>
-<button id="btn" onclick="migrate()">▶ Migration Başlat</button>
-<div id="log"></div>
-
-<script>
-const SUPABASE_URL = 'https://bniqmxbtvgwkaoswugds.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
-
-const T = (system, title) =>
-  `https://raw.githubusercontent.com/libretro-thumbnails/${system}/master/Named_Boxarts/${encodeURIComponent(title)}.png`;
-
-const games = [
-  { name: "GTA: San Andreas", system: "PS2", genre: "Action", release_year: 2004, is_coop: false, status: "backlog", notes: "Serinin zirvesi. Açık dünya, RPG mekaniği. Portmaster native port da mevcut.", cover_url: T("Sony_-_PlayStation_2", "Grand Theft Auto - San Andreas (USA) (v3.00)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "GTA: Vice City", system: "PS2", genre: "Action", release_year: 2002, is_coop: false, status: "backlog", notes: "80'lerin Miami atmosferi, ikonik soundtrack.", cover_url: T("Sony_-_PlayStation_2", "Grand Theft Auto - Vice City (USA) (v3.00)"), emulator: "AetherSX2", rom_status: "missing", rating: 9 },
-  { name: "GTA III", system: "PS2", genre: "Action", release_year: 2001, is_coop: false, status: "backlog", notes: "3D GTA'yı yaratan oyun.", cover_url: T("Sony_-_PlayStation_2", "Grand Theft Auto III (USA) (v3.00)"), emulator: "AetherSX2", rom_status: "missing", rating: 8 },
-  { name: "GTA: Liberty City Stories", system: "PSP", genre: "Action", release_year: 2005, is_coop: false, status: "backlog", notes: "GTA III'ün PSP prequel'i. PPSSPP'de tertemiz.", cover_url: T("Sony_-_PlayStation_Portable", "Grand Theft Auto - Liberty City Stories (USA)"), emulator: "PPSSPP", rom_status: "missing", rating: 7 },
-  { name: "GTA: Vice City Stories", system: "PSP", genre: "Action", release_year: 2006, is_coop: false, status: "backlog", notes: "Vice City evreninin PSP genişlemesi.", cover_url: T("Sony_-_PlayStation_Portable", "Grand Theft Auto - Vice City Stories (USA)"), emulator: "PPSSPP", rom_status: "missing", rating: 7 },
-  { name: "GTA: Chinatown Wars", system: "DS", genre: "Action", release_year: 2009, is_coop: false, status: "backlog", notes: "Top-down GTA, DS'in en iyi 3rd party oyunlarından.", cover_url: T("Nintendo_-_Nintendo_DS", "Grand Theft Auto - Chinatown Wars (USA) (En,Fr,De,Es,It)"), emulator: "DraStic", rom_status: "missing", rating: 8 },
-  { name: "God of War: Chains of Olympus", system: "PSP", genre: "Action", release_year: 2008, is_coop: false, status: "backlog", notes: "PSP'nin en iyi 3D aksiyon oyunlarından biri.", cover_url: T("Sony_-_PlayStation_Portable", "God of War - Chains of Olympus (USA)"), emulator: "PPSSPP", rom_status: "missing", rating: 9 },
-  { name: "God of War: Ghost of Sparta", system: "PSP", genre: "Action", release_year: 2010, is_coop: false, status: "backlog", notes: "PSP'nin teknik şaheseri.", cover_url: T("Sony_-_PlayStation_Portable", "God of War - Ghost of Sparta (USA)"), emulator: "PPSSPP", rom_status: "missing", rating: 9 },
-  { name: "God of War", system: "PS2", genre: "Action", release_year: 2005, is_coop: false, status: "backlog", notes: "Demanding PS2, RP5'te 55+ FPS sabit kalır.", cover_url: T("Sony_-_PlayStation_2", "God of War (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "God of War II", system: "PS2", genre: "Action", release_year: 2007, is_coop: false, status: "backlog", notes: "PS2'nin teknik tavanını zorlayan oyun.", cover_url: T("Sony_-_PlayStation_2", "God of War II (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Pokemon FireRed", system: "GBA", genre: "RPG", release_year: 2004, is_coop: false, status: "backlog", notes: "Klasik Kanto bölgesi remake.", cover_url: T("Nintendo_-_Game_Boy_Advance", "Pokemon - Fire Red Version (USA, Europe)"), emulator: "mGBA", rom_status: "missing", rating: 9 },
-  { name: "Pokemon LeafGreen", system: "GBA", genre: "RPG", release_year: 2004, is_coop: false, status: "backlog", notes: "FireRed'in eşi.", cover_url: T("Nintendo_-_Game_Boy_Advance", "Pokemon - Leaf Green Version (USA, Europe)"), emulator: "mGBA", rom_status: "missing", rating: 9 },
-  { name: "Pokemon Emerald", system: "GBA", genre: "RPG", release_year: 2005, is_coop: false, status: "backlog", notes: "Hoenn üçlemesinin definitive sürümü. Battle Frontier var.", cover_url: T("Nintendo_-_Game_Boy_Advance", "Pokemon - Emerald Version (USA, Europe)"), emulator: "mGBA", rom_status: "missing", rating: 10 },
-  { name: "Pokemon HeartGold", system: "DS", genre: "RPG", release_year: 2009, is_coop: false, status: "backlog", notes: "Johto + Kanto, iki bölge. Pokémon'un altın çağı.", cover_url: T("Nintendo_-_Nintendo_DS", "Pokemon HeartGold Version (USA)"), emulator: "DraStic", rom_status: "missing", rating: 10 },
-  { name: "Pokemon SoulSilver", system: "DS", genre: "RPG", release_year: 2009, is_coop: false, status: "backlog", notes: "HeartGold'un eşi.", cover_url: T("Nintendo_-_Nintendo_DS", "Pokemon SoulSilver Version (USA)"), emulator: "DraStic", rom_status: "missing", rating: 10 },
-  { name: "Pokemon Platinum", system: "DS", genre: "RPG", release_year: 2008, is_coop: false, status: "backlog", notes: "Sinnoh definitive sürümü. Distortion World epik.", cover_url: T("Nintendo_-_Nintendo_DS", "Pokemon - Platinum Version (USA)"), emulator: "DraStic", rom_status: "missing", rating: 9 },
-  { name: "Pokemon Black", system: "DS", genre: "RPG", release_year: 2010, is_coop: false, status: "backlog", notes: "Hikaye odaklı, en iyi Pokemon hikayesi diyenler var.", cover_url: T("Nintendo_-_Nintendo_DS", "Pokemon - Black Version (USA, Europe)"), emulator: "DraStic", rom_status: "missing", rating: 9 },
-  { name: "Pokemon White", system: "DS", genre: "RPG", release_year: 2010, is_coop: false, status: "backlog", notes: "Black'in eşi.", cover_url: T("Nintendo_-_Nintendo_DS", "Pokemon - White Version (USA, Europe)"), emulator: "DraStic", rom_status: "missing", rating: 9 },
-  { name: "Pokemon Black 2", system: "DS", genre: "RPG", release_year: 2012, is_coop: false, status: "backlog", notes: "Doğrudan sequel — nadir bir Pokemon devamı.", cover_url: T("Nintendo_-_Nintendo_DS", "Pokemon - Black Version 2 (USA, Europe)"), emulator: "DraStic", rom_status: "missing", rating: 8 },
-  { name: "Pokemon X", system: "3DS", genre: "RPG", release_year: 2013, is_coop: false, status: "backlog", notes: "Serinin ilk gerçek 3D oyunu. Mega Evolution.", cover_url: T("Nintendo_-_Nintendo_3DS", "Pokemon X (USA)"), emulator: "Citra", rom_status: "missing", rating: 7 },
-  { name: "Pokemon Sun", system: "3DS", genre: "RPG", release_year: 2016, is_coop: false, status: "backlog", notes: "Alola bölgesi. Hikaye odaklı yenilik.", cover_url: T("Nintendo_-_Nintendo_3DS", "Pokemon Sun (USA)"), emulator: "Citra", rom_status: "missing", rating: 7 },
-  { name: "Super Mario 64", system: "N64", genre: "Platformer", release_year: 1996, is_coop: false, status: "backlog", notes: "3D platformerın doğuşu.", cover_url: T("Nintendo_-_Nintendo_64", "Super Mario 64 (USA)"), emulator: "Mupen64Plus-Next", rom_status: "missing", rating: 10 },
-  { name: "Super Mario Sunshine", system: "GameCube", genre: "Platformer", release_year: 2002, is_coop: false, status: "backlog", notes: "FLUDD ile yenilikçi bir Mario.", cover_url: T("Nintendo_-_GameCube", "Super Mario Sunshine (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 9 },
-  { name: "Super Mario Galaxy", system: "Wii", genre: "Platformer", release_year: 2007, is_coop: false, status: "backlog", notes: "Yerçekimi bulmacaları, orkestra soundtrack. Şaheser.", cover_url: T("Nintendo_-_Wii", "Super Mario Galaxy (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 10 },
-  { name: "Super Mario Galaxy 2", system: "Wii", genre: "Platformer", release_year: 2010, is_coop: false, status: "backlog", notes: "Galaxy'nin daha rafine versiyonu.", cover_url: T("Nintendo_-_Wii", "Super Mario Galaxy 2 (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 10 },
-  { name: "Mario Kart: Double Dash!!", system: "GameCube", genre: "Racing", release_year: 2003, is_coop: true, status: "backlog", notes: "İki karakterli kart. Co-op: biri sürer biri item atar.", cover_url: T("Nintendo_-_GameCube", "Mario Kart - Double Dash!! (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 9 },
-  { name: "Mario Kart Wii", system: "Wii", genre: "Racing", release_year: 2008, is_coop: true, status: "backlog", notes: "Bisiklet ve motor. Split-screen 2 player.", cover_url: T("Nintendo_-_Wii", "Mario Kart Wii (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 9 },
-  { name: "Mario Kart 64", system: "N64", genre: "Racing", release_year: 1996, is_coop: true, status: "backlog", notes: "Klasik MK. 2P split-screen mükemmel.", cover_url: T("Nintendo_-_Nintendo_64", "Mario Kart 64 (USA)"), emulator: "Mupen64Plus-Next", rom_status: "missing", rating: 8 },
-  { name: "Mario Kart DS", system: "DS", genre: "Racing", release_year: 2005, is_coop: true, status: "backlog", notes: "İlk taşınabilir online Mario Kart.", cover_url: T("Nintendo_-_Nintendo_DS", "Mario Kart DS (USA)"), emulator: "DraStic", rom_status: "missing", rating: 8 },
-  { name: "New Super Mario Bros. Wii", system: "Wii", genre: "Platformer", release_year: 2009, is_coop: true, status: "backlog", notes: "4 kişiye kadar local co-op. Eşinle TOP TIER.", cover_url: T("Nintendo_-_Wii", "New Super Mario Bros. Wii (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 9 },
-  { name: "New Super Mario Bros.", system: "DS", genre: "Platformer", release_year: 2006, is_coop: false, status: "backlog", notes: "DS'in en sevilen platformerı.", cover_url: T("Nintendo_-_Nintendo_DS", "New Super Mario Bros. (USA, Australia)"), emulator: "DraStic", rom_status: "missing", rating: 8 },
-  { name: "Paper Mario: Thousand-Year Door", system: "GameCube", genre: "RPG", release_year: 2004, is_coop: false, status: "backlog", notes: "RPG meraklıları için Paper Mario'nun doruğu.", cover_url: T("Nintendo_-_GameCube", "Paper Mario - The Thousand-Year Door (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 10 },
-  { name: "Paper Mario", system: "N64", genre: "RPG", release_year: 2001, is_coop: false, status: "backlog", notes: "İlk Paper Mario, charm dolu.", cover_url: T("Nintendo_-_Nintendo_64", "Paper Mario (USA)"), emulator: "Mupen64Plus-Next", rom_status: "missing", rating: 9 },
-  { name: "Mario & Luigi: Superstar Saga", system: "GBA", genre: "RPG", release_year: 2003, is_coop: false, status: "backlog", notes: "Komik diyaloglar, seri RPG'nin başlangıcı.", cover_url: T("Nintendo_-_Game_Boy_Advance", "Mario & Luigi - Superstar Saga (USA, Australia)"), emulator: "mGBA", rom_status: "missing", rating: 9 },
-  { name: "Mario Party 7", system: "GameCube", genre: "Party", release_year: 2005, is_coop: true, status: "backlog", notes: "8 player'a kadar parti oyunu.", cover_url: T("Nintendo_-_GameCube", "Mario Party 7 (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 8 },
-  { name: "Mario Party 4", system: "GameCube", genre: "Party", release_year: 2002, is_coop: true, status: "backlog", notes: "İlk GameCube Mario Party.", cover_url: T("Nintendo_-_GameCube", "Mario Party 4 (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 7 },
-  { name: "The Legend of Zelda: Ocarina of Time", system: "N64", genre: "Action-Adventure", release_year: 1998, is_coop: false, status: "backlog", notes: "Tüm zamanların en iyi oyunu sayılan başyapıt.", cover_url: T("Nintendo_-_Nintendo_64", "Legend of Zelda, The - Ocarina of Time (USA)"), emulator: "Mupen64Plus-Next", rom_status: "missing", rating: 10 },
-  { name: "The Legend of Zelda: Majora's Mask", system: "N64", genre: "Action-Adventure", release_year: 2000, is_coop: false, status: "backlog", notes: "Karanlık, atmosferik kült klasik. 3 günlük döngü.", cover_url: T("Nintendo_-_Nintendo_64", "Legend of Zelda, The - Majora's Mask (USA)"), emulator: "Mupen64Plus-Next", rom_status: "missing", rating: 10 },
-  { name: "The Legend of Zelda: The Wind Waker", system: "GameCube", genre: "Action-Adventure", release_year: 2003, is_coop: false, status: "backlog", notes: "Cel-shaded sanat tarzı, AMOLED'de büyüleyici.", cover_url: T("Nintendo_-_GameCube", "Legend of Zelda, The - The Wind Waker (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 10 },
-  { name: "The Legend of Zelda: Twilight Princess", system: "GameCube", genre: "Action-Adventure", release_year: 2006, is_coop: false, status: "backlog", notes: "Karanlık ve epik.", cover_url: T("Nintendo_-_GameCube", "Legend of Zelda, The - Twilight Princess (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 9 },
-  { name: "The Legend of Zelda: A Link to the Past", system: "SNES", genre: "Action-Adventure", release_year: 1991, is_coop: false, status: "backlog", notes: "2D Zelda'nın tepe noktası.", cover_url: T("Nintendo_-_Super_Nintendo_Entertainment_System", "Legend of Zelda, The - A Link to the Past (USA)"), emulator: "Snes9x", rom_status: "missing", rating: 10 },
-  { name: "The Legend of Zelda: The Minish Cap", system: "GBA", genre: "Action-Adventure", release_year: 2004, is_coop: false, status: "backlog", notes: "GBA Zelda'nın güzel sanat stili.", cover_url: T("Nintendo_-_Game_Boy_Advance", "Legend of Zelda, The - The Minish Cap (USA)"), emulator: "mGBA", rom_status: "missing", rating: 9 },
-  { name: "The Legend of Zelda: Phantom Hourglass", system: "DS", genre: "Action-Adventure", release_year: 2007, is_coop: false, status: "backlog", notes: "Wind Waker direkt sequel'i.", cover_url: T("Nintendo_-_Nintendo_DS", "Legend of Zelda, The - Phantom Hourglass (USA)"), emulator: "DraStic", rom_status: "missing", rating: 7 },
-  { name: "The Legend of Zelda: Spirit Tracks", system: "DS", genre: "Action-Adventure", release_year: 2009, is_coop: false, status: "backlog", notes: "Tren temalı Zelda.", cover_url: T("Nintendo_-_Nintendo_DS", "Legend of Zelda, The - Spirit Tracks (USA)"), emulator: "DraStic", rom_status: "missing", rating: 7 },
-  { name: "The Legend of Zelda: A Link Between Worlds", system: "3DS", genre: "Action-Adventure", release_year: 2013, is_coop: false, status: "backlog", notes: "A Link to the Past'in modern devamı.", cover_url: T("Nintendo_-_Nintendo_3DS", "Legend of Zelda, The - A Link Between Worlds (USA)"), emulator: "Citra", rom_status: "missing", rating: 9 },
-  { name: "The Legend of Zelda: Four Swords Adventures", system: "GameCube", genre: "Action-Adventure", release_year: 2004, is_coop: true, status: "backlog", notes: "Co-op Zelda.", cover_url: T("Nintendo_-_GameCube", "Legend of Zelda, The - Four Swords Adventures (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 7 },
-  { name: "Sonic the Hedgehog 2", system: "Genesis", genre: "Platformer", release_year: 1992, is_coop: true, status: "backlog", notes: "2P split-screen yarışlar. Klasik 2D Sonic.", cover_url: T("Sega_-_Mega_Drive_-_Genesis", "Sonic The Hedgehog 2 (World) (Rev A)"), emulator: "Genesis Plus GX", rom_status: "missing", rating: 8 },
-  { name: "Sonic the Hedgehog 3 & Knuckles", system: "Genesis", genre: "Platformer", release_year: 1994, is_coop: false, status: "backlog", notes: "Klasik Sonic'in zirvesi.", cover_url: T("Sega_-_Mega_Drive_-_Genesis", "Sonic The Hedgehog 3 (USA)"), emulator: "Genesis Plus GX", rom_status: "missing", rating: 9 },
-  { name: "Sonic Adventure", system: "Dreamcast", genre: "Platformer", release_year: 1998, is_coop: false, status: "backlog", notes: "İlk 3D Sonic. Flycast ile çalışır.", cover_url: T("Sega_-_Dreamcast", "Sonic Adventure (USA)"), emulator: "Flycast", rom_status: "missing", rating: 8 },
-  { name: "Sonic Adventure 2: Battle", system: "GameCube", genre: "Platformer", release_year: 2001, is_coop: true, status: "backlog", notes: "Chao Garden, multiplayer battle. Co-op eğlenceli.", cover_url: T("Nintendo_-_GameCube", "Sonic Adventure 2 Battle (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 8 },
-  { name: "Sonic Heroes", system: "GameCube", genre: "Platformer", release_year: 2003, is_coop: false, status: "backlog", notes: "Üçlü takım dinamikleri.", cover_url: T("Nintendo_-_GameCube", "Sonic Heroes (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 6 },
-  { name: "Crash Bandicoot", system: "PS1", genre: "Platformer", release_year: 1996, is_coop: false, status: "backlog", notes: "DuckStation ile 1080p upscaled.", cover_url: T("Sony_-_PlayStation", "Crash Bandicoot (USA)"), emulator: "DuckStation", rom_status: "missing", rating: 8 },
-  { name: "Crash Bandicoot 2", system: "PS1", genre: "Platformer", release_year: 1997, is_coop: false, status: "backlog", notes: "Serinin en iyisi diyenler var.", cover_url: T("Sony_-_PlayStation", "Crash Bandicoot 2 - Cortex Strikes Back (USA)"), emulator: "DuckStation", rom_status: "missing", rating: 9 },
-  { name: "Crash Bandicoot 3: Warped", system: "PS1", genre: "Platformer", release_year: 1998, is_coop: false, status: "backlog", notes: "Klasik üçlemenin tepesi.", cover_url: T("Sony_-_PlayStation", "Crash Bandicoot 3 - Warped (USA)"), emulator: "DuckStation", rom_status: "missing", rating: 9 },
-  { name: "Crash Team Racing", system: "PS1", genre: "Racing", release_year: 1999, is_coop: true, status: "backlog", notes: "PS1'in en iyi kart yarışı. Eşinle ZORUNLU.", cover_url: T("Sony_-_PlayStation", "Crash Team Racing (USA)"), emulator: "DuckStation", rom_status: "missing", rating: 10 },
-  { name: "Crash Bandicoot: Wrath of Cortex", system: "PS2", genre: "Platformer", release_year: 2001, is_coop: false, status: "backlog", notes: "PS2 dönemi Crash.", cover_url: T("Sony_-_PlayStation_2", "Crash Bandicoot - The Wrath of Cortex (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 6 },
-  { name: "Tekken 3", system: "PS1", genre: "Fighting", release_year: 1998, is_coop: true, status: "backlog", notes: "Tüm zamanların en iyi dövüş oyunlarından.", cover_url: T("Sony_-_PlayStation", "Tekken 3 (USA)"), emulator: "DuckStation", rom_status: "missing", rating: 10 },
-  { name: "Tekken 5", system: "PS2", genre: "Fighting", release_year: 2005, is_coop: true, status: "backlog", notes: "PS2 Tekken'in zirvesi.", cover_url: T("Sony_-_PlayStation_2", "Tekken 5 (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Tekken: Dark Resurrection", system: "PSP", genre: "Fighting", release_year: 2006, is_coop: true, status: "backlog", notes: "PSP'nin gururu.", cover_url: T("Sony_-_PlayStation_Portable", "Tekken - Dark Resurrection (USA)"), emulator: "PPSSPP", rom_status: "missing", rating: 9 },
-  { name: "Final Fantasy X", system: "PS2", genre: "RPG", release_year: 2001, is_coop: false, status: "backlog", notes: "Sphere Grid, dramatik hikaye.", cover_url: T("Sony_-_PlayStation_2", "Final Fantasy X (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Final Fantasy VII", system: "PS1", genre: "RPG", release_year: 1997, is_coop: false, status: "backlog", notes: "JRPG'lerin altın standartı.", cover_url: T("Sony_-_PlayStation", "Final Fantasy VII (USA) (Disc 1)"), emulator: "DuckStation", rom_status: "missing", rating: 10 },
-  { name: "Final Fantasy IX", system: "PS1", genre: "RPG", release_year: 2000, is_coop: false, status: "backlog", notes: "Klasik fantasy temasına dönüş. Birçok kişiye göre serinin zirvesi.", cover_url: T("Sony_-_PlayStation", "Final Fantasy IX (USA) (Disc 1)"), emulator: "DuckStation", rom_status: "missing", rating: 10 },
-  { name: "Crisis Core: Final Fantasy VII", system: "PSP", genre: "RPG", release_year: 2007, is_coop: false, status: "backlog", notes: "FF7 prequel, action-RPG.", cover_url: T("Sony_-_PlayStation_Portable", "Crisis Core - Final Fantasy VII (USA)"), emulator: "PPSSPP", rom_status: "missing", rating: 9 },
-  { name: "Final Fantasy Tactics: War of the Lions", system: "PSP", genre: "Strategy-RPG", release_year: 2007, is_coop: false, status: "backlog", notes: "Tactical RPG'nin definitive sürümü.", cover_url: T("Sony_-_PlayStation_Portable", "Final Fantasy Tactics - The War of the Lions (USA)"), emulator: "PPSSPP", rom_status: "missing", rating: 10 },
-  { name: "Final Fantasy VI", system: "SNES", genre: "RPG", release_year: 1994, is_coop: false, status: "backlog", notes: "JRPG'nin SNES zirvesi.", cover_url: T("Nintendo_-_Super_Nintendo_Entertainment_System", "Final Fantasy III (USA)"), emulator: "Snes9x", rom_status: "missing", rating: 10 },
-  { name: "Resident Evil 4", system: "GameCube", genre: "Survival Horror", release_year: 2005, is_coop: false, status: "backlog", notes: "Tüm zamanların en iyi action-horror oyunu.", cover_url: T("Nintendo_-_GameCube", "Resident Evil 4 (USA) (Disc 1)"), emulator: "Dolphin", rom_status: "missing", rating: 10 },
-  { name: "Resident Evil Code: Veronica X", system: "PS2", genre: "Survival Horror", release_year: 2001, is_coop: false, status: "backlog", notes: "Klasik RE.", cover_url: T("Sony_-_PlayStation_2", "Resident Evil - Code Veronica X (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 8 },
-  { name: "Devil May Cry 3: Dante's Awakening", system: "PS2", genre: "Action", release_year: 2005, is_coop: false, status: "backlog", notes: "Hack-and-slash zirvesi.", cover_url: T("Sony_-_PlayStation_2", "Devil May Cry 3 - Dante's Awakening - Special Edition (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Metal Gear Solid 3: Snake Eater", system: "PS2", genre: "Stealth", release_year: 2004, is_coop: false, status: "backlog", notes: "Serinin en sevilen oyunu.", cover_url: T("Sony_-_PlayStation_2", "Metal Gear Solid 3 - Snake Eater (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Metal Gear Solid", system: "PS1", genre: "Stealth", release_year: 1998, is_coop: false, status: "backlog", notes: "Stealth tarihinin başlangıcı.", cover_url: T("Sony_-_PlayStation", "Metal Gear Solid (USA) (Disc 1)"), emulator: "DuckStation", rom_status: "missing", rating: 10 },
-  { name: "Kingdom Hearts", system: "PS2", genre: "Action-RPG", release_year: 2002, is_coop: false, status: "backlog", notes: "Disney + Final Fantasy crossover.", cover_url: T("Sony_-_PlayStation_2", "Kingdom Hearts (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 9 },
-  { name: "Kingdom Hearts II", system: "PS2", genre: "Action-RPG", release_year: 2005, is_coop: false, status: "backlog", notes: "Aksiyon mekanikleri rafine.", cover_url: T("Sony_-_PlayStation_2", "Kingdom Hearts II (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Kingdom Hearts: Birth by Sleep", system: "PSP", genre: "Action-RPG", release_year: 2010, is_coop: false, status: "backlog", notes: "PSP'nin en güzel görünen oyunlarından biri.", cover_url: T("Sony_-_PlayStation_Portable", "Kingdom Hearts - Birth by Sleep (USA)"), emulator: "PPSSPP", rom_status: "missing", rating: 9 },
-  { name: "Jak and Daxter: The Precursor Legacy", system: "PS2", genre: "Platformer", release_year: 2001, is_coop: false, status: "backlog", notes: "PS2'nin en iyi 3D platformerlarından.", cover_url: T("Sony_-_PlayStation_2", "Jak and Daxter - The Precursor Legacy (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 9 },
-  { name: "Ratchet & Clank", system: "PS2", genre: "Platformer", release_year: 2002, is_coop: false, status: "backlog", notes: "Silah çeşitliliği muhteşem.", cover_url: T("Sony_-_PlayStation_2", "Ratchet & Clank (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 9 },
-  { name: "Sly Cooper and the Thievius Raccoonus", system: "PS2", genre: "Platformer", release_year: 2002, is_coop: false, status: "backlog", notes: "Stealth platformer, çizgi film stilinde.", cover_url: T("Sony_-_PlayStation_2", "Sly Cooper and the Thievius Raccoonus (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 8 },
-  { name: "Sly 2: Band of Thieves", system: "PS2", genre: "Platformer", release_year: 2004, is_coop: false, status: "backlog", notes: "Sly serisinin zirvesi.", cover_url: T("Sony_-_PlayStation_2", "Sly 2 - Band of Thieves (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 9 },
-  { name: "Metroid Prime", system: "GameCube", genre: "Action-Adventure", release_year: 2002, is_coop: false, status: "backlog", notes: "First-person Metroid. PrimeHack önerilir.", cover_url: T("Nintendo_-_GameCube", "Metroid Prime (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 10 },
-  { name: "Metroid Fusion", system: "GBA", genre: "Action-Adventure", release_year: 2002, is_coop: false, status: "backlog", notes: "GBA'nın en iyi metroidvania'sı.", cover_url: T("Nintendo_-_Game_Boy_Advance", "Metroid Fusion (USA, Australia)"), emulator: "mGBA", rom_status: "missing", rating: 9 },
-  { name: "Metroid: Zero Mission", system: "GBA", genre: "Action-Adventure", release_year: 2004, is_coop: false, status: "backlog", notes: "İlk Metroid'in remake'i.", cover_url: T("Nintendo_-_Game_Boy_Advance", "Metroid - Zero Mission (USA)"), emulator: "mGBA", rom_status: "missing", rating: 9 },
-  { name: "Shadow of the Colossus", system: "PS2", genre: "Action-Adventure", release_year: 2005, is_coop: false, status: "backlog", notes: "Sanat eseri.", cover_url: T("Sony_-_PlayStation_2", "Shadow of the Colossus (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Okami", system: "PS2", genre: "Action-Adventure", release_year: 2006, is_coop: false, status: "backlog", notes: "Sumi-e sanat tarzı. AMOLED'de muhteşem.", cover_url: T("Sony_-_PlayStation_2", "Okami (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Castlevania: Symphony of the Night", system: "PS1", genre: "Metroidvania", release_year: 1997, is_coop: false, status: "backlog", notes: "Metroidvania janrına ilham veren başyapıt.", cover_url: T("Sony_-_PlayStation", "Castlevania - Symphony of the Night (USA)"), emulator: "DuckStation", rom_status: "missing", rating: 10 },
-  { name: "Castlevania: Aria of Sorrow", system: "GBA", genre: "Metroidvania", release_year: 2003, is_coop: false, status: "backlog", notes: "GBA Castlevania'sının en iyisi.", cover_url: T("Nintendo_-_Game_Boy_Advance", "Castlevania - Aria of Sorrow (USA)"), emulator: "mGBA", rom_status: "missing", rating: 10 },
-  { name: "Tony Hawk's Pro Skater 3", system: "PS2", genre: "Sports", release_year: 2001, is_coop: true, status: "backlog", notes: "Soundtrack efsane. 2P split-screen var.", cover_url: T("Sony_-_PlayStation_2", "Tony Hawk's Pro Skater 3 (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 9 },
-  { name: "Persona 4", system: "PS2", genre: "RPG", release_year: 2008, is_coop: false, status: "backlog", notes: "JRPG + sosyal sim.", cover_url: T("Sony_-_PlayStation_2", "Shin Megami Tensei - Persona 4 (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Persona 3 FES", system: "PS2", genre: "RPG", release_year: 2007, is_coop: false, status: "backlog", notes: "Persona serisinin modern formülünün başlangıcı.", cover_url: T("Sony_-_PlayStation_2", "Shin Megami Tensei - Persona 3 FES (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 10 },
-  { name: "Pikmin", system: "GameCube", genre: "Strategy", release_year: 2001, is_coop: false, status: "backlog", notes: "Real-time strategy + bulmaca.", cover_url: T("Nintendo_-_GameCube", "Pikmin (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 8 },
-  { name: "Pikmin 2", system: "GameCube", genre: "Strategy", release_year: 2004, is_coop: true, status: "backlog", notes: "İki başkahraman. Co-op modu var.", cover_url: T("Nintendo_-_GameCube", "Pikmin 2 (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 9 },
-  { name: "Soulcalibur II", system: "GameCube", genre: "Fighting", release_year: 2003, is_coop: true, status: "backlog", notes: "GameCube exclusive Link karakteri ile.", cover_url: T("Nintendo_-_GameCube", "SoulCalibur II (USA)"), emulator: "Dolphin", rom_status: "missing", rating: 9 },
-  { name: "Super Smash Bros. Melee", system: "GameCube", genre: "Fighting", release_year: 2001, is_coop: true, status: "backlog", notes: "Smash'in altın standardı. 4P local.", cover_url: T("Nintendo_-_GameCube", "Super Smash Bros. Melee (USA) (En,Ja)"), emulator: "Dolphin", rom_status: "missing", rating: 10 },
-  { name: "TimeSplitters 2", system: "PS2", genre: "FPS", release_year: 2002, is_coop: true, status: "backlog", notes: "Split-screen FPS multiplayer'ın en iyisi.", cover_url: T("Sony_-_PlayStation_2", "TimeSplitters 2 (USA)"), emulator: "AetherSX2", rom_status: "missing", rating: 9 },
-  { name: "Professor Layton and the Curious Village", system: "DS", genre: "Puzzle", release_year: 2007, is_coop: false, status: "backlog", notes: "Bulmaca + hikaye. Anlık girip çıkmalık.", cover_url: T("Nintendo_-_Nintendo_DS", "Professor Layton and the Curious Village (USA)"), emulator: "DraStic", rom_status: "missing", rating: 9 },
-  { name: "Professor Layton and the Diabolical Box", system: "DS", genre: "Puzzle", release_year: 2007, is_coop: false, status: "backlog", notes: "Layton serisinin ikincisi.", cover_url: T("Nintendo_-_Nintendo_DS", "Professor Layton and the Diabolical Box (USA)"), emulator: "DraStic", rom_status: "missing", rating: 8 },
-  { name: "Professor Layton and the Unwound Future", system: "DS", genre: "Puzzle", release_year: 2008, is_coop: false, status: "backlog", notes: "Birçok fan'a göre serinin zirvesi.", cover_url: T("Nintendo_-_Nintendo_DS", "Professor Layton and the Unwound Future (USA)"), emulator: "DraStic", rom_status: "missing", rating: 10 },
-  { name: "Brain Age", system: "DS", genre: "Puzzle", release_year: 2005, is_coop: false, status: "backlog", notes: "Sudoku + beyin egzersizi.", cover_url: T("Nintendo_-_Nintendo_DS", "Brain Age - Train Your Brain in Minutes a Day! (USA)"), emulator: "DraStic", rom_status: "missing", rating: 7 },
-  { name: "Picross DS", system: "DS", genre: "Puzzle", release_year: 2007, is_coop: false, status: "backlog", notes: "Bağımlılık yapan görsel bulmaca.", cover_url: T("Nintendo_-_Nintendo_DS", "Picross DS (USA)"), emulator: "DraStic", rom_status: "missing", rating: 8 },
-  { name: "Tetris DS", system: "DS", genre: "Puzzle", release_year: 2006, is_coop: false, status: "backlog", notes: "Klasik Tetris, DS modları ile.", cover_url: T("Nintendo_-_Nintendo_DS", "Tetris DS (USA)"), emulator: "DraStic", rom_status: "missing", rating: 8 },
-  { name: "42 All-Time Classics", system: "DS", genre: "Puzzle", release_year: 2005, is_coop: true, status: "backlog", notes: "Satranç, dama, Mahjong — 42 oyun bir arada.", cover_url: T("Nintendo_-_Nintendo_DS", "42 All-Time Classics (Europe) (En,Fr,De,Es,It)"), emulator: "DraStic", rom_status: "missing", rating: 8 },
-  { name: "Advance Wars", system: "GBA", genre: "Strategy", release_year: 2001, is_coop: false, status: "backlog", notes: "Sıra tabanlı strateji klasiği.", cover_url: T("Nintendo_-_Game_Boy_Advance", "Advance Wars (USA)"), emulator: "mGBA", rom_status: "missing", rating: 9 },
-  { name: "Advance Wars: Dual Strike", system: "DS", genre: "Strategy", release_year: 2005, is_coop: false, status: "backlog", notes: "DS'in çift ekran kullanan strateji oyunu.", cover_url: T("Nintendo_-_Nintendo_DS", "Advance Wars - Dual Strike (USA)"), emulator: "DraStic", rom_status: "missing", rating: 9 },
-  { name: "Puzzle Quest: Challenge of the Warlords", system: "DS", genre: "Puzzle-RPG", release_year: 2007, is_coop: false, status: "backlog", notes: "Match-3 + RPG. Bağımlılık yapar.", cover_url: T("Nintendo_-_Nintendo_DS", "Puzzle Quest - Challenge of the Warlords (USA)"), emulator: "DraStic", rom_status: "missing", rating: 8 },
-];
-
-function log(msg, cls = '') {
-  const div = document.getElementById('log');
-  div.innerHTML += `<div class="${cls}">${msg}</div>`;
-  div.scrollTop = div.scrollHeight;
-}
-
-async function migrate() {
-  document.getElementById('btn').disabled = true;
-  log('🚀 Migration başlıyor... ' + games.length + ' oyun yüklenecek.', 'info');
-
-  // Batch insert - 20'lik gruplar halinde
-  const batchSize = 20;
-  let success = 0;
-  let fail = 0;
-
-  for (let i = 0; i < games.length; i += batchSize) {
-    const batch = games.slice(i, i + batchSize);
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/games`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(batch)
-      });
-
-      if (res.ok) {
-        success += batch.length;
-        log(`✓ Batch ${Math.floor(i/batchSize)+1}: ${batch.map(g => g.name).join(', ')}`, 'ok');
-      } else {
-        const err = await res.text();
-        fail += batch.length;
-        log(`✗ Batch ${Math.floor(i/batchSize)+1} HATA: ${err}`, 'err');
-      }
-    } catch(e) {
-      fail += batch.length;
-      log(`✗ Network hatası: ${e.message}`, 'err');
-    }
-
-    await new Promise(r => setTimeout(r, 200)); // rate limit
-  }
-
-  log('', '');
-  log(`✅ Migration tamamlandı: ${success} başarılı, ${fail} hatalı`, success > 0 ? 'ok' : 'err');
-  if (success > 0) {
-    log('🎉 Artık dashboard Supabase\'den okuyacak!', 'info');
-  }
-}
-</script>
+  <div class="box">
+    <h1>Bu arac arsivlendi</h1>
+    <p><code>migrate_to_supabase.html</code> artik canli urun akisinin parcasi degil. Kaynak metni repo icinde saklaniyor.</p>
+    <p><a href="Retroid_Legacy_Tools.html">Legacy Tools</a> sayfasina git veya <a href="legacy_tools/migrate_to_supabase.html.txt">arsiv metnini</a> ac.</p>
+  </div>
 </body>
 </html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Legacy Tools - Retroid RP5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#ff4655;--accent-2:#00d4ff;--gold:#ffb347;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);min-height:100vh;padding:24px}
+.wrap{max-width:920px;margin:0 auto}
+header{margin-bottom:20px;padding:22px;border-radius:16px;border:1px solid var(--border);background:linear-gradient(135deg,rgba(255,70,85,.12),rgba(0,212,255,.08))}
+h1{font-size:1.8rem;margin-bottom:8px}
+p{color:var(--muted);line-height:1.6}
+.note{margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(19,24,41,.75);border:1px solid var(--border);color:var(--muted);font-size:.92rem}
+.list{display:grid;gap:12px;margin-top:18px}
+.card{padding:16px;border-radius:14px;border:1px solid var(--border);background:var(--bg-2)}
+.card h2{font-size:1rem;margin-bottom:6px}
+.card p{font-size:.9rem;margin-bottom:10px}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;text-decoration:none;background:var(--bg-3);border:1px solid var(--border);color:var(--accent-2);font-size:.85rem;font-weight:600}
+.links a:hover{border-color:var(--accent-2)}
+footer{text-align:center;margin-top:28px;color:var(--muted);font-size:.8rem}
+footer a{color:var(--accent-2);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Legacy Tools</h1>
+    <p>Eski migration ve import araclari aktif urun akisindan cikarildi. Kaynaklari repo icinde okunabilir sekilde saklaniyor, ama canli sitede calistirilabilir HTML olarak sunulmuyor.</p>
+    <div class="note">Bu sayfa referans icindir. Mevcut urun akisinda admin, database ve cover test disindaki migration araclari artik kullanilmiyor.</div>
+  </header>
+
+  <div class="list">
+    <div class="card">
+      <h2>Supabase Migration Tool</h2>
+      <p>Ilk ham oyun yuklemeleri icin kullanilan erken donem migration araci.</p>
+      <div class="links">
+        <a href="legacy_tools/migrate_to_supabase.html.txt">Arsiv Metni</a>
+        <a href="https://github.com/Lasciviens/retroid-pocket-5-/blob/main/legacy_tools/migrate_to_supabase.html.txt" target="_blank">GitHub</a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Migration v2</h2>
+      <p>Normalize schema gecisi sirasinda kullanilan uzun migration akisi.</p>
+      <div class="links">
+        <a href="legacy_tools/migrate_v2.html.txt">Arsiv Metni</a>
+        <a href="https://github.com/Lasciviens/retroid-pocket-5-/blob/main/legacy_tools/migrate_v2.html.txt" target="_blank">GitHub</a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Glossary Migration</h2>
+      <p>Sozluk icerigini tek seferlik olarak Supabase'e yuklemek icin kullanilan arac.</p>
+      <div class="links">
+        <a href="legacy_tools/migrate_glossary.html.txt">Arsiv Metni</a>
+        <a href="https://github.com/Lasciviens/retroid-pocket-5-/blob/main/legacy_tools/migrate_glossary.html.txt" target="_blank">GitHub</a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>PDF Migration Tool</h2>
+      <p>PDF tabanli oyun notlari ve kupleri icin gecici import araci.</p>
+      <div class="links">
+        <a href="legacy_tools/migrate_pdf_games.html.txt">Arsiv Metni</a>
+        <a href="https://github.com/Lasciviens/retroid-pocket-5-/blob/main/legacy_tools/migrate_pdf_games.html.txt" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <a href="index.html">Hub</a> · <a href="admin.html">Admin</a> · <a href="https://github.com/Lasciviens/retroid-pocket-5-" target="_blank">GitHub</a>
+  </footer>
+</div>
+</body>
+</html>
