@@ -82,6 +82,7 @@ git push origin main:gh-pages
 
 Migration notes: `GITHUB_PAGES_MIGRATION.md`
 Security follow-up: `SECURITY_NEXT_STEPS.md`
+RLS apply checklist: `SUPABASE_RLS_APPLY.md`
 
 ---
 

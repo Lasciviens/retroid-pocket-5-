@@ -72,7 +72,9 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── Retroid_Request_Tracker.html    # İstekler (notes tablosu, category=request/done)
 ├── admin.html                      # Oyun ekle/düzenle/sil
 ├── migration_v3.sql                # DB migration (Supabase SQL Editor'de çalıştırıldı)
-├── migrate_v2.html                 # İlk data yüklemesi (bir kez çalıştırıldı)
+├── migrate_v2.html                 # İlk data yüklemesi (legacy bakım aracı)
+├── migrate_*.html                  # Legacy migration/import araçları
+├── Retroid_Cover_Test.html         # Yönetici aracı
 ├── ROM_Folder_Guide.md             # ROM klasör yapısı rehberi
 ├── game_wishlist.md                # Eklenecek oyunlar listesi
 ├── project_todo.md                 # Geliştirme to-do listesi
@@ -169,3 +171,9 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - [ ] ROM durumu takibi UI (game_platforms.rom_status kolonu hazır)
 - [ ] Harici API entegrasyonu (RAWG/IGDB — external_id kolonu hazır)
 - [ ] Admin'e emülatör ekleme formu
+
+## Operasyon Notu
+
+- Normal kullanıcı akışı `index.html` üzerinden başlar.
+- `migrate_*.html` dosyaları aktif ürün akışının parçası değildir.
+- RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.
