@@ -171,6 +171,8 @@
     .divider { display: none; }
   }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
 </head>
 <body>
 
@@ -186,6 +188,7 @@
     </div>
     <p class="subtitle">Elite Retro Gaming Library</p>
     <div class="device-badge">⚡ Furkan's Personal Collection</div>
+    <div data-auth-mount></div>
   </header>
 
   <!-- Live stats from Supabase -->
@@ -256,19 +259,19 @@
       <div class="card-badge">Aç</div>
     </a>
 
-    <a class="card" href="admin.html" style="--card-color: #00d4ff;">
+    <a class="card" href="admin.html" style="--card-color: #00d4ff;" data-auth-required-link>
       <div class="card-icon">➕</div>
       <div class="card-title">Oyun Ekle</div>
       <div class="card-desc">Kütüphaneye yeni oyun ekle, mevcut oyunları düzenle veya sil.</div>
       <div class="card-badge">Aç</div>
     </a>
-    <a class="card" href="Retroid_Database.html" style="--card-color: #8b5cf6;">
+    <a class="card" href="Retroid_Database.html" style="--card-color: #8b5cf6;" data-auth-required-link>
       <div class="card-icon">🗄️</div>
       <div class="card-title">Database</div>
       <div class="card-desc">Tüm oyun listesi. Düzenle, filtrele, kopyala, ROM URL ekle.</div>
       <div class="card-badge">Aç</div>
     </a>
-    <a class="card" href="Retroid_Cover_Test.html" style="--card-color: #f59e0b;">
+    <a class="card" href="Retroid_Cover_Test.html" style="--card-color: #f59e0b;" data-auth-required-link>
       <div class="card-icon">🖼️</div>
       <div class="card-title">Cover Test</div>
       <div class="card-desc">URL yaz, önizle, beğenince kaydet. Bozuk cover'ları düzeltmek için.</div>

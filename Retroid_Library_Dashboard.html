@@ -109,6 +109,8 @@ footer{text-align:center;margin-top:36px;padding:16px;color:var(--muted);font-si
 footer a{color:var(--accent-2);text-decoration:none}
 @media(max-width:600px){.modal-hero-art{width:80px;height:110px;left:12px}.modal-hero-info{left:108px}.modal-hero-info h2{font-size:1.1rem}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
 </head>
 <body>
 <header>
@@ -119,8 +121,9 @@ footer a{color:var(--accent-2);text-decoration:none}
     <a href="Retroid_Glossary.html">📖 Terimler</a>
     <a href="Retroid_Series_Roadmap.html">🗺️ Seriler</a>
     <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatörler</a>
-    <a href="admin.html">➕ Oyun Ekle</a>
+    <a href="admin.html" data-auth-required-link>➕ Oyun Ekle</a>
   </div>
+  <div data-auth-mount></div>
 </header>
 
 <div class="stats">
@@ -284,6 +287,7 @@ function render(){
 }
 
 async function setStatus(id,status){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Oyun durumu guncellemek icin yonetici oturumu acik olmali.'}))) return;
   const g=ALL.find(x=>x.id===id);
   if(!g)return;
   g.status=status;
@@ -292,12 +296,14 @@ async function setStatus(id,status){
 }
 
 async function setRom(platformId,romStatus){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'ROM durumu guncellemek icin yonetici oturumu acik olmali.'}))) return;
   ALL.forEach(g=>g.platforms.forEach(p=>{if(p.id===platformId)p.romStatus=romStatus;}));
   render();
   await patch(`game_platforms?id=eq.${platformId}`,{rom_status:romStatus});
 }
 
 async function setRomModal(platformId,romStatus,btn){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'ROM durumu guncellemek icin yonetici oturumu acik olmali.'}))) return;
   // Butonları güncelle
   const container=btn.closest('div[style*="display:flex"]');
   container.querySelectorAll('button[data-platform]').forEach(b=>{
@@ -315,6 +321,7 @@ async function setRomModal(platformId,romStatus,btn){
 }
 
 async function setRomUrl(platformId,url){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'ROM URL guncellemek icin yonetici oturumu acik olmali.'}))) return;
   ALL.forEach(g=>g.platforms.forEach(p=>{if(p.id===platformId)p.romUrl=url;}));
   await patch(`game_platforms?id=eq.${platformId}`,{rom_url:url||null});
 }
@@ -415,6 +422,7 @@ function openModal(id){
 function closeModal(){document.getElementById('modal').classList.remove('active');}
 
 async function saveNotes(id){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Not kaydetmek icin yonetici oturumu acik olmali.'}))) return;
   const notes=document.getElementById('modal-notes').value;
   const log=document.getElementById('modal-log').value;
   const g=ALL.find(x=>x.id===id);
@@ -424,6 +432,7 @@ async function saveNotes(id){
 }
 
 async function addToQueue(gameId){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Oynama sirasina eklemek icin yonetici oturumu acik olmali.'}))) return;
   // Mevcut en yüksek play_order'ı bul
   const queued=await fetch(`${SB}/rest/v1/games?select=play_order&play_order=not.is.null&order=play_order.desc&limit=1`,H).then(r=>r.json());
   const nextOrder=(queued[0]?.play_order||0)+1;

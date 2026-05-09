@@ -121,6 +121,8 @@ textarea.field-input{resize:vertical;min-height:70px}
 .rom-btn.found{background:#eab308;color:#000}
 .rom-btn.missing{background:var(--bad);color:#fff}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
 </head>
 <body>
 
@@ -597,7 +599,12 @@ async function checkRomUrlColumn(){
 }
 
 checkRomUrlColumn();
-load();
+window.rp5Auth.lockAdminPage({
+  title:'Yonetici girisi gerekli',
+  message:'Database sayfasi web uzerinden yonetim icin acik, ama sadece yonetici oturumuyla.'
+}).then(function(ok){
+  if(ok) load();
+});
 </script>
 </body>
 </html>

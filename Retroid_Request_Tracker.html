@@ -57,6 +57,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 footer{text-align:center;margin-top:32px;padding:14px;color:var(--muted);font-size:.8rem}
 footer a{color:var(--accent);text-decoration:none}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
 </head>
 <body>
 <header>
@@ -66,8 +68,9 @@ footer a{color:var(--accent);text-decoration:none}
     <a href="index.html">🏠 Hub</a>
     <a href="Retroid_Library_Dashboard.html">📚 Kütüphane</a>
     <a href="Retroid_Queue.html">🎮 Oynama Sırası</a>
-    <a href="admin.html">➕ Oyun Ekle</a>
+    <a href="admin.html" data-auth-required-link>➕ Oyun Ekle</a>
   </div>
+  <div data-auth-mount></div>
 </header>
 
 <div class="add-section">
@@ -177,6 +180,7 @@ function render(){
 }
 
 async function addItem(){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Yeni istek eklemek icin yonetici oturumu acik olmali.'}))) return;
   const title=document.getElementById('f-title').value.trim();
   if(!title)return;
   const cat=document.getElementById('f-cat').value;
@@ -190,11 +194,13 @@ async function addItem(){
 }
 
 async function markDone(id){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Istek guncellemek icin yonetici oturumu acik olmali.'}))) return;
   await api(`notes?id=eq.${id}`,'PATCH',{category:'done'});
   load();
 }
 
 async function deleteItem(id){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Istek silmek icin yonetici oturumu acik olmali.'}))) return;
   if(!confirm('Silinsin mi?'))return;
   await api(`notes?id=eq.${id}`,'DELETE');
   load();

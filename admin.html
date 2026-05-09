@@ -47,6 +47,8 @@ textarea{resize:vertical;min-height:80px}
 .loading{color:var(--muted);padding:20px;text-align:center}
 @media(max-width:600px){.form-grid{grid-template-columns:1fr}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
 </head>
 <body>
 <div class="nav"><a href="Retroid_Library_Dashboard.html">← Kütüphaneye Dön</a></div>
@@ -275,7 +277,12 @@ function switchTab(tab){
   if(tab==='list')loadList();
 }
 
-init();
+window.rp5Auth.lockAdminPage({
+  title:'Yonetici girisi gerekli',
+  message:'Admin paneli sadece yonetici oturumuyla acilir. Bir kez giris yaptiginda tarayici seni hatirlar.'
+}).then(function(ok){
+  if(ok) init();
+});
 </script>
 </body>
 </html>
