@@ -22,10 +22,16 @@ Bu handoff sonrasinda kütüphane yüzeyi üzerinde güvenli UX iyilestirmeleri 
   - `IGDB Eksik` filtresi eklendi
   - `Kapak Eksik / Ozet Eksik / Yil Eksik` filtreleri eklendi
   - sonuc ozeti / aktif filtre ozeti eklendi
+- `Retroid_Cleanup_Workspace.html`
+  - yeni yogun metadata denetim yuzeyi eklendi
+  - gap skoru ile cleanup adaylarini one cikarir
+  - kutuphane / IGDB / database / kapak araci gecislerini tek satirda toplar
 - `Retroid_IGDB_Bridge.html`
   - eslestirme sonuc kartlarinda yerel platformlar, IGDB platformlari ve yeni alternatif platformlar daha net gosteriliyor
 - `README.md`, `ARCHITECTURE.md`, `project_todo.md`
   - GitHub Actions deploy modeli ve yeni kutuphane davranislariyla guncellendi
+- `DOCS_INDEX.md`
+  - markdown notlari icin hizli index eklendi
 - Yeni entegrasyon zemini:
   - `INTEGRATIONS_ROADMAP.md`
   - `PRODUCT_IDEAS_FROM_REFERENCES.md`

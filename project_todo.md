@@ -14,7 +14,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [ ] **RetroAchievements entegrasyonu** — user progress / completion / game progress proxy + modal enrichment
 - [ ] **SteamGridDB entegrasyonu** — alternatif kapak / hero / logo onerileri
 - [ ] **RAWG discovery entegrasyonu** — benzer oyunlar / dis linkler / discovery katmani
-- [ ] **Cleanup Workspace** — admin icin yogun metadata denetim gorunumu
+- [ ] **Cleanup Workspace** — admin icin yogun metadata denetim gorunumu (ilk ekran tamam, sonraki adim inline hizli aksiyonlar)
 - [ ] **Artwork Manager** — IGDB / libretro / SteamGridDB kaynaklari arasinda kapak secimi
 - [ ] **Discovery Shelf** — kutuphaneden secilmis akilli oneriler
 
@@ -54,6 +54,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] Dashboard'a sorting eklendi (A-Z, yıl, rating, IGDB rating)
 - [x] Kütüphane için grid / liste / tablo görünümü eklendi
 - [x] Kütüphaneye metadata gap filtreleri eklendi (IGDB / kapak / ozet / yil eksik)
+- [x] Cleanup Workspace sayfasi eklendi
 - [x] Co-op Dashboard (19 oyun, rastgele öneri)
 - [x] Series Roadmap (10 seri, timeline)
 - [x] Emülatör Matrix (17 sistem, deep-dive notlar)

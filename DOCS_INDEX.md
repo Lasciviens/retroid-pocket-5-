@@ -1,0 +1,29 @@
+# Docs Index
+
+Bu dosya repo icindeki markdown notlarini hizli bulmak icin var.
+
+## Baslangic
+
+- `README.md` — genel proje tanimi
+- `ARCHITECTURE.md` — mimari ve dosya yapisi
+- `project_todo.md` — aktif yol haritasi
+- `CLAUDE_HANDOFF_2026-05-10.md` — son kapsamli handoff
+
+## IGDB
+
+- `IGDB_INTEGRATION.md` — proxy ve sync mimarisi
+- `IGDB_DATA_PLAN.md` — veri kapsam kararlari
+- `migration_v6.sql` — ileri metadata genisletme taslagi
+
+## Guvenlik ve Deploy
+
+- `SUPABASE_RLS_APPLY.md` — RLS uygulama notu
+- `SECURITY_NEXT_STEPS.md` — sonraki guvenlik adimlari
+- `GITHUB_PAGES_MIGRATION.md` — Pages gecis notlari
+
+## Uygulama ve Urun
+
+- `INTEGRATIONS_ROADMAP.md` — yeni entegrasyon oncelikleri
+- `PRODUCT_IDEAS_FROM_REFERENCES.md` — referanslardan cikan urun fikirleri
+- `ROM_Folder_Guide.md` — ROM klasor mantigi
+- `game_wishlist.md` — eklenecek oyunlar

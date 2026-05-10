@@ -62,6 +62,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 /
 ├── index.html                      # Ana hub sayfası
 ├── Retroid_Library_Dashboard.html  # Ana kütüphane — grid/list/table + IGDB filtreleri
+├── Retroid_Cleanup_Workspace.html  # Yogun cleanup ve metadata denetim yuzeyi
 ├── Retroid_Coop_Dashboard.html     # Co-op oyun seçici
 ├── Retroid_Series_Roadmap.html     # 10 serinin yol haritası
 ├── Retroid_Emulator_Matrix.html    # Emülatör rehberi (emulator_systems kullanır)
@@ -82,6 +83,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── IGDB_DATA_PLAN.md               # IGDB veri kapsami ve sonraki urun yolu
 ├── INTEGRATIONS_ROADMAP.md         # Yeni entegrasyonlar icin karar ve oncelik notu
 ├── PRODUCT_IDEAS_FROM_REFERENCES.md # Tonkatsu Box ve benzeri urunlerden cikan fikirler
+├── DOCS_INDEX.md                   # Markdown notlari icin hizli indeks
 ├── supabase/functions/igdb-search  # IGDB proxy scaffold
 ├── supabase/functions/retroachievements-player  # RetroAchievements proxy scaffold
 ├── supabase/functions/steamgriddb-art          # SteamGridDB proxy scaffold

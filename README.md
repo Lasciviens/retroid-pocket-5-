@@ -20,6 +20,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 | Page | Description |
 |------|-------------|
 | 📚 **Library** | 100+ games with cover art, filters (system, genre, series, IGDB/kapak/özet/yıl eksikleri), grid/list/table görünümleri, year/rating sorting, play status |
+| 🧹 **Cleanup Workspace** | Yoğun admin görünümü; IGDB, kapak, özet, yıl ve ROM yolu eksiklerini hızlı denetleme |
 | 👫 **Co-op Hub** | Filtered view of 2-player games with random suggestion engine |
 | 🗺️ **Series Roadmap** | Chronological game list per series — where to start each franchise |
 | 🎮 **Play Queue** | Drag-and-drop play order, synced across devices |
@@ -87,6 +88,7 @@ IGDB bridge notes: `IGDB_INTEGRATION.md`
 IGDB data plan: `IGDB_DATA_PLAN.md`
 Integrations roadmap: `INTEGRATIONS_ROADMAP.md`
 Reference-driven product ideas: `PRODUCT_IDEAS_FROM_REFERENCES.md`
+Docs index: `DOCS_INDEX.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
 IGDB schema expansion: `migration_v6.sql`
 

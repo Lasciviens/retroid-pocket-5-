@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Cleanup Workspace - Retroid RP5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--bg-4:#222840;--accent:#00d4ff;--accent2:#ff4655;--gold:#ffb347;--good:#2ecc71;--warn:#f39c12;--bad:#e74c3c;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-1);color:var(--text);min-height:100vh}
+.topbar{background:var(--bg-2);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar h1{font-size:1.15rem;font-weight:800;color:var(--accent)}
+.topbar-note{font-size:.78rem;color:var(--muted)}
+.topbar-links{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.topbar-links a{color:var(--muted);text-decoration:none;font-size:.8rem;padding:5px 9px;border-radius:7px;border:1px solid var(--border);background:var(--bg-3)}
+.topbar-links a:hover{border-color:var(--accent);color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:16px 20px;background:rgba(19,24,41,.9);border-bottom:1px solid var(--border)}
+.stat{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.stat strong{display:block;font-size:1.45rem;font-weight:800}
+.stat span{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:4px}
+.toolbar{padding:14px 20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);background:var(--bg-2)}
+.search-box,.filter{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.84rem}
+.search-box{width:240px;max-width:100%}
+.search-box:focus,.filter:focus{outline:none;border-color:var(--accent)}
+.chip{background:var(--bg-3);border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:8px 12px;font-size:.76rem;font-weight:700;cursor:pointer}
+.chip.active{color:#fff;border-color:var(--accent);background:rgba(0,212,255,.18)}
+.toolbar-note{margin-left:auto;color:var(--muted);font-size:.75rem}
+.table-wrap{overflow-x:auto;padding:0 20px 24px}
+table{width:100%;border-collapse:separate;border-spacing:0 10px;margin-top:14px}
+thead th{padding:0 10px 8px;text-align:left;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+tbody td{background:var(--bg-2);padding:12px 10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-size:.82rem;vertical-align:top}
+tbody td:first-child{border-left:1px solid var(--border);border-top-left-radius:10px;border-bottom-left-radius:10px}
+tbody td:last-child{border-right:1px solid var(--border);border-top-right-radius:10px;border-bottom-right-radius:10px}
+tbody tr:hover td{border-color:rgba(0,212,255,.35);background:rgba(28,34,56,.92)}
+.title{font-weight:700;font-size:.9rem}
+.sub{font-size:.73rem;color:var(--muted);line-height:1.45;margin-top:4px}
+.score{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;border-radius:999px;font-size:.82rem;font-weight:800}
+.score.good{background:rgba(46,204,113,.15);color:var(--good);border:1px solid rgba(46,204,113,.35)}
+.score.warn{background:rgba(243,156,18,.15);color:var(--warn);border:1px solid rgba(243,156,18,.35)}
+.score.bad{background:rgba(231,76,60,.15);color:var(--bad);border:1px solid rgba(231,76,60,.35)}
+.badge-row{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:var(--bg-3);font-size:.7rem;color:var(--muted);font-weight:700}
+.badge.gap{color:var(--warn);border-color:rgba(243,156,18,.35)}
+.badge.igdb{color:#c4b5fd;border-color:rgba(124,58,237,.35)}
+.badge.ok{color:var(--good);border-color:rgba(46,204,113,.35)}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.actions a{font-size:.74rem;text-decoration:none;color:var(--text);background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:6px 9px}
+.actions a:hover{border-color:var(--accent);color:var(--accent)}
+.empty{padding:60px 20px;text-align:center;color:var(--muted)}
+footer{text-align:center;padding:18px;color:var(--muted);font-size:.78rem}
+footer a{color:var(--accent);text-decoration:none}
+@media(max-width:760px){
+  .toolbar-note{width:100%;margin-left:0}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rp5_auth.js"></script>
+</head>
+<body>
+<div class="topbar">
+  <h1>🧹 CLEANUP WORKSPACE</h1>
+  <span class="topbar-note">Metadata, IGDB ve ROM eksiklerini hizli taramak icin yogun denetim yuzeyi.</span>
+  <div data-auth-mount></div>
+  <div class="topbar-links">
+    <a href="index.html">🏠 Hub</a>
+    <a href="Retroid_Library_Dashboard.html">📚 Kutuphane</a>
+    <a href="Retroid_Database.html">🗄️ Database</a>
+    <a href="Retroid_IGDB_Bridge.html">🛰️ IGDB</a>
+    <a href="admin.html">➕ Admin</a>
+  </div>
+</div>
+
+<div class="stats" id="stats">
+  <div class="stat"><strong id="s-total">—</strong><span>Toplam</span></div>
+  <div class="stat"><strong id="s-focus" style="color:var(--warn)">—</strong><span>Cleanup Adayi</span></div>
+  <div class="stat"><strong id="s-unmatched" style="color:#c4b5fd">—</strong><span>IGDB Eksik</span></div>
+  <div class="stat"><strong id="s-cover" style="color:var(--accent2)">—</strong><span>Kapak Eksik</span></div>
+  <div class="stat"><strong id="s-summary" style="color:var(--warn)">—</strong><span>Ozet Eksik</span></div>
+  <div class="stat"><strong id="s-rom" style="color:var(--gold)">—</strong><span>ROM Yol Eksik</span></div>
+</div>
+
+<div class="toolbar">
+  <input class="search-box" id="search" placeholder="🔍 Oyun, seri, sistem ara...">
+  <select class="filter" id="f-sort">
+    <option value="score-desc">Gap Skoru ↓</option>
+    <option value="title">A-Z</option>
+    <option value="year-asc">Yıl ↑</option>
+    <option value="year-desc">Yıl ↓</option>
+  </select>
+  <button class="chip active" id="chip-focus">Cleanup Adaylari</button>
+  <button class="chip" id="chip-unmatched">IGDB Eksik</button>
+  <button class="chip" id="chip-cover">Kapak Eksik</button>
+  <button class="chip" id="chip-summary">Ozet Eksik</button>
+  <button class="chip" id="chip-year">Yil Eksik</button>
+  <button class="chip" id="chip-rom">ROM Yol Eksik</button>
+  <button class="chip" id="chip-reset">Sifirla</button>
+  <span class="toolbar-note" id="toolbar-note">Yuksek gap skoru, once bakmaya deger oyunlari one cikarir.</span>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Skor</th>
+        <th>Oyun</th>
+        <th>Eksikler</th>
+        <th>Platform</th>
+        <th>ROM</th>
+        <th>Hizli Gecis</th>
+      </tr>
+    </thead>
+    <tbody id="rows">
+      <tr><td colspan="6" class="empty">Yukleniyor...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  Cleanup Workspace · <a href="PRODUCT_IDEAS_FROM_REFERENCES.md">urun fikirleri</a> · <a href="project_todo.md">to-do</a>
+</footer>
+
+<script>
+const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+const HEADERS={apikey:KEY,Authorization:`Bearer ${KEY}`};
+let ALL=[];
+let filters={search:'',focus:true,unmatched:false,cover:false,summary:false,year:false,rom:false,sort:'score-desc'};
+
+function escapeHtml(value){
+  return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function getPreferred(game){
+  return game.platforms.find(p=>p.isPreferred) || game.platforms[0] || null;
+}
+
+function getCover(game){
+  const preferred=getPreferred(game);
+  return game.cover || preferred?.cover || game.platforms[0]?.cover || '';
+}
+
+function getGapInfo(game){
+  const preferred=getPreferred(game);
+  const hasCover=!!getCover(game);
+  const hasSummary=!!(game.desc && String(game.desc).trim());
+  const hasYear=!!game.year;
+  const hasIgdb=!!game.externalId;
+  const romPathMissing=game.platforms.some(p=>['installed','sd_card','found'].includes(p.romStatus) && !String(p.romUrl||'').trim());
+  const issues=[];
+  if(!hasIgdb) issues.push('IGDB eksik');
+  if(!hasCover) issues.push('Kapak eksik');
+  if(!hasSummary) issues.push('Ozet eksik');
+  if(!hasYear) issues.push('Yil eksik');
+  if(romPathMissing) issues.push('ROM yol eksik');
+  const score=(hasIgdb?0:4)+(hasCover?0:2)+(hasSummary?0:2)+(hasYear?0:1)+(romPathMissing?2:0);
+  return {preferred,hasCover,hasSummary,hasYear,hasIgdb,romPathMissing,issues,score};
+}
+
+async function load(){
+  const response=await fetch(`${SB}/rest/v1/games?select=id,title,release_year,developer,play_status,primary_cover_url,external_id,igdb_rating,igdb_url,description,series(name),game_platforms(id,rom_status,rom_url,is_preferred,cover_url,systems(name),emulators(name))&order=title`,{headers:HEADERS});
+  const games=await response.json();
+  ALL=games.map(g=>({
+    id:g.id,
+    title:g.title,
+    year:g.release_year||null,
+    developer:g.developer||'',
+    status:g.play_status||'backlog',
+    cover:g.primary_cover_url||'',
+    externalId:g.external_id||null,
+    igdbRating:g.igdb_rating||null,
+    igdbUrl:g.igdb_url||'',
+    desc:g.description||'',
+    series:g.series?.name||'',
+    platforms:(g.game_platforms||[]).map(p=>({
+      id:p.id,
+      system:p.systems?.name||'',
+      emulator:p.emulators?.name||'',
+      romStatus:p.rom_status||'missing',
+      romUrl:p.rom_url||'',
+      isPreferred:!!p.is_preferred,
+      cover:p.cover_url||''
+    }))
+  }));
+  renderStats();
+  render();
+}
+
+function renderStats(){
+  const focusList=ALL.filter(g=>getGapInfo(g).score>0);
+  document.getElementById('s-total').textContent=ALL.length;
+  document.getElementById('s-focus').textContent=focusList.length;
+  document.getElementById('s-unmatched').textContent=ALL.filter(g=>!getGapInfo(g).hasIgdb).length;
+  document.getElementById('s-cover').textContent=ALL.filter(g=>!getGapInfo(g).hasCover).length;
+  document.getElementById('s-summary').textContent=ALL.filter(g=>!getGapInfo(g).hasSummary).length;
+  document.getElementById('s-rom').textContent=ALL.filter(g=>getGapInfo(g).romPathMissing).length;
+}
+
+function getFiltered(){
+  let list=ALL.filter(game=>{
+    const info=getGapInfo(game);
+    const haystack=[game.title,game.series,game.developer,game.platforms.map(p=>p.system).join(' ')].join(' ').toLowerCase();
+    if(filters.search && !haystack.includes(filters.search.toLowerCase())) return false;
+    if(filters.focus && info.score===0) return false;
+    if(filters.unmatched && info.hasIgdb) return false;
+    if(filters.cover && info.hasCover) return false;
+    if(filters.summary && info.hasSummary) return false;
+    if(filters.year && info.hasYear) return false;
+    if(filters.rom && !info.romPathMissing) return false;
+    return true;
+  });
+  list.sort((a,b)=>{
+    const aInfo=getGapInfo(a);
+    const bInfo=getGapInfo(b);
+    if(filters.sort==='year-asc') return (a.year||9999)-(b.year||9999);
+    if(filters.sort==='year-desc') return (b.year||0)-(a.year||0);
+    if(filters.sort==='title') return a.title.localeCompare(b.title);
+    return bInfo.score-aInfo.score || a.title.localeCompare(b.title);
+  });
+  return list;
+}
+
+function render(){
+  const list=getFiltered();
+  const tbody=document.getElementById('rows');
+  const active=[];
+  if(filters.focus) active.push('cleanup adayi');
+  if(filters.unmatched) active.push('IGDB eksik');
+  if(filters.cover) active.push('kapak eksik');
+  if(filters.summary) active.push('ozet eksik');
+  if(filters.year) active.push('yil eksik');
+  if(filters.rom) active.push('ROM yol eksik');
+  document.getElementById('toolbar-note').textContent=active.length ? `Aktif: ${active.join(' · ')}` : 'Tum kutuphane acik.';
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="6" class="empty">Filtreye uyan oyun bulunamadi.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=list.map(game=>{
+    const info=getGapInfo(game);
+    const preferred=info.preferred;
+    const scoreTone=info.score>=6?'bad':info.score>=3?'warn':'good';
+    return `<tr>
+      <td><span class="score ${scoreTone}">${info.score}</span></td>
+      <td>
+        <div class="title">${escapeHtml(game.title)}</div>
+        <div class="sub">
+          ${escapeHtml(game.series||'Seri yok')}
+          ${game.year?` · ${game.year}`:' · Yil yok'}
+          ${game.developer?` · ${escapeHtml(game.developer)}`:''}
+        </div>
+      </td>
+      <td>
+        <div class="badge-row">
+          ${info.issues.length?info.issues.map(label=>`<span class="badge gap">${escapeHtml(label)}</span>`).join(''):'<span class="badge ok">Temiz</span>'}
+          ${info.hasIgdb?'<span class="badge igdb">IGDB eslesti</span>':''}
+        </div>
+      </td>
+      <td>
+        <div>${escapeHtml(preferred?.system || 'Platform yok')}</div>
+        <div class="sub">${escapeHtml(preferred?.emulator || 'Emulator yok')}</div>
+      </td>
+      <td>
+        <div>${escapeHtml(preferred?.romStatus || 'missing')}</div>
+        <div class="sub">${preferred?.romUrl?escapeHtml(preferred.romUrl):'ROM yolu yok'}</div>
+      </td>
+      <td>
+        <div class="actions">
+          <a href="Retroid_Library_Dashboard.html?search=${encodeURIComponent(game.title)}">Kutuphane</a>
+          <a href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(game.id)}&title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}">IGDB</a>
+          <a href="Retroid_Database.html">DB</a>
+          <a href="Retroid_Cover_Test.html">Kapak</a>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function bindChip(id,key,exclusive=false){
+  const el=document.getElementById(id);
+  el.addEventListener('click',()=>{
+    if(id==='chip-reset'){
+      filters={search:'',focus:true,unmatched:false,cover:false,summary:false,year:false,rom:false,sort:'score-desc'};
+      document.getElementById('search').value='';
+      document.getElementById('f-sort').value='score-desc';
+      ['chip-focus','chip-unmatched','chip-cover','chip-summary','chip-year','chip-rom'].forEach(chipId=>{
+        document.getElementById(chipId).classList.toggle('active', chipId==='chip-focus');
+      });
+      render();
+      return;
+    }
+    if(exclusive){
+      ['focus','unmatched','cover','summary','year','rom'].forEach(name=>filters[name]=false);
+      ['chip-focus','chip-unmatched','chip-cover','chip-summary','chip-year','chip-rom'].forEach(chipId=>{
+        document.getElementById(chipId).classList.remove('active');
+      });
+    }
+    filters[key]=!filters[key];
+    el.classList.toggle('active', filters[key]);
+    render();
+  });
+}
+
+document.getElementById('search').addEventListener('input',e=>{filters.search=e.target.value;render();});
+document.getElementById('f-sort').addEventListener('change',e=>{filters.sort=e.target.value;render();});
+bindChip('chip-focus','focus',true);
+bindChip('chip-unmatched','unmatched',true);
+bindChip('chip-cover','cover',true);
+bindChip('chip-summary','summary',true);
+bindChip('chip-year','year',true);
+bindChip('chip-rom','rom',true);
+bindChip('chip-reset','reset');
+load();
+</script>
+</body>
+</html>
