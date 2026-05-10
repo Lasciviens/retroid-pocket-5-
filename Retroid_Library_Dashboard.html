@@ -120,6 +120,12 @@ select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/
 .igdb-result-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .igdb-inline-note{font-size:.76rem;color:var(--muted);line-height:1.5}
 .igdb-sort-note{font-size:.75rem;color:var(--muted);margin-top:8px}
+.platform-preferred{border:1px solid rgba(255,179,71,.5)!important;background:rgba(255,179,71,.06)!important}
+.pref-badge{font-size:.65rem;font-weight:700;color:var(--gold);background:rgba(255,179,71,.15);border:1px solid rgba(255,179,71,.4);padding:2px 7px;border-radius:12px;letter-spacing:.3px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:6px}
+.info-cell{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+.info-cell .lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px}
+.info-cell .val{font-size:.82rem;color:var(--text);font-weight:600}
 .igdb-match-badge{position:absolute;bottom:6px;left:6px;background:rgba(124,58,237,.88);color:#fff;padding:2px 6px;border-radius:4px;font-size:.58rem;font-weight:700;text-transform:uppercase;z-index:2}
 .igdb-rating-card{font-size:.72rem;padding:2px 6px;border-radius:4px;background:rgba(124,58,237,.15);color:#c4b5fd;border:1px solid rgba(124,58,237,.35)}
 .loading{text-align:center;padding:60px;color:var(--muted);font-size:1.1rem;grid-column:1/-1}
@@ -276,19 +282,23 @@ function getDisplayRating(game){
 }
 
 function getLiveIgdbRating(game){
-  return game.externalId && game.rating ? Number(game.rating) : null;
+  // DB'de kayitli IGDB puani (igdb_rating kolonu gerektirir — migration_v6.sql)
+  return game.igdbRating || null;
 }
 
 async function load(){
-  const games=await sb('games?select=id,title,release_year,is_coop,coop_notes,play_status,rating,is_iconic,description,play_notes,game_log,tier,primary_cover_url,external_id,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,systems(name),emulators(name))&order=title');
+  const games=await sb('games?select=id,title,release_year,developer,is_coop,coop_notes,play_status,rating,igdb_rating,is_iconic,description,play_notes,game_log,tier,primary_cover_url,external_id,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,rom_url,region,is_preferred,systems(name),emulators(name))&order=title').catch(()=>
+    sb('games?select=id,title,release_year,developer,is_coop,coop_notes,play_status,rating,is_iconic,description,play_notes,game_log,tier,primary_cover_url,external_id,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,rom_url,region,is_preferred,systems(name),emulators(name))&order=title')
+  );
   ALL=games.map(g=>({
-    id:g.id,title:g.title,year:g.release_year,coop:g.is_coop,coopNotes:g.coop_notes,
-    status:g.play_status||'backlog',rating:g.rating,iconic:g.is_iconic,desc:g.description,
+    id:g.id,title:g.title,year:g.release_year,developer:g.developer||null,
+    coop:g.is_coop,coopNotes:g.coop_notes,
+    status:g.play_status||'backlog',rating:g.rating,igdbRating:g.igdb_rating||null,iconic:g.is_iconic,desc:g.description,
     playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',externalId:g.external_id||null,
     cover:g.primary_cover_url||null,
     series:g.series?.name||null,
     genres:(g.game_genres||[]).map(gg=>gg.genres?.name).filter(Boolean),
-    platforms:(g.game_platforms||[]).map(p=>({id:p.id,system:p.systems?.name,emulator:p.emulators?.name,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing'}))
+    platforms:(g.game_platforms||[]).map(p=>({id:p.id,system:p.systems?.name,emulator:p.emulators?.name,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing',romUrl:p.rom_url||'',region:p.region||'',isPreferred:p.is_preferred||false}))
   }));
   const fSys=document.getElementById('f-system');
   const fGen=document.getElementById('f-genre');
@@ -338,8 +348,9 @@ function render(){
   const grid=document.getElementById('grid');
   if(!list.length){grid.innerHTML='<div class="empty">Filtreyle eşleşen oyun bulunamadı.</div>';return;}
   grid.innerHTML=list.map(g=>{
-    const cover=g.cover||'';
-    const sys=g.platforms.map(p=>p.system).filter(Boolean).join(', ');
+    const preferred=g.platforms.find(p=>p.isPreferred)||null;
+    const cover=g.cover||preferred?.cover||g.platforms[0]?.cover||'';
+    const sys=(preferred?[preferred,...g.platforms.filter(p=>p!==preferred)]:g.platforms).map(p=>p.system).filter(Boolean).join(', ');
     const perf=g.platforms[0]?.perf||'good';
     const perfLabel=perf==='good'?'✓ Smooth':perf==='warn'?'⚠ Tweak':'✗ Sorunlu';
     const isWish=g.status==='wishlist';
@@ -364,7 +375,7 @@ function render(){
           ${g.genres[0]?`<span class="badge badge-genre">${g.genres[0]}</span>`:''}
           ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
           ${g.series?`<span class="badge badge-series">${g.series}</span>`:''}
-          ${igdbRating?`<span class="igdb-rating-card">IGDB ${Number(igdbRating).toFixed(1)}</span>`:''}
+          ${g.igdbRating?`<span class="igdb-rating-card">IGDB ${Number(g.igdbRating).toFixed(1)}</span>`:''}
         </div>
         <div class="status-btns" onclick="event.stopPropagation()">
           <button class="sbtn${g.status==='backlog'?' active backlog':''}" onclick="setStatus('${g.id}','backlog')">Yeni</button>
@@ -583,89 +594,123 @@ function showRandom(){
 function openModal(id){
   const g=ALL.find(x=>x.id===id);
   if(!g)return;
-  const cover=g.platforms[0]?.cover||'';
+  // Cover: primary_cover_url (IGDB) → platform cover → nothing
+  const heroCover=g.cover||g.platforms[0]?.cover||'';
+  const preferred=g.platforms.find(p=>p.isPreferred)||null;
   const displayRating=getDisplayRating(g);
+  const romColors={installed:'#2ecc71',sd_card:'#f97316',found:'#eab308',missing:'#e74c3c'};
+  const romLabels={installed:'📲 Cihazda',sd_card:'💾 SD',found:'📁 Bulundu',missing:'❌ Yok'};
+  const statusColors={backlog:'var(--muted)',playing:'var(--warn)',completed:'var(--good)',dropped:'var(--bad)',wishlist:'#a855f7'};
+  const statusLabels={backlog:'Backlog',playing:'Oynuyor',completed:'Bitti',dropped:'Bıraktım',wishlist:'İstek'};
+
   document.getElementById('modal-content').innerHTML=`
     <div class="modal-hero">
-      ${cover?`<img class="modal-hero-bg" src="${cover}" onerror="this.style.display='none'"><img class="modal-hero-art" src="${cover}" onerror="this.style.opacity='.2'">`:``}
-      <div class="modal-hero-info" style="${!cover?'left:24px':''}">
-        <h2>${g.title}${g.iconic?' ★':''}</h2>
-        <div class="badges">
-          ${g.genres.map(x=>`<span class="badge badge-genre">${x}</span>`).join('')}
+      ${heroCover?`<img class="modal-hero-bg" src="${escapeHtml(heroCover)}" onerror="this.style.display='none'"><img class="modal-hero-art" src="${escapeHtml(heroCover)}" onerror="this.style.opacity='.2'">`:``}
+      <div class="modal-hero-info" style="${!heroCover?'left:24px':''}">
+        <h2>${escapeHtml(g.title)}${g.iconic?' ★':''}</h2>
+        <div class="badges" style="margin-top:6px">
           ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
-          ${g.coop?'<span class="badge" style="background:rgba(46,204,113,.85);color:#fff">2P Co-op</span>':''}
-          ${displayRating?`<span class="badge badge-year">${displayRating}/10 ⭐</span>`:''}
+          ${g.genres.slice(0,3).map(x=>`<span class="badge badge-genre">${escapeHtml(x)}</span>`).join('')}
+          ${g.coop?'<span class="badge" style="background:rgba(46,204,113,.85);color:#fff">2P</span>':''}
+          ${displayRating?`<span class="badge" style="background:rgba(255,179,71,.2);color:var(--gold);border:1px solid rgba(255,179,71,.4)">${displayRating}/10 ⭐</span>`:''}
+          ${g.igdbRating?`<span class="badge" style="background:rgba(124,58,237,.2);color:#c4b5fd;border:1px solid rgba(124,58,237,.35)">IGDB ${Number(g.igdbRating).toFixed(1)}</span>`:g.externalId?'<span class="badge" style="background:rgba(124,58,237,.1);color:#c4b5fd;border:1px solid rgba(124,58,237,.25)">IGDB ✓</span>':''}
+        </div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+          ${g.developer?`<span style="color:rgba(255,255,255,.55);font-size:.76rem">🏢 ${escapeHtml(g.developer)}</span>`:''}
+          ${preferred?`<span style="color:var(--gold);font-size:.76rem">▶ Tercih: ${escapeHtml(preferred.system||'?')}${preferred.emulator?' / '+escapeHtml(preferred.emulator):''}</span>`:''}
+          <span style="color:${statusColors[g.status]||'var(--muted)'};font-size:.75rem;font-weight:600">${statusLabels[g.status]||g.status}</span>
         </div>
       </div>
     </div>
     <div class="modal-body">
-      ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p>${g.desc}</p></div>`:''}
-      ${g.series?`<div class="modal-section"><h4>🎮 Seri</h4><p>${g.series}</p></div>`:''}
+
+      ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p style="line-height:1.65;font-size:.88rem">${escapeHtml(g.desc)}</p></div>`:''}
+
+      <div class="modal-section">
+        <h4>ℹ️ Bilgiler</h4>
+        <div class="info-grid">
+          ${g.year?`<div class="info-cell"><div class="lbl">Yıl</div><div class="val">${g.year}</div></div>`:''}
+          ${g.developer?`<div class="info-cell"><div class="lbl">Geliştirici</div><div class="val">${escapeHtml(g.developer)}</div></div>`:''}
+          ${g.series?`<div class="info-cell"><div class="lbl">Seri</div><div class="val">${escapeHtml(g.series)}</div></div>`:''}
+          ${g.genres.length?`<div class="info-cell"><div class="lbl">Tür</div><div class="val">${g.genres.map(escapeHtml).join(', ')}</div></div>`:''}
+          ${displayRating?`<div class="info-cell"><div class="lbl">Kişisel Puan</div><div class="val">${displayRating}/10 ⭐</div></div>`:''}
+          ${g.igdbRating?`<div class="info-cell"><div class="lbl">IGDB Puanı</div><div class="val" style="color:#c4b5fd">${Number(g.igdbRating).toFixed(1)}/100</div></div>`:''}
+          <div class="info-cell"><div class="lbl">Durum</div><div class="val" style="color:${statusColors[g.status]}">${statusLabels[g.status]||g.status}</div></div>
+          ${g.coop?`<div class="info-cell"><div class="lbl">Co-op</div><div class="val">👫 Evet${g.coopNotes?' · '+escapeHtml(g.coopNotes):''}</div></div>`:''}
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <h4>🖥️ Platformlar</h4>
+        <div class="platform-list" id="platform-list-${g.id}">
+          ${g.platforms.map(p=>`
+            <div class="platform-row${p.isPreferred?' platform-preferred':''}" style="flex-direction:column;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)" id="prow-${p.id}">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:8px">
+                  ${p.isPreferred?'<span class="pref-badge">★ TERCİH</span>':''}
+                  <span class="platform-sys">${escapeHtml(p.system||'?')}</span>
+                  <span class="platform-emu">${escapeHtml(p.emulator||'—')}</span>
+                  <span class="perf-badge ${p.perf||'good'}" style="position:static">${p.perf==='good'?'Smooth':p.perf==='warn'?'Tweak':'Sorunlu'}</span>
+                  ${p.region?`<span style="font-size:.65rem;color:var(--muted);background:var(--bg-1);padding:1px 5px;border-radius:4px">${escapeHtml(p.region)}</span>`:''}
+                </div>
+                ${!p.isPreferred?`<button onclick="setPreferredPlatform('${g.id}','${p.id}')" class="fbtn" style="font-size:.7rem;padding:3px 10px">Tercih Et</button>`:'<button onclick="setPreferredPlatform(\''+g.id+'\',\''+p.id+'\')" class="fbtn" style="font-size:.7rem;padding:3px 10px;opacity:.5">★ Seçildi</button>'}
+              </div>
+              ${p.perfNotes?`<div style="color:var(--muted);font-size:.75rem">${escapeHtml(p.perfNotes)}</div>`:''}
+              <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+                <span style="font-size:.7rem;color:var(--muted)">ROM:</span>
+                ${['installed','sd_card','found','missing'].map(s=>`
+                  <button onclick="setRomModal('${p.id}','${s}',this)"
+                    style="font-size:.7rem;padding:3px 8px;border-radius:6px;border:1px solid ${p.romStatus===s?romColors[s]:'var(--border)'};background:${p.romStatus===s?romColors[s]+'22':'var(--bg-3)'};color:${p.romStatus===s?romColors[s]:'var(--muted)'};cursor:pointer;font-weight:${p.romStatus===s?'700':'400'}"
+                    data-platform="${p.id}" data-status="${s}">${romLabels[s]}</button>`).join('')}
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-size:.7rem;color:var(--muted);flex-shrink:0">URL:</span>
+                <input value="${escapeHtml(p.romUrl||'')}" placeholder="/storage/ROMs/..."
+                  style="flex:1;background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:.72rem;font-family:monospace"
+                  onchange="setRomUrl('${p.id}',this.value)">
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+
       <div class="modal-section">
         <div id="igdb-panel"><div class="igdb-panel"><div class="igdb-inline-note">IGDB metadata yukleniyor...</div></div></div>
       </div>
-      <div class="modal-section">
-        <h4>🖥️ Platformlar & ROM Durumu</h4>
-        <div class="platform-list">
-          ${g.platforms.map(p=>{
-            const romColors={installed:'#2ecc71',sd_card:'#f39c12',found:'#3b82f6',missing:'#e74c3c'};
-            const romLabels={installed:'📲 Cihazda',sd_card:'💾 SD Kartta',found:'📁 Bulundu',missing:'❌ Yok'};
-            return`<div class="platform-row" style="flex-wrap:wrap;gap:6px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
-              <div style="display:flex;align-items:center;gap:8px;width:100%">
-                <span class="platform-sys">${p.system||'?'}</span>
-                <span class="platform-emu">${p.emulator||'—'}</span>
-                <span class="perf-badge ${p.perf||'good'}" style="position:static">${p.perf==='good'?'Smooth':p.perf==='warn'?'Tweak':'Sorunlu'}</span>
-                ${p.perfNotes?`<span style="color:var(--muted);font-size:.75rem">${p.perfNotes}</span>`:''}
-              </div>
-              <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-                <span style="font-size:.72rem;color:var(--muted);margin-right:2px">ROM:</span>
-                ${['installed','sd_card','found','missing'].map(s=>`
-                  <button onclick="setRomModal('${p.id}','${s}',this)"
-                    style="font-size:.72rem;padding:3px 8px;border-radius:6px;border:1px solid ${p.romStatus===s?romColors[s]:'var(--border)'};background:${p.romStatus===s?`${romColors[s]}22`:'var(--bg-3)'};color:${p.romStatus===s?romColors[s]:'var(--muted)'};cursor:pointer;font-weight:${p.romStatus===s?'700':'400'}"
-                    data-platform="${p.id}" data-status="${s}">
-                    ${romLabels[s]}
-                  </button>`).join('')}
-              </div>
-              <div style="width:100%;display:flex;align-items:center;gap:6px;margin-top:2px">
-                <span style="font-size:.72rem;color:var(--muted);flex-shrink:0">ROM URL:</span>
-                <input id="rom-url-${p.id}" value="${p.romUrl||''}" placeholder="/storage/ROMs/... veya https://..."
-                  style="flex:1;background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:.75rem;font-family:monospace"
-                  onchange="setRomUrl('${p.id}',this.value)">
-              </div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>
-      ${g.coop&&g.coopNotes?`<div class="modal-section"><h4>👫 Co-op Detay</h4><p>${g.coopNotes}</p></div>`:''}
 
       <div class="modal-section">
         <h4>📝 Kişisel Notum</h4>
-        <textarea id="modal-notes" placeholder="Bu oyun hakkında notlarını yaz..." style="width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:.88rem;font-family:inherit;resize:vertical;min-height:80px;margin-top:4px">${g.playNotes}</textarea>
+        <textarea id="modal-notes" placeholder="Bu oyun hakkında notlarını yaz..." style="width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:.88rem;font-family:inherit;resize:vertical;min-height:80px;margin-top:4px">${escapeHtml(g.playNotes)}</textarea>
       </div>
 
       <div class="modal-section">
         <h4>🐛 Hata / Fix Log</h4>
-        <textarea id="modal-log" placeholder="PNG çalışmıyor, ses sorunu var gibi notlar..." style="width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:.88rem;font-family:inherit;resize:vertical;min-height:60px;margin-top:4px">${g.gameLog}</textarea>
+        <textarea id="modal-log" placeholder="PNG çalışmıyor, ses sorunu var gibi notlar..." style="width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:.88rem;font-family:inherit;resize:vertical;min-height:60px;margin-top:4px">${escapeHtml(g.gameLog)}</textarea>
       </div>
 
       <div class="modal-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button onclick="saveNotes('${g.id}')" style="background:var(--accent-2);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">💾 Kaydet</button>
         <button onclick="addToQueue('${g.id}', this)" style="background:var(--gold);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">🎮 Sıraya Ekle</button>
-        <a href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(g.id)}&title=${encodeURIComponent(g.title)}${g.year?`&year=${encodeURIComponent(g.year)}`:''}" target="_blank" style="background:var(--bg-3);color:var(--accent-2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🛰️ IGDB Koprusu</a>
+        <a href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(g.id)}&title=${encodeURIComponent(g.title)}${g.year?`&year=${encodeURIComponent(g.year)}`:''}" target="_blank" style="background:var(--bg-3);color:var(--accent-2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🛰️ IGDB Köprüsü</a>
         <span id="save-status" style="font-size:.8rem;color:var(--good);display:none">✓ Kaydedildi</span>
       </div>
     </div>`;
   document.getElementById('modal').classList.add('active');
   renderIgdbPanel(g);
-  fetchIgdbForGame(g).then(()=>{
-    renderIgdbPanel(g);
-    render();
-  }).catch(()=>{
-    renderIgdbPanel(g);
-  });
+  fetchIgdbForGame(g).then(()=>{renderIgdbPanel(g);render();}).catch(()=>renderIgdbPanel(g));
 }
 
 function closeModal(){document.getElementById('modal').classList.remove('active');}
+
+async function setPreferredPlatform(gameId, platformId){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Tercih edilen platformu degistirmek icin yonetici oturumu acik olmali.'}))) return;
+  const g=ALL.find(x=>x.id===gameId);
+  if(!g)return;
+  g.platforms.forEach(p=>p.isPreferred=(p.id===platformId));
+  // DB: hepsini false yap, sonra secileni true
+  await Promise.all(g.platforms.map(p=>patch(`game_platforms?id=eq.${p.id}`,{is_preferred:p.id===platformId})));
+  openModal(gameId);
+  render();
+}
 
 async function saveNotes(id){
   if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Not kaydetmek icin yonetici oturumu acik olmali.'}))) return;
