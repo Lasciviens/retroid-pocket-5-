@@ -19,6 +19,7 @@ Bu dosya, IGDB yonu icin net karar kaydidir.
 4. Admin olarak:
    - `Ana DB'ye Aday Olarak Ekle`
    - `Var Olan Oyunla Eslestir`
+5. Eslesme ekraninda yerel platformlar / IGDB platformlari / yeni alternatif platformlar karsilastirmasi
 
 ## IGDB'den Cekilecek Cekirdek Alanlar
 
@@ -55,6 +56,7 @@ Bu dosya, IGDB yonu icin net karar kaydidir.
   - PS2 icin genel varsayim: cihazda cogunlukla oynanir, oyun bazli tweak gerekebilir
   - bridge tarafinda yeni PS2 platform satirlari acilinca varsayilan `warn`
 - diger eslesen platformlar icin varsayilan `good`
+- IGDB'den gelen ve local DB'de olmayan platformlar `game_platforms` icine alternatif platform satiri olarak acilabilir
 - `emulator` ve ROM alanlari manuel/editorial katmanda kalir
 
 ## Bu Turda Kasten Yapilmayanlar

@@ -343,7 +343,8 @@ async function createGameFromIgdb(item){
     developer:extractDeveloper(item),
     description:buildDbDescription(item),
     play_status:'wishlist',
-    rating:item.rating ? igdbToDbRating(item.rating) : null,
+    igdb_rating:item.rating || null,
+    igdb_url:item.igdbUrl || null,
     primary_cover_url:item.coverUrl || null,
     external_id:Number(item.id),
     series_id:seriesId,
@@ -359,7 +360,7 @@ async function createGameFromIgdb(item){
 }
 
 async function updateGameFromIgdb(gameId, item){
-  const currentList=await apiRequest(`games?select=id,title,release_year,developer,description,rating,primary_cover_url,is_coop,coop_notes&id=eq.${gameId}`);
+  const currentList=await apiRequest(`games?select=id,title,release_year,developer,description,igdb_rating,igdb_url,primary_cover_url,is_coop,coop_notes&id=eq.${gameId}`);
   const current=currentList?.[0];
   if(!current) throw new Error('Yerel oyun bulunamadi');
   const seriesId=await ensureSeriesId(item.franchises?.[0] || item.collections?.[0] || '');
@@ -368,11 +369,13 @@ async function updateGameFromIgdb(gameId, item){
   if(!current.release_year && item.releaseYear) patch.release_year=item.releaseYear;
   if(!current.developer && extractDeveloper(item)) patch.developer=extractDeveloper(item);
   if(!current.description && buildDbDescription(item)) patch.description=buildDbDescription(item);
-  if((current.rating==null) && item.rating) patch.rating=igdbToDbRating(item.rating);
+  if((current.igdb_rating==null) && item.rating) patch.igdb_rating=item.rating;
+  if(!current.igdb_url && item.igdbUrl) patch.igdb_url=item.igdbUrl;
   if(!current.primary_cover_url && item.coverUrl) patch.primary_cover_url=item.coverUrl;
   if(!current.is_coop && coop.isCoop) patch.is_coop=true;
   if(!current.coop_notes && coop.coopNotes) patch.coop_notes=coop.coopNotes;
   if(seriesId) patch.series_id=seriesId;
+  if(item.name && item.name!==current.title) patch.title=item.name;
   await apiRequest(`games?id=eq.${gameId}`,{method:'PATCH',body:patch,headers:{Prefer:'return=minimal'}});
   await syncGameGenres(gameId, item.genres || []);
   await syncGamePlatforms(gameId, item, item.coverUrl || null);

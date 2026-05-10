@@ -61,7 +61,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ```
 /
 ├── index.html                      # Ana hub sayfası
-├── Retroid_Library_Dashboard.html  # Ana kütüphane — Supabase'den okur
+├── Retroid_Library_Dashboard.html  # Ana kütüphane — grid/list/table + IGDB filtreleri
 ├── Retroid_Coop_Dashboard.html     # Co-op oyun seçici
 ├── Retroid_Series_Roadmap.html     # 10 serinin yol haritası
 ├── Retroid_Emulator_Matrix.html    # Emülatör rehberi (emulator_systems kullanır)
@@ -113,18 +113,12 @@ Dosyaya `- Oyun Adı | Sistem | Not` formatında yaz. Sonraki session'da Claude 
 
 ## Deployment
 
-GitHub Pages yayını `gh-pages` branch üzerinden çalışır.
+GitHub Pages yayını GitHub Actions üzerinden çalışır.
 
 ```bash
 git add .
 git commit -m "değişiklik açıklaması"
-git push
-```
-
-Canlıya yayınlamak için:
-
-```bash
-git push origin main:gh-pages
+git push origin main
 ```
 
 Migration log: `GITHUB_PAGES_MIGRATION.md`
@@ -186,5 +180,6 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - `Retroid_IGDB_Bridge.html` artik admin oturumu ile aday ekleme ve mevcut oyunu eslestirme akislarini da tasir.
 - `supabase/functions/igdb-search/index.ts` canlı proxy için hazır iskelet sağlar.
 - `Retroid_Library_Dashboard.html` modal icinde canli IGDB sonuclarini gosterir; liste/siralama ise DB'ye kaydedilen degerleri kullanir.
+- Kütüphane görünümü `grid / list / table` olarak değiştirilebilir; bu özellikle toplu IGDB cleanup sırasında hızlı tarama için eklendi.
 - IGDB kapsam kararlari `IGDB_DATA_PLAN.md` icinde tutulur.
 - RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.

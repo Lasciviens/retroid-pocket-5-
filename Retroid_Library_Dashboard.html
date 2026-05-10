@@ -29,15 +29,51 @@ h1{font-size:2rem;background:linear-gradient(90deg,var(--accent),var(--accent-2)
 .fbtn:hover{border-color:var(--accent-2)}
 .fbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .fbtn.wishlist-active{background:#a855f7;border-color:#a855f7;color:#fff}
+.fbtn.filter-accent.active{background:rgba(124,58,237,.92);border-color:#7c3aed;color:#fff}
 select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e8eaf0' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
 .sort-group{display:flex;gap:4px;align-items:center}
 .sort-group label{font-size:.75rem;color:var(--muted)}
+.view-group{display:flex;gap:4px;align-items:center;padding:4px;border-radius:10px;background:rgba(10,14,26,.55);border:1px solid var(--border)}
+.view-btn{min-width:74px;text-align:center}
+.results-meta{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;border-radius:12px;background:rgba(19,24,41,.9);border:1px solid var(--border)}
+.results-meta strong{font-size:.92rem}
+.results-meta span{font-size:.78rem;color:var(--muted);line-height:1.5}
 .random-btn{background:linear-gradient(135deg,#f39c12,#e67e22);border:none;border-radius:8px;padding:9px 14px;color:#fff;font-size:.8rem;cursor:pointer;font-weight:700;transition:all .2s}
 .random-btn:hover{opacity:.85;transform:scale(1.02)}
 .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.game-grid.view-list{grid-template-columns:1fr;gap:10px}
+.game-grid.view-table{display:block}
 .game-card{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s;display:flex;flex-direction:column}
 .game-card:hover{transform:translateY(-3px);border-color:var(--accent-2);box-shadow:0 10px 24px rgba(0,212,255,.15)}
 .game-card.wishlist-card{border-color:#a855f7;box-shadow:0 0 0 1px #a855f720}
+.game-list-item{display:grid;grid-template-columns:96px minmax(0,1.3fr) minmax(0,.9fr) auto;background:var(--bg-2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s}
+.game-list-item:hover{border-color:var(--accent-2);transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,212,255,.12)}
+.game-list-item.wishlist-card{border-color:#a855f7;box-shadow:0 0 0 1px #a855f720}
+.list-cover{position:relative;background:var(--bg-3);min-height:132px}
+.list-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.list-fallback{height:100%;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;color:var(--muted);font-size:.74rem}
+.list-main{padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.list-title-row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.list-title{font-size:1rem;font-weight:800;line-height:1.25}
+.list-sub{font-size:.8rem;color:var(--muted);line-height:1.45}
+.list-side{padding:14px 14px 14px 0;display:flex;flex-direction:column;gap:8px;min-width:0}
+.list-actions{padding:14px 14px 14px 0;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.list-row{display:flex;flex-wrap:wrap;gap:6px}
+.list-summary{font-size:.8rem;color:var(--text);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.results-table{width:100%;border-collapse:separate;border-spacing:0 8px}
+.results-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700;padding:0 10px 8px;text-align:left}
+.results-table tbody tr{background:var(--bg-2);border:1px solid var(--border)}
+.results-table tbody td{padding:12px 10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-size:.82rem;vertical-align:middle}
+.results-table tbody td:first-child{border-left:1px solid var(--border);border-top-left-radius:10px;border-bottom-left-radius:10px}
+.results-table tbody td:last-child{border-right:1px solid var(--border);border-top-right-radius:10px;border-bottom-right-radius:10px}
+.results-table tbody tr:hover td{border-color:rgba(0,212,255,.35);background:rgba(28,34,56,.92)}
+.table-title{font-weight:700;font-size:.88rem}
+.table-sub{display:block;color:var(--muted);font-size:.73rem;margin-top:3px}
+.table-cover{width:46px;height:62px;border-radius:6px;object-fit:cover;background:var(--bg-3)}
+.table-cover-fallback{width:46px;height:62px;border-radius:6px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.62rem}
+.mini-stack{display:flex;flex-direction:column;gap:5px}
+.mini-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mini-actions .fbtn{padding:6px 9px;font-size:.72rem}
 .boxart-wrap{position:relative;width:100%;padding-top:133%;background:var(--bg-3);overflow:hidden}
 .boxart{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s}
 .game-card:hover .boxart{transform:scale(1.05)}
@@ -59,6 +95,8 @@ select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/
 .badge-genre{background:rgba(255,70,85,.15);color:var(--accent);border:1px solid rgba(255,70,85,.3)}
 .badge-year{background:var(--bg-3);color:var(--muted);border:1px solid var(--border)}
 .badge-series{background:rgba(255,179,71,.1);color:var(--gold);border:1px solid rgba(255,179,71,.3)}
+.badge.match-strong{color:var(--good);border-color:rgba(46,204,113,.35);background:rgba(46,204,113,.08)}
+.badge.match-low{color:var(--muted);border-color:var(--border);background:var(--bg-3)}
 .status-btns{display:flex;gap:3px;margin-top:auto;padding-top:6px}
 .sbtn{flex:1;background:var(--bg-3);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 2px;font-size:.55rem;cursor:pointer;transition:all .2s;text-transform:uppercase;font-weight:700}
 .sbtn:hover{color:var(--text)}
@@ -135,6 +173,21 @@ select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/
 .empty{text-align:center;padding:60px;color:var(--muted);grid-column:1/-1}
 footer{text-align:center;margin-top:36px;padding:16px;color:var(--muted);font-size:.8rem}
 footer a{color:var(--accent-2);text-decoration:none}
+@media(max-width:900px){
+  .game-list-item{grid-template-columns:84px 1fr}
+  .list-side,.list-actions{padding:0 14px 14px 14px}
+  .list-actions{flex-direction:row;justify-content:flex-start;flex-wrap:wrap}
+}
+@media(max-width:760px){
+  .view-group{width:100%;justify-content:space-between}
+  .view-btn{flex:1}
+  .results-table thead{display:none}
+  .results-table,.results-table tbody,.results-table tr,.results-table td{display:block;width:100%}
+  .results-table tbody tr{margin-bottom:10px}
+  .results-table tbody td{border-left:1px solid var(--border)!important;border-right:1px solid var(--border)!important;border-radius:0!important}
+  .results-table tbody td:first-child{border-top-left-radius:10px!important;border-top-right-radius:10px!important}
+  .results-table tbody td:last-child{border-bottom-left-radius:10px!important;border-bottom-right-radius:10px!important}
+}
 @media(max-width:600px){.modal-hero-art{width:80px;height:110px;left:12px}.modal-hero-info{left:108px}.modal-hero-info h2{font-size:1.1rem}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -181,6 +234,7 @@ footer a{color:var(--accent-2);text-decoration:none}
   </select>
   <button class="fbtn" id="f-coop">👫 Co-op</button>
   <button class="fbtn" id="f-iconic">★ Kült</button>
+  <button class="fbtn filter-accent" id="f-unmatched">🛰️ IGDB Eksik</button>
   <div class="sort-group">
     <label>Sırala:</label>
     <select class="fbtn" id="f-sort">
@@ -191,10 +245,19 @@ footer a{color:var(--accent-2);text-decoration:none}
       <option value="igdb-rating">IGDB Rating</option>
     </select>
   </div>
+  <div class="view-group" aria-label="Gorunum">
+    <button class="fbtn view-btn active" id="view-grid" data-view="grid">Grid</button>
+    <button class="fbtn view-btn" id="view-list" data-view="list">Liste</button>
+    <button class="fbtn view-btn" id="view-table" data-view="table">Tablo</button>
+  </div>
   <button class="random-btn" onclick="showRandom()">🎲 Şans Eseri</button>
   <button class="fbtn" id="f-reset">↺ Sıfırla</button>
 </div>
 <div class="igdb-sort-note" id="igdb-sort-note" style="display:none">IGDB rating siralamasi sadece veritabanina kaydedilmis puanlari kullanir. Canli IGDB sorgusu siralama icin calismaz.</div>
+<div class="results-meta" id="results-meta">
+  <strong>Oyunlar hazirlaniyor...</strong>
+  <span>Filtreler ve gorunum modlari kutuphaneyi daha hizli taramak icin burada.</span>
+</div>
 
 <div class="game-grid" id="grid"><div class="loading">⏳ Oyunlar yükleniyor...</div></div>
 
@@ -244,7 +307,7 @@ async function patch(ep,body){
   });
 }
 
-let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,sort:'title'};
+let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,unmatchedIgdb:false,sort:'title',view:'grid'};
 const IGDB_CACHE=new Map();
 const IGDB_IN_FLIGHT=new Map();
 
@@ -325,6 +388,7 @@ function getFiltered(){
     if(filters.status&&g.status!==filters.status)return false;
     if(filters.coop&&!g.coop)return false;
     if(filters.iconic&&!g.iconic)return false;
+    if(filters.unmatchedIgdb&&g.externalId)return false;
     return true;
   });
   list.sort((a,b)=>{
@@ -337,6 +401,167 @@ function getFiltered(){
   return list;
 }
 
+function getPrimaryPlatform(game){
+  return game.platforms.find(p=>p.isPreferred)||game.platforms[0]||null;
+}
+
+function getGameCover(game){
+  const primary=getPrimaryPlatform(game);
+  return game.cover||primary?.cover||game.platforms[0]?.cover||'';
+}
+
+function getGameSystems(game){
+  const primary=getPrimaryPlatform(game);
+  const ordered=primary?[primary,...game.platforms.filter(p=>p!==primary)]:game.platforms;
+  return ordered.map(p=>p.system).filter(Boolean);
+}
+
+function getPerfLabel(value){
+  if(value==='warn') return '⚠ Tweak';
+  if(value==='bad') return '✗ Sorunlu';
+  return '✓ Smooth';
+}
+
+function getRomSummary(game){
+  const counts={installed:0,sd_card:0,found:0,missing:0};
+  game.platforms.forEach(p=>{counts[p.romStatus]=(counts[p.romStatus]||0)+1;});
+  if(counts.installed) return `${counts.installed} cihazda`;
+  if(counts.sd_card) return `${counts.sd_card} SD kartta`;
+  if(counts.found) return `${counts.found} bulundu`;
+  if(game.platforms.length) return `${counts.missing || game.platforms.length} eksik`;
+  return 'Platform yok';
+}
+
+function getMetaSummary(list){
+  const filtersUsed=[];
+  if(filters.search) filtersUsed.push(`Arama: "${filters.search}"`);
+  if(filters.system) filtersUsed.push(filters.system);
+  if(filters.genre) filtersUsed.push(filters.genre);
+  if(filters.series) filtersUsed.push(filters.series);
+  if(filters.status) filtersUsed.push(`Durum: ${filters.status}`);
+  if(filters.coop) filtersUsed.push('Co-op');
+  if(filters.iconic) filtersUsed.push('Kult');
+  if(filters.unmatchedIgdb) filtersUsed.push('IGDB eksik');
+  return {
+    title:`${list.length} oyun gorunuyor`,
+    detail:filtersUsed.length ? `Aktif filtreler: ${filtersUsed.join(' · ')}` : 'Tum kutuphane acik. Grid, liste ve tablo modlari arasinda gecis yapabilirsin.'
+  };
+}
+
+function renderStatusButtons(game){
+  return `<div class="status-btns" onclick="event.stopPropagation()">
+    <button class="sbtn${game.status==='backlog'?' active backlog':''}" onclick="setStatus('${game.id}','backlog')">Yeni</button>
+    <button class="sbtn${game.status==='playing'?' active playing':''}" onclick="setStatus('${game.id}','playing')">Oynuyor</button>
+    <button class="sbtn${game.status==='completed'?' active completed':''}" onclick="setStatus('${game.id}','completed')">Bitti</button>
+    <button class="sbtn${game.status==='dropped'?' active dropped':''}" onclick="setStatus('${game.id}','dropped')">Bıktım</button>
+  </div>`;
+}
+
+function renderGameGridCard(g){
+  const cover=getGameCover(g);
+  const systems=getGameSystems(g);
+  const sys=systems.join(', ');
+  const perf=getPrimaryPlatform(g)?.perf||'good';
+  const perfLabel=getPerfLabel(perf);
+  const isWish=g.status==='wishlist';
+  const igdbMatch=!!g.externalId;
+  return`<div class="game-card${isWish?' wishlist-card':''}" onclick="openModal('${g.id}')">
+    <div class="boxart-wrap">
+      ${cover?`<img class="boxart" src="${cover}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="boxart-fb" style="display:none"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`:`<div class="boxart-fb" style="display:flex"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`}
+      ${g.iconic?'<div class="corner-star">★</div>':''}
+      ${g.coop?'<div class="corner-coop">2P</div>':''}
+      ${igdbMatch?'<div class="igdb-match-badge">IGDB</div>':''}
+      <div class="perf-badge ${perf}">${perfLabel}</div>
+      <button onclick="event.stopPropagation();addToQueue('${g.id}', this)" title="Sıraya Ekle"
+        style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:1px solid rgba(255,179,71,.5);border-radius:6px;color:var(--gold);font-size:.7rem;padding:3px 6px;cursor:pointer;backdrop-filter:blur(4px);z-index:2;transition:all .15s"
+        onmouseover="this.style.background='rgba(255,179,71,.3)'"
+        onmouseout="this.style.background='rgba(0,0,0,.7)'">🎮+</button>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${g.title}</div>
+      <div class="badges">
+        ${sys?`<span class="badge badge-sys">${sys}</span>`:''}
+        ${g.genres[0]?`<span class="badge badge-genre">${g.genres[0]}</span>`:''}
+        ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
+        ${g.series?`<span class="badge badge-series">${g.series}</span>`:''}
+        ${g.igdbRating?`<span class="igdb-rating-card">IGDB ${(Number(g.igdbRating)/10).toFixed(1)}/10</span>`:''}
+      </div>
+      ${renderStatusButtons(g)}
+      ${g.platforms.length?`<div class="rom-row" onclick="event.stopPropagation()">
+        ${g.platforms.map(p=>`
+          <button class="rom-btn installed${p.romStatus==='installed'?' active':''}" onclick="setRom('${p.id}','installed')" title="✅ Cihaza yüklendi">📲</button>
+          <button class="rom-btn sd_card${p.romStatus==='sd_card'?' active':''}" onclick="setRom('${p.id}','sd_card')" title="🟠 SD kartta var">💾</button>
+          <button class="rom-btn found${p.romStatus==='found'?' active':''}" onclick="setRom('${p.id}','found')" title="🟡 Bulundu, yüklenmedi">📁</button>
+          <button class="rom-btn missing${p.romStatus==='missing'?' active':''}" onclick="setRom('${p.id}','missing')" title="🔴 ROM yok">❌</button>
+        `).join('')}
+      </div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderGameListItem(g){
+  const cover=getGameCover(g);
+  const primary=getPrimaryPlatform(g);
+  const systems=getGameSystems(g);
+  const isWish=g.status==='wishlist';
+  const igdbLabel=g.igdbRating?`IGDB ${(Number(g.igdbRating)/10).toFixed(1)}/10`:(g.externalId?'IGDB eslesti':'IGDB eksik');
+  return `<article class="game-list-item${isWish?' wishlist-card':''}" onclick="openModal('${g.id}')">
+    <div class="list-cover">
+      ${cover?`<img src="${cover}" alt="${escapeHtml(g.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="list-fallback" style="display:none">${systems[0]||'?'}</div>`:`<div class="list-fallback">${systems[0]||'?'}</div>`}
+    </div>
+    <div class="list-main">
+      <div class="list-title-row">
+        <div>
+          <div class="list-title">${escapeHtml(g.title)}${g.iconic?' ★':''}</div>
+          <div class="list-sub">${systems.join(' · ') || 'Platform yok'}${g.year?` · ${g.year}`:''}${g.developer?` · ${escapeHtml(g.developer)}`:''}</div>
+        </div>
+        <div class="list-row">
+          ${g.coop?'<span class="badge" style="background:rgba(46,204,113,.16);color:var(--good);border:1px solid rgba(46,204,113,.35)">Co-op</span>':''}
+          ${g.series?`<span class="badge badge-series">${escapeHtml(g.series)}</span>`:''}
+          <span class="badge ${g.externalId?'match-strong':'match-low'}">${igdbLabel}</span>
+        </div>
+      </div>
+      <div class="list-row">
+        ${g.genres.slice(0,4).map(name=>`<span class="badge badge-genre">${escapeHtml(name)}</span>`).join('')}
+      </div>
+      ${g.desc?`<div class="list-summary">${escapeHtml(g.desc)}</div>`:''}
+      ${renderStatusButtons(g)}
+    </div>
+    <div class="list-side">
+      <div class="mini-stack">
+        <span class="badge badge-sys">${primary?.system || 'Sistem yok'}</span>
+        <span class="badge badge-year">${getPerfLabel(primary?.perf || 'good')}</span>
+        <span class="badge badge-year">${getRomSummary(g)}</span>
+      </div>
+    </div>
+    <div class="list-actions" onclick="event.stopPropagation()">
+      <button class="fbtn" onclick="openModal('${g.id}')">Detay</button>
+      <button class="fbtn" onclick="addToQueue('${g.id}', this)">Sıraya Ekle</button>
+      ${g.igdbUrl?`<a class="fbtn" href="${escapeHtml(g.igdbUrl)}" target="_blank" onclick="event.stopPropagation()">IGDB</a>`:''}
+    </div>
+  </article>`;
+}
+
+function renderGameTable(list){
+  return `<table class="results-table"><thead><tr>
+    <th>Kapak</th><th>Oyun</th><th>Platform</th><th>Durum</th><th>IGDB</th><th>ROM</th><th>Aksiyon</th>
+  </tr></thead><tbody>
+    ${list.map(g=>{
+      const cover=getGameCover(g);
+      const primary=getPrimaryPlatform(g);
+      return `<tr onclick="openModal('${g.id}')" style="cursor:pointer">
+        <td>${cover?`<img class="table-cover" src="${cover}" alt="${escapeHtml(g.title)}" loading="lazy">`:`<div class="table-cover-fallback">${escapeHtml((primary?.system||'?').slice(0,3))}</div>`}</td>
+        <td><span class="table-title">${escapeHtml(g.title)}${g.iconic?' ★':''}</span><span class="table-sub">${getGameSystems(g).join(' · ') || 'Platform yok'}${g.year?` · ${g.year}`:''}</span></td>
+        <td>${escapeHtml(primary?.system || '—')}<span class="table-sub">${escapeHtml(primary?.emulator || 'Emulator yok')}</span></td>
+        <td>${escapeHtml(g.status || 'backlog')}<span class="table-sub">${g.coop?'Co-op · ':''}${getPerfLabel(primary?.perf || 'good')}</span></td>
+        <td>${g.igdbRating?`${(Number(g.igdbRating)/10).toFixed(1)}/10`:(g.externalId?'Eslesti':'Eksik')}<span class="table-sub">${g.series?escapeHtml(g.series):'Seri yok'}</span></td>
+        <td>${escapeHtml(getRomSummary(g))}<span class="table-sub">${escapeHtml(primary?.region || 'Region yok')}</span></td>
+        <td onclick="event.stopPropagation()"><div class="mini-actions"><button class="fbtn" onclick="openModal('${g.id}')">Detay</button><button class="fbtn" onclick="addToQueue('${g.id}', this)">+ Sıra</button></div></td>
+      </tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+
 function render(){
   document.getElementById('s-total').textContent=ALL.length;
   document.getElementById('s-iconic').textContent=ALL.filter(g=>g.iconic).length;
@@ -347,54 +572,19 @@ function render(){
   document.getElementById('igdb-sort-note').style.display=filters.sort==='igdb-rating' ? 'block' : 'none';
   const list=getFiltered();
   const grid=document.getElementById('grid');
+  const meta=getMetaSummary(list);
+  document.getElementById('results-meta').innerHTML=`<strong>${meta.title}</strong><span>${meta.detail}</span>`;
+  grid.className=`game-grid view-${filters.view}`;
   if(!list.length){grid.innerHTML='<div class="empty">Filtreyle eşleşen oyun bulunamadı.</div>';return;}
-  grid.innerHTML=list.map(g=>{
-    const preferred=g.platforms.find(p=>p.isPreferred)||null;
-    const cover=g.cover||preferred?.cover||g.platforms[0]?.cover||'';
-    const sys=(preferred?[preferred,...g.platforms.filter(p=>p!==preferred)]:g.platforms).map(p=>p.system).filter(Boolean).join(', ');
-    const perf=g.platforms[0]?.perf||'good';
-    const perfLabel=perf==='good'?'✓ Smooth':perf==='warn'?'⚠ Tweak':'✗ Sorunlu';
-    const isWish=g.status==='wishlist';
-    const igdbMatch=!!g.externalId;
-    const igdbRating=getLiveIgdbRating(g);
-    return`<div class="game-card${isWish?' wishlist-card':''}" onclick="openModal('${g.id}')">
-      <div class="boxart-wrap">
-        ${cover?`<img class="boxart" src="${cover}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="boxart-fb" style="display:none"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`:`<div class="boxart-fb" style="display:flex"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`}
-        ${g.iconic?'<div class="corner-star">★</div>':''}
-        ${g.coop?'<div class="corner-coop">2P</div>':''}
-        ${igdbMatch?'<div class="igdb-match-badge">IGDB</div>':''}
-        <div class="perf-badge ${perf}">${perfLabel}</div>
-        <button onclick="event.stopPropagation();addToQueue('${g.id}', this)" title="Sıraya Ekle"
-          style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:1px solid rgba(255,179,71,.5);border-radius:6px;color:var(--gold);font-size:.7rem;padding:3px 6px;cursor:pointer;backdrop-filter:blur(4px);z-index:2;transition:all .15s"
-          onmouseover="this.style.background='rgba(255,179,71,.3)'"
-          onmouseout="this.style.background='rgba(0,0,0,.7)'">🎮+</button>
-      </div>
-      <div class="card-body">
-        <div class="card-title">${g.title}</div>
-        <div class="badges">
-          ${sys?`<span class="badge badge-sys">${sys}</span>`:''}
-          ${g.genres[0]?`<span class="badge badge-genre">${g.genres[0]}</span>`:''}
-          ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
-          ${g.series?`<span class="badge badge-series">${g.series}</span>`:''}
-          ${g.igdbRating?`<span class="igdb-rating-card">IGDB ${(Number(g.igdbRating)/10).toFixed(1)}/10</span>`:''}
-        </div>
-        <div class="status-btns" onclick="event.stopPropagation()">
-          <button class="sbtn${g.status==='backlog'?' active backlog':''}" onclick="setStatus('${g.id}','backlog')">Yeni</button>
-          <button class="sbtn${g.status==='playing'?' active playing':''}" onclick="setStatus('${g.id}','playing')">Oynuyor</button>
-          <button class="sbtn${g.status==='completed'?' active completed':''}" onclick="setStatus('${g.id}','completed')">Bitti</button>
-          <button class="sbtn${g.status==='dropped'?' active dropped':''}" onclick="setStatus('${g.id}','dropped')">Bıktım</button>
-        </div>
-        ${g.platforms.length?`<div class="rom-row" onclick="event.stopPropagation()">
-          ${g.platforms.map(p=>`
-            <button class="rom-btn installed${p.romStatus==='installed'?' active':''}" onclick="setRom('${p.id}','installed')" title="✅ Cihaza yüklendi">📲</button>
-            <button class="rom-btn sd_card${p.romStatus==='sd_card'?' active':''}" onclick="setRom('${p.id}','sd_card')" title="🟠 SD kartta var">💾</button>
-            <button class="rom-btn found${p.romStatus==='found'?' active':''}" onclick="setRom('${p.id}','found')" title="🟡 Bulundu, yüklenmedi">📁</button>
-            <button class="rom-btn missing${p.romStatus==='missing'?' active':''}" onclick="setRom('${p.id}','missing')" title="🔴 ROM yok">❌</button>
-          `).join('')}
-        </div>`:''}
-      </div>
-    </div>`;
-  }).join('');
+  if(filters.view==='list'){
+    grid.innerHTML=list.map(renderGameListItem).join('');
+    return;
+  }
+  if(filters.view==='table'){
+    grid.innerHTML=renderGameTable(list);
+    return;
+  }
+  grid.innerHTML=list.map(renderGameGridCard).join('');
 }
 
 async function setStatus(id,status){
@@ -751,12 +941,19 @@ document.getElementById('f-status').addEventListener('change',e=>{filters.status
 document.getElementById('f-sort').addEventListener('change',e=>{filters.sort=e.target.value;render();});
 document.getElementById('f-coop').addEventListener('click',e=>{filters.coop=!filters.coop;e.target.classList.toggle('active');render();});
 document.getElementById('f-iconic').addEventListener('click',e=>{filters.iconic=!filters.iconic;e.target.classList.toggle('active');render();});
+document.getElementById('f-unmatched').addEventListener('click',e=>{filters.unmatchedIgdb=!filters.unmatchedIgdb;e.target.classList.toggle('active');render();});
+document.querySelectorAll('.view-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  filters.view=btn.dataset.view;
+  document.querySelectorAll('.view-btn').forEach(item=>item.classList.toggle('active', item===btn));
+  render();
+}));
 document.getElementById('f-reset').addEventListener('click',()=>{
-  filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,sort:'title'};
+  filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,unmatchedIgdb:false,sort:'title',view:'grid'};
   document.getElementById('search').value='';
   ['f-system','f-genre','f-series','f-status'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-sort').value='title';
-  ['f-coop','f-iconic'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  ['f-coop','f-iconic','f-unmatched'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.querySelectorAll('.view-btn').forEach(item=>item.classList.toggle('active', item.dataset.view==='grid'));
   render();
 });
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});

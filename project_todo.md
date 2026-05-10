@@ -14,8 +14,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 
 
-- [ ] **Dashboard'a release year ekle** — Her oyuna `releaseYear` variable'ı eklenmeli. Sorting için gerekli. (Furkan isteği: 2026-05-01)
-- [ ] **Dashboard'a sorting ekle** — Release year, alfabetik, sistem, rating bazlı sıralama. releaseYear variable olmadan yapılamaz, önce o.
+- [ ] **Library bulk cleanup görünümü** — özellikle eşleşmemiş / metadata eksiği olan oyunlar için daha yoğun admin görünümü
 - [ ] **ROM klasör yapısını hazırla** — `ROM_Folder_Guide.md` dosyası oluşturuldu (bkz. aşağı). Dashboard'da her oyunun hangi klasöre gideceği görünmeli.
 
 ---
@@ -45,6 +44,9 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 ## ✅ Tamamlananlar
 
 - [x] Ana kütüphane Dashboard'u (95+ oyun, boxart, filtre, arama)
+- [x] Dashboard'a release year eklendi
+- [x] Dashboard'a sorting eklendi (A-Z, yıl, rating, IGDB rating)
+- [x] Kütüphane için grid / liste / tablo görünümü eklendi
 - [x] Co-op Dashboard (19 oyun, rastgele öneri)
 - [x] Series Roadmap (10 seri, timeline)
 - [x] Emülatör Matrix (17 sistem, deep-dive notlar)

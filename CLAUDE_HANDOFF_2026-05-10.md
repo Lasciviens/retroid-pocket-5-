@@ -15,6 +15,20 @@ Retroid Pocket 5 oyun kütüphanesi. Supabase DB + GitHub Pages statik site.
 
 ## Bu Oturumda Yapılanlar
 
+### 0. Sonraki Codex Turu — UI ve Cleanup
+Bu handoff sonrasinda kütüphane yüzeyi üzerinde güvenli UX iyilestirmeleri yapildi:
+- `Retroid_Library_Dashboard.html`
+  - `grid / list / table` gorunum modlari eklendi
+  - `IGDB Eksik` filtresi eklendi
+  - sonuc ozeti / aktif filtre ozeti eklendi
+- `Retroid_IGDB_Bridge.html`
+  - eslestirme sonuc kartlarinda yerel platformlar, IGDB platformlari ve yeni alternatif platformlar daha net gosteriliyor
+- `README.md`, `ARCHITECTURE.md`, `project_todo.md`
+  - GitHub Actions deploy modeli ve yeni kutuphane davranislariyla guncellendi
+
+Not:
+- `migration_v6.sql` hala repo'da duruyor ama `igdb_url` ve `igdb_rating` alanlari artik canli DB'de mevcut. Bu migration uygulanmadan once mevcut schema ile tekrar reconcile edilmeli.
+
 ### 1. GitHub Pages Deploy Sorunu Çözüldü
 Commit `abeb714`'ten sonra GitHub Pages otomatik deploy durmuştu (4 commit birikti, hiç deploy edilmedi). `.github/workflows/pages.yml` custom workflow oluşturuldu. GitHub repo Settings → Pages → Source **"GitHub Actions"** olarak değiştirildi (kullanıcı yaptı). Artık her push'ta otomatik deploy çalışıyor.
 
