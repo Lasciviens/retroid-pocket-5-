@@ -36,6 +36,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 - The browser keeps your admin session so you are not asked on every visit.
 - Server-side RLS hardening is prepared in `supabase_rls_hardening.sql` and should be applied in Supabase next.
 - Legacy migration/import tools are archived and no longer part of the live product surface.
+- The main Library modal now includes live IGDB summary, rating, link, and admin match/apply controls.
 
 ---
 

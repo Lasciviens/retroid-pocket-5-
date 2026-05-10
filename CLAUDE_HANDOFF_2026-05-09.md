@@ -70,6 +70,8 @@ Related docs:
 - `supabase/functions/igdb-search/index.ts` was added as a ready proxy scaffold for later secret-backed deployment
 - The IGDB proxy is now actually deployed at `https://bniqmxbtvgwkaoswugds.supabase.co/functions/v1/igdb-search`
 - The bridge page now points to that deployed proxy by default using the public anon headers
+- The main Library modal now loads live IGDB summary/rating/link data and shows admin match buttons
+- Library sorting now includes `IGDB Rating`, which hydrates visible games in the background
 
 ## Important Constraints
 

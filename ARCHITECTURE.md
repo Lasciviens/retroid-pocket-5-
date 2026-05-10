@@ -182,4 +182,5 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - Legacy migration araçları `legacy_tools/` altında düz metin olarak tutulur.
 - `Retroid_IGDB_Bridge.html` DB'ye yazmadan harici metadata köprüsü görevi görür.
 - `supabase/functions/igdb-search/index.ts` canlı proxy için hazır iskelet sağlar.
+- `Retroid_Library_Dashboard.html` artık modal içinde canlı IGDB sonuçlarını gösterir ve admin eşleme akışı sunar.
 - RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.
