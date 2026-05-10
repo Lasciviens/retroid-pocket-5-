@@ -68,6 +68,8 @@ Related docs:
 - `Retroid_IGDB_Bridge.html` and `rp5_igdb.js` were added as the non-DB IGDB integration layer
 - Bridge now reads library candidates, prioritizes titles without `external_id`, and shows simple match scores
 - `supabase/functions/igdb-search/index.ts` was added as a ready proxy scaffold for later secret-backed deployment
+- The IGDB proxy is now actually deployed at `https://bniqmxbtvgwkaoswugds.supabase.co/functions/v1/igdb-search`
+- The bridge page now points to that deployed proxy by default using the public anon headers
 
 ## Important Constraints
 
@@ -93,6 +95,5 @@ Related docs:
 Small, safe next moves:
 
 1. UX polish for `Retroid_Queue.html` and `Retroid_Tierlist.html`
-2. Deploy the Supabase Edge Function proxy using Twitch / IGDB credentials
-3. Add approved field-level IGDB -> DB sync after proxy is live
-4. Optional stronger admin-role model later
+2. Add approved field-level IGDB -> DB sync now that the proxy is live
+3. Optional stronger admin-role model later

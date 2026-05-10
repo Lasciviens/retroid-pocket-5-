@@ -94,6 +94,10 @@ Bu repo su an Supabase Edge Function odakli bir scaffold da iceriyor:
 - `supabase/functions/igdb-search/index.ts`
 - `supabase/functions/README.md`
 
+Bu proxy artik deploy edildi:
+
+- `https://bniqmxbtvgwkaoswugds.supabase.co/functions/v1/igdb-search`
+
 Ornek deploy akisi, Supabase'in resmi docs akisi ile uyumludur:
 
 1. `supabase login`
@@ -102,6 +106,10 @@ Ornek deploy akisi, Supabase'in resmi docs akisi ile uyumludur:
 4. `supabase functions deploy igdb-search`
 5. frontend'de proxy URL olarak su adresi kullan:
    `https://<project-ref>.supabase.co/functions/v1/igdb-search`
+
+Bu projede frontend varsayilan olarak su endpoint'e baglidir:
+
+`https://bniqmxbtvgwkaoswugds.supabase.co/functions/v1/igdb-search`
 
 ## Sonraki adim: DB sync
 

@@ -1,9 +1,14 @@
 (function(){
   const STORAGE_KEY='rp5_igdb_proxy_url';
+  const DEFAULT_PROXY_URL='https://bniqmxbtvgwkaoswugds.supabase.co/functions/v1/igdb-search';
 
   function getProxyUrl(){
     const configured=(window.RP5_IGDB && window.RP5_IGDB.proxyUrl) || '';
-    return (configured || localStorage.getItem(STORAGE_KEY) || '').trim();
+    return (configured || localStorage.getItem(STORAGE_KEY) || DEFAULT_PROXY_URL || '').trim();
+  }
+
+  function getHeaders(){
+    return { ...((window.RP5_IGDB && window.RP5_IGDB.headers) || {}) };
   }
 
   function setProxyUrl(url){
@@ -82,7 +87,7 @@
     try{
       const glue=proxyUrl.includes('?')?'&':'?';
       const response=await fetch(`${proxyUrl}${glue}title=${encodeURIComponent(query)}`,{
-        headers:{Accept:'application/json'}
+        headers:{Accept:'application/json', ...getHeaders()}
       });
       if(!response.ok){
         return {status:'http_error',query,results:[],fallbackUrl:buildFallbackUrl(query),code:response.status};
@@ -134,6 +139,7 @@
 
   window.rp5IgdbBridge={
     getProxyUrl,
+    getHeaders,
     setProxyUrl,
     clearProxyUrl,
     buildFallbackUrl,

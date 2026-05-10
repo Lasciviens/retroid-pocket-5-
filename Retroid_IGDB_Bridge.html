@@ -109,6 +109,13 @@ footer a{color:var(--accent-2);text-decoration:none}
 <script>
 const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
+window.RP5_IGDB = {
+  proxyUrl: 'https://bniqmxbtvgwkaoswugds.supabase.co/functions/v1/igdb-search',
+  headers: {
+    apikey: KEY,
+    Authorization: `Bearer ${KEY}`
+  }
+};
 let libraryGames=[], selectedCandidate=null;
 
 function readQuery(){
