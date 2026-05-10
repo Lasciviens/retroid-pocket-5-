@@ -822,13 +822,13 @@ async function saveIgdbMatch(gameId,index){
     platform.versionTitle=variantPatch.version_title || '';
     platform.isPrimaryVariant=variantPatch.is_primary_variant;
   }
+  const preIdx=getFiltered().findIndex(x=>x.id===gameId);
   game.externalId=payload.external_id;
   if(payload.description) game.desc=payload.description;
   if(payload.primary_cover_url) game.cover=payload.primary_cover_url;
   if(payload.igdb_rating!=null) game.igdbRating=payload.igdb_rating;
   if(payload.igdb_url) game.igdbUrl=payload.igdb_url;
   if(payload.title) game.title=payload.title;
-  const preIdx=getFiltered().findIndex(x=>x.id===gameId);
   render();
   const stillVisible=getFiltered().some(x=>x.id===gameId);
   if(!stillVisible && preIdx>=0){
