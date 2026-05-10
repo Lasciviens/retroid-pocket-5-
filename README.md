@@ -93,6 +93,7 @@ Integrations roadmap: `INTEGRATIONS_ROADMAP.md`
 Reference-driven product ideas: `PRODUCT_IDEAS_FROM_REFERENCES.md`
 Docs index: `DOCS_INDEX.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
+Bulk IGDB matcher: `scripts/igdb_bulk_match.py`
 IGDB schema expansion: `migration_v6.sql`
 IGDB platform-variant schema draft: `migration_v7.sql`
 

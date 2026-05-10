@@ -360,7 +360,7 @@ function getLiveIgdbRating(game){
 }
 
 async function load(){
-  const games=await sb('games?select=id,title,release_year,developer,is_coop,coop_notes,play_status,rating,igdb_rating,igdb_url,is_iconic,description,play_notes,game_log,tier,primary_cover_url,external_id,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,rom_url,region,is_preferred,systems(name),emulators(name))&order=title');
+  const games=await sb('games?select=id,title,release_year,developer,is_coop,coop_notes,play_status,rating,igdb_rating,igdb_url,is_iconic,description,play_notes,game_log,tier,primary_cover_url,external_id,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,rom_url,region,is_preferred,igdb_game_id,igdb_slug,igdb_url,igdb_rating,igdb_release_year,igdb_first_release_date,version_title,is_primary_variant,systems(name),emulators(name))&order=title');
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,developer:g.developer||null,
     coop:g.is_coop,coopNotes:g.coop_notes,
@@ -369,7 +369,7 @@ async function load(){
     cover:g.primary_cover_url||null,
     series:g.series?.name||null,
     genres:(g.game_genres||[]).map(gg=>gg.genres?.name).filter(Boolean),
-    platforms:(g.game_platforms||[]).map(p=>({id:p.id,system:p.systems?.name,emulator:p.emulators?.name,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing',romUrl:p.rom_url||'',region:p.region||'',isPreferred:p.is_preferred||false}))
+    platforms:(g.game_platforms||[]).map(p=>({id:p.id,system:p.systems?.name,emulator:p.emulators?.name,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing',romUrl:p.rom_url||'',region:p.region||'',isPreferred:p.is_preferred||false,igdbGameId:p.igdb_game_id||null,igdbSlug:p.igdb_slug||'',igdbUrl:p.igdb_url||'',igdbRating:p.igdb_rating||null,igdbReleaseYear:p.igdb_release_year||null,igdbFirstReleaseDate:p.igdb_first_release_date||null,versionTitle:p.version_title||'',isPrimaryVariant:p.is_primary_variant||false}))
   }));
   const fSys=document.getElementById('f-system');
   const fGen=document.getElementById('f-genre');
@@ -755,17 +755,65 @@ async function saveIgdbMatch(gameId,index){
   const state=getIgdbState(game);
   const item=state?.results?.[index];
   if(!item) return;
-  const payload={ external_id:Number(item.id) };
+  const normalized=window.rp5IgdbBridge.toNormalizedPayload(item, {
+    normalizePlatformName:value=>value,
+    preferredPlatform:(game.platforms.find(p=>p.isPreferred)?.system) || (game.platforms[0]?.system) || ''
+  });
+  const primaryVariant=(normalized.platform_variants || []).find(v=>v.is_primary_variant) || normalized.platform_variants?.[0] || {};
+  const payload={ external_id:String(primaryVariant.igdb_game_id || item.id) };
   if(!game.desc && (item.combinedSummary || item.summary)) payload.description=item.combinedSummary || item.summary;
   if(!game.cover && item.coverUrl) payload.primary_cover_url=item.coverUrl;
   if(item.rating!=null) payload.igdb_rating=item.rating;
   if(item.igdbUrl) payload.igdb_url=item.igdbUrl;
   if(item.name && item.name!==game.title) payload.title=item.name;
+  payload.igdb_synced_at=new Date().toISOString();
   const response=await patch(`games?id=eq.${gameId}`,payload);
   if(!response.ok){
     const details=await response.text().catch(()=>'');
     alert(`IGDB eslesmesi kaydedilemedi.${details?`\n\n${details}`:''}`);
     return;
+  }
+  const incomingSystems=new Set((normalized.platform_variants || []).map(v=>v.platform));
+  const primaryPlatform=primaryVariant.platform || '';
+  if(primaryPlatform){
+    for(const platform of game.platforms){
+      if(platform.isPrimaryVariant && platform.system!==primaryPlatform){
+        const clearResponse=await patch(`game_platforms?id=eq.${platform.id}`,{is_primary_variant:false});
+        if(!clearResponse.ok){
+          const details=await clearResponse.text().catch(()=>'');
+          alert(`Primary varyant guncellenemedi.${details?`\n\n${details}`:''}`);
+          return;
+        }
+        platform.isPrimaryVariant=false;
+      }
+    }
+  }
+  for(const platform of game.platforms){
+    if(!incomingSystems.has(platform.system)) continue;
+    const variantPatch={
+      igdb_game_id:primaryVariant.igdb_game_id || Number(item.id),
+      igdb_slug:primaryVariant.igdb_slug || item.slug || null,
+      igdb_url:primaryVariant.igdb_url || item.igdbUrl || null,
+      igdb_rating:primaryVariant.rating ?? item.rating ?? null,
+      igdb_release_year:primaryVariant.release_year || item.releaseYear || null,
+      igdb_first_release_date:primaryVariant.first_release_date ? new Date(primaryVariant.first_release_date * 1000).toISOString() : null,
+      version_title:primaryVariant.version_title || item.name || null,
+      is_primary_variant:platform.system===primaryPlatform
+    };
+    const variantResponse=await patch(`game_platforms?id=eq.${platform.id}`,variantPatch);
+    if(!variantResponse.ok){
+      const details=await variantResponse.text().catch(()=>'');
+      alert(`Platform varyanti kaydedilemedi.${details?`\n\n${details}`:''}`);
+      return;
+    }
+    platform.igdbGameId=variantPatch.igdb_game_id;
+    platform.igdbSlug=variantPatch.igdb_slug || '';
+    platform.igdbUrl=variantPatch.igdb_url || '';
+    platform.igdbRating=variantPatch.igdb_rating;
+    platform.igdbReleaseYear=variantPatch.igdb_release_year;
+    platform.igdbFirstReleaseDate=variantPatch.igdb_first_release_date;
+    platform.versionTitle=variantPatch.version_title || '';
+    platform.isPrimaryVariant=variantPatch.is_primary_variant;
   }
   game.externalId=payload.external_id;
   if(payload.description) game.desc=payload.description;

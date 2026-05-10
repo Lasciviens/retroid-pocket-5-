@@ -84,7 +84,7 @@ footer a{color:var(--accent-2);text-decoration:none}
     <h2>Kutuphaneden Esleme Adaylari</h2>
     <div class="status-row" id="candidate-stats"></div>
   </div>
-  <div class="helper-note">Buradaki liste sadece okuma yapar. `external_id` bos olan oyunlari one cikarir; boylece ileride DB esleme turu daha hizli olur.</div>
+  <div class="helper-note">Buradaki liste sadece okuma yapar. Canonical `external_id` veya platform varyanti `igdb_game_id` eksik olan oyunlari one cikarir; boylece esleme turu daha hizli olur.</div>
   <div class="suggestions" id="candidate-chips"></div>
 </div>
 
@@ -232,6 +232,18 @@ function buildDbDescription(item){
   return [item.summary || '', item.storyline ? `Storyline: ${item.storyline}` : ''].filter(Boolean).join('\n\n') || null;
 }
 
+function getPreferredPlatformName(localGame){
+  const preferred=(localGame?.systems || []).find(Boolean);
+  return preferred || '';
+}
+
+function normalizeIgdbPayload(item, localGame=null){
+  return window.rp5IgdbBridge.toNormalizedPayload(item, {
+    normalizePlatformName,
+    preferredPlatform: getPreferredPlatformName(localGame)
+  });
+}
+
 function extractDeveloper(item){
   if(item.developers?.length) return item.developers[0];
   if(item.publishers?.length) return item.publishers[0];
@@ -245,6 +257,28 @@ function deriveCoop(item){
     isCoop: signals.some(text=>String(text).toLowerCase().includes('co-op')),
     coopNotes: signals.length ? signals.join(' · ') : null
   };
+}
+
+function buildCanonicalPatch(item, normalized, current={}){
+  const canonical=normalized.canonical_game || {};
+  const primaryVariant=(normalized.platform_variants || []).find(variant=>variant.is_primary_variant) || normalized.platform_variants?.[0] || {};
+  const coop=deriveCoop(item);
+  const patch={};
+
+  if(!current.release_year && primaryVariant.release_year) patch.release_year=primaryVariant.release_year;
+  if(!current.developer && canonical.developer) patch.developer=canonical.developer;
+  if(!current.publisher && canonical.publisher) patch.publisher=canonical.publisher;
+  if(!current.storyline && canonical.storyline) patch.storyline=canonical.storyline;
+  if(!current.description && buildDbDescription(item)) patch.description=buildDbDescription(item);
+  if((current.igdb_rating==null) && primaryVariant.rating!=null) patch.igdb_rating=primaryVariant.rating;
+  if(!current.igdb_url && primaryVariant.igdb_url) patch.igdb_url=primaryVariant.igdb_url;
+  if(!current.primary_cover_url && primaryVariant.cover_url) patch.primary_cover_url=primaryVariant.cover_url;
+  if(!current.external_id && primaryVariant.igdb_game_id) patch.external_id=String(primaryVariant.igdb_game_id);
+  if(!current.is_coop && coop.isCoop) patch.is_coop=true;
+  if(!current.coop_notes && coop.coopNotes) patch.coop_notes=coop.coopNotes;
+  if(item.name && item.name!==current.title) patch.title=item.name;
+  patch.igdb_synced_at=new Date().toISOString();
+  return patch;
 }
 
 function getExistingSystemsForSelected(){
@@ -300,17 +334,28 @@ async function getSystems(){
   return cachedSystems;
 }
 
-async function syncGamePlatforms(gameId, item, coverUrl){
+async function syncGamePlatforms(gameId, normalized, coverUrl){
   const systems=await getSystems();
   const systemMap=new Map((systems || []).map(row=>[row.name,row.id]));
-  const platformNames=[...new Set((item.platforms || []).map(normalizePlatformName).filter(Boolean))];
-  if(!platformNames.length) return;
-  const existing=await apiRequest(`game_platforms?select=id,system_id,cover_url,performance_notes,performance&game_id=eq.${gameId}`);
+  const platformVariants=normalized.platform_variants || [];
+  if(!platformVariants.length) return;
+  const existing=await apiRequest(`game_platforms?select=id,system_id,cover_url,performance_notes,performance,igdb_game_id,igdb_slug,igdb_url,igdb_rating,igdb_release_year,igdb_first_release_date,version_title,is_primary_variant&game_id=eq.${gameId}`);
   const existingBySystem=new Map((existing || []).map(row=>[row.system_id,row]));
+  const mappedVariants=platformVariants
+    .map(variant=>({variant,name:variant.platform,id:systemMap.get(variant.platform) || null}))
+    .filter(row=>row.id);
+
+  if(mappedVariants.some(row=>row.variant.is_primary_variant)){
+    for(const row of existing || []){
+      if(row.is_primary_variant){
+        await apiRequest(`game_platforms?id=eq.${row.id}`,{method:'PATCH',body:{is_primary_variant:false},headers:{Prefer:'return=minimal'}});
+      }
+    }
+  }
+
   const existingIds=new Set((existing || []).map(row=>row.system_id));
-  const inserts=platformNames
-    .map(name=>({name,id:systemMap.get(name) || null}))
-    .filter(row=>row.id && !existingIds.has(row.id))
+  const inserts=mappedVariants
+    .filter(row=>!existingIds.has(row.id))
     .map(row=>({
       game_id:gameId,
       system_id:row.id,
@@ -318,15 +363,32 @@ async function syncGamePlatforms(gameId, item, coverUrl){
       performance:defaultPerformance(row.name),
       performance_notes:defaultPerformanceNote(row.name),
       region:'USA',
-      cover_url:coverUrl || null,
-      rom_status:'missing'
+      cover_url:row.variant.cover_url || coverUrl || null,
+      rom_status:'missing',
+      igdb_game_id:row.variant.igdb_game_id || null,
+      igdb_slug:row.variant.igdb_slug || null,
+      igdb_url:row.variant.igdb_url || null,
+      igdb_rating:row.variant.rating ?? null,
+      igdb_release_year:row.variant.release_year || null,
+      igdb_first_release_date:row.variant.first_release_date ? new Date(row.variant.first_release_date * 1000).toISOString() : null,
+      version_title:row.variant.version_title || row.variant.platform || null,
+      is_primary_variant:!!row.variant.is_primary_variant
     }));
-  for(const row of platformNames.map(name=>({name,id:systemMap.get(name) || null})).filter(row=>row.id && existingIds.has(row.id))){
+
+  for(const row of mappedVariants.filter(row=>existingIds.has(row.id))){
     const current=existingBySystem.get(row.id);
     const patch={};
-    if(!current?.cover_url && coverUrl) patch.cover_url=coverUrl;
+    if(!current?.cover_url && (row.variant.cover_url || coverUrl)) patch.cover_url=row.variant.cover_url || coverUrl;
     if(!current?.performance_notes && defaultPerformanceNote(row.name)) patch.performance_notes=defaultPerformanceNote(row.name);
     if(current?.performance==null && defaultPerformance(row.name)) patch.performance=defaultPerformance(row.name);
+    if(!current?.igdb_game_id && row.variant.igdb_game_id) patch.igdb_game_id=row.variant.igdb_game_id;
+    if(!current?.igdb_slug && row.variant.igdb_slug) patch.igdb_slug=row.variant.igdb_slug;
+    if(!current?.igdb_url && row.variant.igdb_url) patch.igdb_url=row.variant.igdb_url;
+    if(current?.igdb_rating==null && row.variant.rating!=null) patch.igdb_rating=row.variant.rating;
+    if(current?.igdb_release_year==null && row.variant.release_year) patch.igdb_release_year=row.variant.release_year;
+    if(!current?.igdb_first_release_date && row.variant.first_release_date) patch.igdb_first_release_date=new Date(row.variant.first_release_date * 1000).toISOString();
+    if(!current?.version_title && row.variant.version_title) patch.version_title=row.variant.version_title;
+    if(row.variant.is_primary_variant && !current?.is_primary_variant) patch.is_primary_variant=true;
     if(Object.keys(patch).length){
       await apiRequest(`game_platforms?id=eq.${current.id}`,{method:'PATCH',body:patch,headers:{Prefer:'return=minimal'}});
     }
@@ -335,50 +397,33 @@ async function syncGamePlatforms(gameId, item, coverUrl){
 }
 
 async function createGameFromIgdb(item){
+  const normalized=normalizeIgdbPayload(item);
   const seriesId=await ensureSeriesId(item.franchises?.[0] || item.collections?.[0] || '');
-  const coop=deriveCoop(item);
   const payload={
-    title:item.name,
-    release_year:item.releaseYear || null,
-    developer:extractDeveloper(item),
-    description:buildDbDescription(item),
+    title:normalized.canonical_game.title,
     play_status:'wishlist',
-    igdb_rating:item.rating || null,
-    igdb_url:item.igdbUrl || null,
-    primary_cover_url:item.coverUrl || null,
-    external_id:Number(item.id),
+    ...buildCanonicalPatch(item, normalized, {}),
     series_id:seriesId,
-    is_coop:coop.isCoop,
-    coop_notes:coop.coopNotes
   };
   const created=await apiRequest('games',{method:'POST',body:payload});
   const game=Array.isArray(created) ? created[0] : created;
   if(!game?.id) throw new Error('Oyun eklenemedi');
-  await syncGameGenres(game.id, item.genres || []);
-  await syncGamePlatforms(game.id, item, item.coverUrl || null);
+  await syncGameGenres(game.id, normalized.canonical_game.genres || []);
+  await syncGamePlatforms(game.id, normalized, item.coverUrl || null);
   return game;
 }
 
 async function updateGameFromIgdb(gameId, item){
-  const currentList=await apiRequest(`games?select=id,title,release_year,developer,description,igdb_rating,igdb_url,primary_cover_url,is_coop,coop_notes&id=eq.${gameId}`);
+  const normalized=normalizeIgdbPayload(item, selectedCandidate);
+  const currentList=await apiRequest(`games?select=id,title,release_year,developer,publisher,storyline,description,igdb_rating,igdb_url,primary_cover_url,is_coop,coop_notes,external_id&id=eq.${gameId}`);
   const current=currentList?.[0];
   if(!current) throw new Error('Yerel oyun bulunamadi');
   const seriesId=await ensureSeriesId(item.franchises?.[0] || item.collections?.[0] || '');
-  const coop=deriveCoop(item);
-  const patch={ external_id:Number(item.id) };
-  if(!current.release_year && item.releaseYear) patch.release_year=item.releaseYear;
-  if(!current.developer && extractDeveloper(item)) patch.developer=extractDeveloper(item);
-  if(!current.description && buildDbDescription(item)) patch.description=buildDbDescription(item);
-  if((current.igdb_rating==null) && item.rating) patch.igdb_rating=item.rating;
-  if(!current.igdb_url && item.igdbUrl) patch.igdb_url=item.igdbUrl;
-  if(!current.primary_cover_url && item.coverUrl) patch.primary_cover_url=item.coverUrl;
-  if(!current.is_coop && coop.isCoop) patch.is_coop=true;
-  if(!current.coop_notes && coop.coopNotes) patch.coop_notes=coop.coopNotes;
+  const patch=buildCanonicalPatch(item, normalized, current);
   if(seriesId) patch.series_id=seriesId;
-  if(item.name && item.name!==current.title) patch.title=item.name;
   await apiRequest(`games?id=eq.${gameId}`,{method:'PATCH',body:patch,headers:{Prefer:'return=minimal'}});
-  await syncGameGenres(gameId, item.genres || []);
-  await syncGamePlatforms(gameId, item, item.coverUrl || null);
+  await syncGameGenres(gameId, normalized.canonical_game.genres || []);
+  await syncGamePlatforms(gameId, normalized, item.coverUrl || null);
   return current;
 }
 
@@ -579,7 +624,7 @@ async function copyMapping(payload, btn){
 
 async function loadSuggestions(){
   try{
-    const response=await fetch(`${SB}/rest/v1/games?select=id,title,release_year,is_iconic,external_id,game_platforms(systems(name))&order=is_iconic.desc,title.asc&limit=120`,{
+    const response=await fetch(`${SB}/rest/v1/games?select=id,title,release_year,is_iconic,external_id,game_platforms(igdb_game_id,is_primary_variant,systems(name))&order=is_iconic.desc,title.asc&limit=120`,{
       headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}
     });
     const games=await response.json();
@@ -588,7 +633,7 @@ async function loadSuggestions(){
       title:game.title,
       releaseYear:game.release_year || null,
       iconic:!!game.is_iconic,
-      matched:!!game.external_id,
+      matched:!!game.external_id || (game.game_platforms || []).some(p=>p.igdb_game_id),
       systems:(game.game_platforms || []).map(p=>p.systems?.name).filter(Boolean)
     }));
     const featured=libraryGames.slice(0,18);

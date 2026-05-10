@@ -76,6 +76,8 @@
     const publishers=normalizeList(companyRows, entry=>entry.publisher ? (entry.company?.name || entry.name || '') : '');
     const franchises=normalizeList(item.franchises || item.franchise, entry=>typeof entry==='string'?entry:(entry.name || ''));
     const collections=normalizeList(item.collections || item.collection, entry=>typeof entry==='string'?entry:(entry.name || ''));
+    const themes=normalizeList(item.themes, entry=>typeof entry==='string'?entry:(entry.name || ''));
+    const keywords=normalizeList(item.keywords, entry=>typeof entry==='string'?entry:(entry.name || ''));
     const screenshots=normalizeList(item.screenshots, entry=>normalizeCover(entry?.url || entry?.image_id || ''));
     const videos=normalizeList(item.videos, entry=>{
       const videoId=entry?.video_id || entry?.id || '';
@@ -102,9 +104,13 @@
       storyline,
       combinedSummary:combinedSummary || item.description || '',
       rating:item.total_rating ?? item.rating ?? null,
+      ratingCount:item.total_rating_count ?? item.rating_count ?? null,
       releaseYear,
+      firstReleaseDate:releaseTs,
       coverUrl:normalizeCover(item.cover?.url || item.coverUrl || item.cover_url || ''),
       genres:normalizeList(item.genres, entry=>typeof entry==='string'?entry:(entry.name || '')),
+      themes,
+      keywords,
       platforms:normalizeList(item.platforms, entry=>typeof entry==='string'?entry:(entry.abbreviation || entry.name || '')),
       companies,
       developers,
@@ -186,6 +192,60 @@
       .trim();
   }
 
+  function uniqueList(values){
+    return [...new Set((values || []).filter(Boolean))];
+  }
+
+  function choosePrimaryPlatform(platforms, preferredPlatform){
+    if(preferredPlatform && platforms.includes(preferredPlatform)) return preferredPlatform;
+    return platforms[0] || '';
+  }
+
+  function toNormalizedPayload(item, options={}){
+    const normalizePlatformName=options.normalizePlatformName || (value=>value);
+    const normalizedPlatforms=uniqueList((item.platforms || []).map(normalizePlatformName).filter(Boolean));
+    const primaryPlatform=choosePrimaryPlatform(normalizedPlatforms, options.preferredPlatform || '');
+
+    return {
+      canonical_game: {
+        title: item.name || '',
+        normalized_title: normalizeText(item.name || ''),
+        summary: item.summary || '',
+        storyline: item.storyline || '',
+        developer: item.developers?.[0] || item.companies?.[0] || '',
+        publisher: item.publishers?.[0] || '',
+        franchise: item.franchises?.[0] || '',
+        collection: item.collections?.[0] || '',
+        genres: uniqueList(item.genres || []),
+        themes: uniqueList(item.themes || []),
+        keywords: uniqueList(item.keywords || []),
+        websites: uniqueList(item.websites || []),
+        screenshots: uniqueList(item.screenshots || []),
+        videos: uniqueList(item.videos || []),
+        multiplayer_signals: uniqueList(item.multiplayerSignals || []),
+      },
+      platform_variants: normalizedPlatforms.map(platform=>({
+        platform,
+        igdb_game_id: item.id || null,
+        igdb_slug: item.slug || '',
+        igdb_url: item.igdbUrl || '',
+        release_year: item.releaseYear || null,
+        first_release_date: item.firstReleaseDate || null,
+        rating: item.rating ?? null,
+        rating_count: item.ratingCount ?? null,
+        cover_url: item.coverUrl || '',
+        multiplayer_signals: uniqueList(item.multiplayerSignals || []),
+        version_title: item.name || '',
+        is_primary_variant: platform === primaryPlatform,
+      })),
+      raw_igdb: {
+        id: item.id || null,
+        slug: item.slug || '',
+        url: item.igdbUrl || buildGameUrl(item.slug || ''),
+      },
+    };
+  }
+
   function scoreMatch(query, item, expectedYear){
     const queryNorm=normalizeText(query);
     const nameNorm=normalizeText(item?.name || '');
@@ -232,6 +292,7 @@
     extractRef,
     searchGames,
     fetchByRef,
-    scoreMatch
+    scoreMatch,
+    toNormalizedPayload
   };
 })();

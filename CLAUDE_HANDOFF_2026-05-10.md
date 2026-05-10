@@ -39,6 +39,7 @@ Bu handoff sonrasinda kütüphane yüzeyi üzerinde güvenli UX iyilestirmeleri 
   - `IGDB_FIELD_MAP.md`
   - `IGDB_QUERY_PRESETS.md`
   - `migration_v7.sql`
+  - `scripts/igdb_bulk_match.py`
   - `supabase/functions/.env.example`
   - `supabase/functions/retroachievements-player/`
   - `supabase/functions/steamgriddb-art/`
@@ -46,6 +47,38 @@ Bu handoff sonrasinda kütüphane yüzeyi üzerinde güvenli UX iyilestirmeleri 
 
 Not:
 - `migration_v6.sql` hala repo'da duruyor ama `igdb_url` ve `igdb_rating` alanlari artik canli DB'de mevcut. Bu migration uygulanmadan once mevcut schema ile tekrar reconcile edilmeli.
+
+### 0b. Sonraki Codex Turu — IGDB Variant Model
+Bu handoff sonrasinda `migration_v7.sql` canli schema ile uzlastirildi ve uygulandi:
+- `games`
+  - `storyline`
+  - `publisher`
+  - `igdb_synced_at`
+- `game_platforms`
+  - `igdb_game_id`
+  - `igdb_slug`
+  - `igdb_url`
+  - `igdb_rating`
+  - `igdb_release_year`
+  - `igdb_first_release_date`
+  - `version_title`
+  - `is_primary_variant`
+
+Ayrica:
+- `Retroid_IGDB_Bridge.html`
+  - canonical game + platform_variants mantigina gecti
+  - canonical fallback olarak `games.external_id / igdb_rating / igdb_url` koruyor
+  - platform varyanti verisini `game_platforms` seviyesinde yazar
+- `Retroid_Library_Dashboard.html`
+  - manuel `saveIgdbMatch` akisi artik platform varyant alanlarini da gunceller
+- `scripts/igdb_bulk_match.py`
+  - repo icine alindi
+  - bulk match artik canonical patch + variant patch mantigiyla calisiyor
+- `~/retroid-project/igdb_bulk_match.py`
+  - repo ile senkron yeni surumle guncellendi
+
+Canli backfill kontrolden gecti:
+- `game_platforms.igdb_game_id` dolu satir: `228`
 
 ### 1. GitHub Pages Deploy Sorunu Çözüldü
 Commit `abeb714`'ten sonra GitHub Pages otomatik deploy durmuştu (4 commit birikti, hiç deploy edilmedi). `.github/workflows/pages.yml` custom workflow oluşturuldu. GitHub repo Settings → Pages → Source **"GitHub Actions"** olarak değiştirildi (kullanıcı yaptı). Artık her push'ta otomatik deploy çalışıyor.

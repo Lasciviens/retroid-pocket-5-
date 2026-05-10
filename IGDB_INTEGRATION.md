@@ -31,7 +31,7 @@ Bu yuzden GitHub Pages uzerindeki bu statik site, secret'i frontend'e koymadan c
   - proxy yoksa IGDB web aramasina kopru
   - kutuphaneden query string ile acilabilme: `?title=Chrono%20Trigger`
   - kutuphaneden `gameId` ile acilabilme
-  - `external_id` bos olan kutuphane oyunlarini one cikarir
+  - canonical `external_id` veya platform varyanti `igdb_game_id` bos olan kutuphane oyunlarini one cikarir
   - aday sonuclarda basit eslesme skoru gosterir
   - sonuc kartindan mapping JSON kopyalayabilir
 - `rp5_igdb.js`
@@ -125,13 +125,20 @@ Daha sonra Claude veya baska bir agent su akisi ekleyebilir:
 2. Kutuphanedeki oyunu IGDB ile eslestir
 3. Aday sonucu goster
 4. Onaylanan alanlari yaz:
-   - `games.external_id`
-   - `games.description`
-   - `games.rating`
-   - gerekirse `games.primary_cover_url`
+   - canonical fallback: `games.external_id`, `games.igdb_rating`, `games.igdb_url`
+   - canonical metadata: `games.description`, `games.storyline`, `games.publisher`
+   - platform varyanti: `game_platforms.igdb_game_id`, `igdb_slug`, `igdb_url`, `igdb_rating`
+   - gerekirse `games.primary_cover_url` ve `game_platforms.cover_url`
    - `series`, `genres`, `game_platforms` tarafinda kontrollu merge
 5. Otomatik overwrite yerine alan bazli onay kullan
 
 ## Not
 
-Bu dosya mimari karar notudur. Veri kapsami ve urun yonu icin `IGDB_DATA_PLAN.md` esas referanstir.
+Bu dosya mimari karar notudur.
+
+Standart is akisi icin ana referanslar:
+
+- `IGDB_IMPORT_PLAYBOOK.md`
+- `IGDB_FIELD_MAP.md`
+- `IGDB_QUERY_PRESETS.md`
+- `scripts/igdb_bulk_match.py`

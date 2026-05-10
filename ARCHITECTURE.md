@@ -38,8 +38,8 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ### Ana Tablolar
 | Tablo | Açıklama |
 |-------|----------|
-| `games` | Oyun kaydı. series_id FK, play_status, rating, is_coop, is_iconic, tier, play_order |
-| `game_platforms` | Oyun ↔ Sistem ↔ Emülatör. cover_url, performance, rom_status, region, folder_path |
+| `games` | Oyun kaydı. series_id FK, play_status, rating, is_coop, is_iconic, tier, play_order, canonical IGDB fallback alanlari |
+| `game_platforms` | Oyun ↔ Sistem ↔ Emülatör. cover_url, performance, rom_status, region, folder_path, platform-variant IGDB alanlari |
 | `notes` | Serbest notlar. category: 'tip' / 'request' / 'done'. Opsiyonel game_id FK |
 | `glossary` | Teknik terimler sözlüğü |
 
@@ -84,6 +84,8 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── IGDB_IMPORT_PLAYBOOK.md         # IGDB import standardi ve duplicate kurali
 ├── IGDB_FIELD_MAP.md               # IGDB alan -> DB alan esleme tablosu
 ├── IGDB_QUERY_PRESETS.md           # tekrar kullanilacak query setleri
+├── migration_v7.sql                # canliya uygulanmis platform varyant migration'i
+├── scripts/igdb_bulk_match.py      # canonical + platform_variants bulk eslestirme araci
 ├── INTEGRATIONS_ROADMAP.md         # Yeni entegrasyonlar icin karar ve oncelik notu
 ├── PRODUCT_IDEAS_FROM_REFERENCES.md # Tonkatsu Box ve benzeri urunlerden cikan fikirler
 ├── DOCS_INDEX.md                   # Markdown notlari icin hizli indeks
