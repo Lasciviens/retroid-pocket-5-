@@ -137,10 +137,10 @@ select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/
 .modal-hero-info{position:absolute;left:156px;top:50%;transform:translateY(-50%);color:#fff}
 .modal-hero-info h2{font-size:1.4rem;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.8)}
 .modal-close{position:absolute;top:10px;right:14px;background:rgba(0,0,0,.6);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:1.2rem;cursor:pointer;z-index:3}
-.modal-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);color:#fff;width:38px;height:38px;border-radius:999px;font-size:1.15rem;cursor:pointer;z-index:3;display:flex;align-items:center;justify-content:center}
-.modal-nav:hover{background:rgba(0,0,0,.68)}
-.modal-nav.prev{left:14px}
-.modal-nav.next{right:54px}
+.modal-nav-fixed{position:fixed;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18);color:#fff;width:46px;height:46px;border-radius:999px;font-size:1.25rem;cursor:pointer;z-index:110;display:none;align-items:center;justify-content:center;transition:background .15s}
+.modal-nav-fixed:hover{background:rgba(0,0,0,.82)}
+.modal-nav-fixed.prev{left:max(10px,calc(50vw - 400px))}
+.modal-nav-fixed.next{right:max(10px,calc(50vw - 400px))}
 .modal-body{padding:20px 24px 24px}
 .modal-section{margin-top:14px}
 .modal-section h4{color:var(--accent-2);font-size:.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
@@ -274,10 +274,12 @@ footer a{color:var(--accent-2);text-decoration:none}
 
 <!-- Detail modal -->
 <div class="modal-overlay" id="modal">
+  <button class="modal-nav-fixed prev" id="modal-nav-prev" onclick="navigateModal(-1)" aria-label="Önceki oyun">‹</button>
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">×</button>
     <div id="modal-content"></div>
   </div>
+  <button class="modal-nav-fixed next" id="modal-nav-next" onclick="navigateModal(1)" aria-label="Sonraki oyun">›</button>
 </div>
 
 <!-- Random modal -->
@@ -826,8 +828,17 @@ async function saveIgdbMatch(gameId,index){
   if(payload.igdb_rating!=null) game.igdbRating=payload.igdb_rating;
   if(payload.igdb_url) game.igdbUrl=payload.igdb_url;
   if(payload.title) game.title=payload.title;
+  const preIdx=getFiltered().findIndex(x=>x.id===gameId);
   render();
-  renderIgdbPanel(game);
+  const stillVisible=getFiltered().some(x=>x.id===gameId);
+  if(!stillVisible && preIdx>=0){
+    const newList=getFiltered();
+    const targetIdx=Math.min(preIdx,newList.length-1);
+    if(targetIdx>=0) openModal(newList[targetIdx].id);
+    else closeModal();
+  } else {
+    renderIgdbPanel(game);
+  }
 }
 
 async function copyIgdbSummary(summary){
@@ -887,10 +898,10 @@ function openModal(id){
   const statusColors={backlog:'var(--muted)',playing:'var(--warn)',completed:'var(--good)',dropped:'var(--bad)',wishlist:'#a855f7'};
   const statusLabels={backlog:'Backlog',playing:'Oynuyor',completed:'Bitti',dropped:'Bıraktım',wishlist:'İstek'};
 
+  document.getElementById('modal-nav-prev').style.display=hasPrev?'flex':'none';
+  document.getElementById('modal-nav-next').style.display=hasNext?'flex':'none';
   document.getElementById('modal-content').innerHTML=`
     <div class="modal-hero">
-      ${hasPrev?`<button class="modal-nav prev" onclick="navigateModal(-1)" aria-label="Onceki oyun">‹</button>`:''}
-      ${hasNext?`<button class="modal-nav next" onclick="navigateModal(1)" aria-label="Sonraki oyun">›</button>`:''}
       ${heroCover?`<img class="modal-hero-bg" src="${escapeHtml(heroCover)}" onerror="this.style.display='none'"><img class="modal-hero-art" src="${escapeHtml(heroCover)}" onerror="this.style.opacity='.2'">`:``}
       <div class="modal-hero-info" style="${!heroCover?'left:24px':''}">
         <h2>${escapeHtml(g.title)}${g.iconic?' ★':''}</h2>
@@ -972,8 +983,6 @@ function openModal(id){
       </div>
 
       <div class="modal-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        ${hasPrev?`<button onclick="navigateModal(-1)" style="background:var(--bg-3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:.82rem;cursor:pointer;font-weight:700">← Önceki</button>`:''}
-        ${hasNext?`<button onclick="navigateModal(1)" style="background:var(--bg-3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:.82rem;cursor:pointer;font-weight:700">Sonraki →</button>`:''}
         <button onclick="saveNotes('${g.id}')" style="background:var(--accent-2);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">💾 Kaydet</button>
         <button onclick="addToQueue('${g.id}', this)" style="background:var(--gold);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">🎮 Sıraya Ekle</button>
         <a href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(g.id)}&title=${encodeURIComponent(g.title)}${g.year?`&year=${encodeURIComponent(g.year)}`:''}" target="_blank" style="background:var(--bg-3);color:var(--accent-2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🛰️ IGDB Köprüsü</a>
@@ -986,7 +995,12 @@ function openModal(id){
   fetchIgdbForGame(g).then(()=>{renderIgdbPanel(g);render();}).catch(()=>renderIgdbPanel(g));
 }
 
-function closeModal(){currentModalGameId=null;document.getElementById('modal').classList.remove('active');}
+function closeModal(){
+  currentModalGameId=null;
+  document.getElementById('modal').classList.remove('active');
+  document.getElementById('modal-nav-prev').style.display='none';
+  document.getElementById('modal-nav-next').style.display='none';
+}
 
 async function setPreferredPlatform(gameId, platformId){
   if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Tercih edilen platformu degistirmek icin yonetici oturumu acik olmali.'}))) return;
