@@ -28,6 +28,7 @@ Bu handoff sonrasinda kütüphane yüzeyi üzerinde güvenli UX iyilestirmeleri 
   - GitHub Actions deploy modeli ve yeni kutuphane davranislariyla guncellendi
 - Yeni entegrasyon zemini:
   - `INTEGRATIONS_ROADMAP.md`
+  - `PRODUCT_IDEAS_FROM_REFERENCES.md`
   - `supabase/functions/.env.example`
   - `supabase/functions/retroachievements-player/`
   - `supabase/functions/steamgriddb-art/`

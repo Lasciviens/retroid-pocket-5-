@@ -81,6 +81,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── IGDB_INTEGRATION.md             # IGDB proxy ve sync mimarisi
 ├── IGDB_DATA_PLAN.md               # IGDB veri kapsami ve sonraki urun yolu
 ├── INTEGRATIONS_ROADMAP.md         # Yeni entegrasyonlar icin karar ve oncelik notu
+├── PRODUCT_IDEAS_FROM_REFERENCES.md # Tonkatsu Box ve benzeri urunlerden cikan fikirler
 ├── supabase/functions/igdb-search  # IGDB proxy scaffold
 ├── supabase/functions/retroachievements-player  # RetroAchievements proxy scaffold
 ├── supabase/functions/steamgriddb-art          # SteamGridDB proxy scaffold
@@ -189,4 +190,5 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - Kütüphane filtresinde `IGDB eksik / kapak eksik / ozet eksik / yil eksik` hizli temizlik akislari bulunur.
 - IGDB kapsam kararlari `IGDB_DATA_PLAN.md` icinde tutulur.
 - Diger entegrasyon karar ve fizibilite notlari `INTEGRATIONS_ROADMAP.md` icinde tutulur.
+- Dis referanslardan uretilen urun gelistirme fikirleri `PRODUCT_IDEAS_FROM_REFERENCES.md` icinde tutulur.
 - RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.

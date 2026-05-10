@@ -14,6 +14,9 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [ ] **RetroAchievements entegrasyonu** — user progress / completion / game progress proxy + modal enrichment
 - [ ] **SteamGridDB entegrasyonu** — alternatif kapak / hero / logo onerileri
 - [ ] **RAWG discovery entegrasyonu** — benzer oyunlar / dis linkler / discovery katmani
+- [ ] **Cleanup Workspace** — admin icin yogun metadata denetim gorunumu
+- [ ] **Artwork Manager** — IGDB / libretro / SteamGridDB kaynaklari arasinda kapak secimi
+- [ ] **Discovery Shelf** — kutuphaneden secilmis akilli oneriler
 
 
 
@@ -61,6 +64,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] Supabase Edge Function IGDB proxy scaffold eklendi
 - [x] IGDB link import + aday ekleme + mevcut oyun eslestirme akisi kuruldu
 - [x] Yeni entegrasyonlar icin roadmap ve function scaffold'lari eklendi
+- [x] Dis referanslardan urun fikirleri derlendi (`PRODUCT_IDEAS_FROM_REFERENCES.md`)
 
 ---
 
