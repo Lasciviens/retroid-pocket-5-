@@ -115,15 +115,21 @@
     if(!queryNorm || !nameNorm)return 0;
 
     let score=0;
-    if(queryNorm===nameNorm)score+=78;
-    else if(nameNorm.startsWith(queryNorm) || queryNorm.startsWith(nameNorm))score+=66;
-    else if(nameNorm.includes(queryNorm) || queryNorm.includes(nameNorm))score+=54;
+    if(queryNorm===nameNorm)score+=82;
+    else if(nameNorm.startsWith(queryNorm) || queryNorm.startsWith(nameNorm))score+=58;
+    else if(nameNorm.includes(queryNorm) || queryNorm.includes(nameNorm))score+=44;
 
     const queryTokens=queryNorm.split(' ').filter(Boolean);
-    const nameTokens=new Set(nameNorm.split(' ').filter(Boolean));
+    const nameTokenList=nameNorm.split(' ').filter(Boolean);
+    const nameTokens=new Set(nameTokenList);
     const tokenHits=queryTokens.filter(token=>nameTokens.has(token)).length;
     if(queryTokens.length){
-      score+=Math.round((tokenHits / queryTokens.length) * 25);
+      score+=Math.round((tokenHits / queryTokens.length) * 12);
+    }
+
+    if(queryNorm!==nameNorm){
+      const extraTokens=Math.max(0, nameTokenList.length - queryTokens.length);
+      score-=extraTokens * 8;
     }
 
     const itemYear=item?.releaseYear || null;
