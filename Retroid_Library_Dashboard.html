@@ -287,14 +287,12 @@ function getLiveIgdbRating(game){
 }
 
 async function load(){
-  const games=await sb('games?select=id,title,release_year,developer,is_coop,coop_notes,play_status,rating,igdb_rating,is_iconic,description,play_notes,game_log,tier,primary_cover_url,external_id,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,rom_url,region,is_preferred,systems(name),emulators(name))&order=title').catch(()=>
-    sb('games?select=id,title,release_year,developer,is_coop,coop_notes,play_status,rating,is_iconic,description,play_notes,game_log,tier,primary_cover_url,external_id,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,rom_url,region,is_preferred,systems(name),emulators(name))&order=title')
-  );
+  const games=await sb('games?select=id,title,release_year,developer,is_coop,coop_notes,play_status,rating,igdb_rating,igdb_url,is_iconic,description,play_notes,game_log,tier,primary_cover_url,external_id,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,rom_url,region,is_preferred,systems(name),emulators(name))&order=title');
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,developer:g.developer||null,
     coop:g.is_coop,coopNotes:g.coop_notes,
     status:g.play_status||'backlog',rating:g.rating,igdbRating:g.igdb_rating||null,iconic:g.is_iconic,desc:g.description,
-    playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',externalId:g.external_id||null,
+    playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',externalId:g.external_id||null,igdbUrl:g.igdb_url||null,
     cover:g.primary_cover_url||null,
     series:g.series?.name||null,
     genres:(g.game_genres||[]).map(gg=>gg.genres?.name).filter(Boolean),
@@ -691,6 +689,7 @@ function openModal(id){
         <button onclick="saveNotes('${g.id}')" style="background:var(--accent-2);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">💾 Kaydet</button>
         <button onclick="addToQueue('${g.id}', this)" style="background:var(--gold);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">🎮 Sıraya Ekle</button>
         <a href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(g.id)}&title=${encodeURIComponent(g.title)}${g.year?`&year=${encodeURIComponent(g.year)}`:''}" target="_blank" style="background:var(--bg-3);color:var(--accent-2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🛰️ IGDB Köprüsü</a>
+        ${g.igdbUrl?`<a href="${escapeHtml(g.igdbUrl)}" target="_blank" style="background:var(--bg-3);color:#c4b5fd;border:1px solid rgba(124,58,237,.35);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🎮 IGDB Sayfası</a>`:''}
         <span id="save-status" style="font-size:.8rem;color:var(--good);display:none">✓ Kaydedildi</span>
       </div>
     </div>`;
