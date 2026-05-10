@@ -551,8 +551,10 @@ async function saveIgdbMatch(gameId,index){
   if(!item) return;
   const payload={ external_id:Number(item.id) };
   if(!game.desc && (item.combinedSummary || item.summary)) payload.description=item.combinedSummary || item.summary;
-  if((game.rating==null || game.rating==='') && item.rating) payload.rating=igdbToDbRating(item.rating);
   if(!game.cover && item.coverUrl) payload.primary_cover_url=item.coverUrl;
+  if(item.rating!=null) payload.igdb_rating=item.rating;
+  if(item.igdbUrl) payload.igdb_url=item.igdbUrl;
+  if(item.name && item.name!==game.title) payload.title=item.name;
   const response=await patch(`games?id=eq.${gameId}`,payload);
   if(!response.ok){
     const details=await response.text().catch(()=>'');
@@ -561,8 +563,10 @@ async function saveIgdbMatch(gameId,index){
   }
   game.externalId=payload.external_id;
   if(payload.description) game.desc=payload.description;
-  if(payload.rating!=null) game.rating=payload.rating;
   if(payload.primary_cover_url) game.cover=payload.primary_cover_url;
+  if(payload.igdb_rating!=null) game.igdbRating=payload.igdb_rating;
+  if(payload.igdb_url) game.igdbUrl=payload.igdb_url;
+  if(payload.title) game.title=payload.title;
   render();
   renderIgdbPanel(game);
 }
