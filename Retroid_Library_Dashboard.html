@@ -104,6 +104,24 @@ select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/
 .platform-row{background:var(--bg-3);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:10px;font-size:.8rem;flex-wrap:wrap}
 .platform-sys{color:var(--accent-2);font-weight:700;min-width:70px}
 .platform-emu{color:var(--muted)}
+.igdb-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.igdb-status{display:flex;gap:6px;flex-wrap:wrap}
+.igdb-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:var(--bg-3);border:1px solid var(--border);font-size:.72rem;color:var(--muted)}
+.igdb-chip.good{color:var(--good);border-color:rgba(46,204,113,.35)}
+.igdb-chip.warn{color:var(--warn);border-color:rgba(243,156,18,.35)}
+.igdb-chip.accent{color:var(--accent-2);border-color:rgba(0,212,255,.35)}
+.igdb-panel{background:var(--bg-3);border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:6px}
+.igdb-search-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.igdb-result-list{display:grid;gap:10px;margin-top:12px}
+.igdb-result-card{border:1px solid var(--border);border-radius:10px;padding:10px;background:rgba(10,14,26,.55)}
+.igdb-result-title{font-size:.9rem;font-weight:700;margin-bottom:4px}
+.igdb-result-meta{font-size:.75rem;color:var(--muted);line-height:1.45;margin-bottom:6px}
+.igdb-result-summary{font-size:.82rem;line-height:1.55;color:var(--text)}
+.igdb-result-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.igdb-inline-note{font-size:.76rem;color:var(--muted);line-height:1.5}
+.igdb-sort-note{font-size:.75rem;color:var(--muted);margin-top:8px}
+.igdb-match-badge{position:absolute;bottom:6px;left:6px;background:rgba(124,58,237,.88);color:#fff;padding:2px 6px;border-radius:4px;font-size:.58rem;font-weight:700;text-transform:uppercase;z-index:2}
+.igdb-rating-card{font-size:.72rem;padding:2px 6px;border-radius:4px;background:rgba(124,58,237,.15);color:#c4b5fd;border:1px solid rgba(124,58,237,.35)}
 .loading{text-align:center;padding:60px;color:var(--muted);font-size:1.1rem;grid-column:1/-1}
 .empty{text-align:center;padding:60px;color:var(--muted);grid-column:1/-1}
 footer{text-align:center;margin-top:36px;padding:16px;color:var(--muted);font-size:.8rem}
@@ -112,6 +130,7 @@ footer a{color:var(--accent-2);text-decoration:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="rp5_auth.js"></script>
+<script src="rp5_igdb.js?v=20260510b"></script>
 </head>
 <body>
 <header>
@@ -160,11 +179,13 @@ footer a{color:var(--accent-2);text-decoration:none}
       <option value="year-asc">Yıl ↑</option>
       <option value="year-desc">Yıl ↓</option>
       <option value="rating">Rating</option>
+      <option value="igdb-rating">IGDB Rating</option>
     </select>
   </div>
   <button class="random-btn" onclick="showRandom()">🎲 Şans Eseri</button>
   <button class="fbtn" id="f-reset">↺ Sıfırla</button>
 </div>
+<div class="igdb-sort-note" id="igdb-sort-note" style="display:none">IGDB rating siralamasi secilince gorunen oyunlar icin puanlar canli yuklenir.</div>
 
 <div class="game-grid" id="grid"><div class="loading">⏳ Oyunlar yükleniyor...</div></div>
 
@@ -188,19 +209,79 @@ footer a{color:var(--accent-2);text-decoration:none}
 <script>
 const SB='https://bniqmxbtvgwkaoswugds.supabase.co';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs';
-const H={headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}};
+window.RP5_IGDB = {
+  proxyUrl: 'https://bniqmxbtvgwkaoswugds.supabase.co/functions/v1/igdb-search',
+  headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }
+};
 
-async function sb(ep){const r=await fetch(`${SB}/rest/v1/${ep}`,H);return r.json();}
-async function patch(ep,body){await fetch(`${SB}/rest/v1/${ep}`,{method:'PATCH',headers:{...H.headers,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(body)});}
+function getRestHeaders(preferSession=false){
+  const sessionToken=window.rp5Auth?.getSession?.()?.access_token;
+  return {
+    apikey: KEY,
+    Authorization: `Bearer ${preferSession && sessionToken ? sessionToken : KEY}`
+  };
+}
+
+async function sb(ep){
+  const r=await fetch(`${SB}/rest/v1/${ep}`,{headers:getRestHeaders(false)});
+  return r.json();
+}
+
+async function patch(ep,body){
+  return fetch(`${SB}/rest/v1/${ep}`,{
+    method:'PATCH',
+    headers:{...getRestHeaders(true),'Content-Type':'application/json',Prefer:'return=minimal'},
+    body:JSON.stringify(body)
+  });
+}
 
 let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,sort:'title'};
+const IGDB_CACHE=new Map();
+const IGDB_IN_FLIGHT=new Map();
+
+function escapeHtml(value){
+  return String(value||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function igdbToLocalRating(value){
+  if(value==null || Number.isNaN(Number(value))) return null;
+  return Math.round(Number(value))/10;
+}
+
+function getIgdbState(game){
+  return IGDB_CACHE.get(game.id) || null;
+}
+
+function getActiveIgdbResult(game){
+  const state=getIgdbState(game);
+  if(!state || !state.results?.length) return null;
+  if(game.externalId){
+    return state.results.find(item=>String(item.id)===String(game.externalId)) || state.results[0];
+  }
+  return state.results[0];
+}
+
+function getDisplayRating(game){
+  const live=getActiveIgdbResult(game);
+  return live?.rating ? igdbToLocalRating(live.rating) : (game.rating || 0);
+}
+
+function getLiveIgdbRating(game){
+  const live=getActiveIgdbResult(game);
+  return live?.rating ? igdbToLocalRating(live.rating) : null;
+}
 
 async function load(){
-  const games=await sb('games?select=id,title,release_year,is_coop,coop_notes,play_status,rating,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,systems(name),emulators(name))&order=title');
+  const games=await sb('games?select=id,title,release_year,is_coop,coop_notes,play_status,rating,is_iconic,description,play_notes,game_log,tier,primary_cover_url,external_id,series(name),game_genres(genres(name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,systems(name),emulators(name))&order=title');
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,coop:g.is_coop,coopNotes:g.coop_notes,
     status:g.play_status||'backlog',rating:g.rating,iconic:g.is_iconic,desc:g.description,
-    playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',
+    playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',externalId:g.external_id||null,
     cover:g.primary_cover_url||null,
     series:g.series?.name||null,
     genres:(g.game_genres||[]).map(gg=>gg.genres?.name).filter(Boolean),
@@ -236,6 +317,7 @@ function getFiltered(){
     if(filters.sort==='year-asc')return(a.year||9999)-(b.year||9999);
     if(filters.sort==='year-desc')return(b.year||0)-(a.year||0);
     if(filters.sort==='rating')return(b.rating||0)-(a.rating||0);
+    if(filters.sort==='igdb-rating')return(getDisplayRating(b)||0)-(getDisplayRating(a)||0);
     return a.title.localeCompare(b.title);
   });
   return list;
@@ -248,7 +330,9 @@ function render(){
   document.getElementById('s-wish').textContent=ALL.filter(g=>g.status==='wishlist').length;
   document.getElementById('s-playing').textContent=ALL.filter(g=>g.status==='playing').length;
   document.getElementById('s-done').textContent=ALL.filter(g=>g.status==='completed').length;
+  document.getElementById('igdb-sort-note').style.display=filters.sort==='igdb-rating' ? 'block' : 'none';
   const list=getFiltered();
+  if(filters.sort==='igdb-rating') primeIgdbForVisible(list);
   const grid=document.getElementById('grid');
   if(!list.length){grid.innerHTML='<div class="empty">Filtreyle eşleşen oyun bulunamadı.</div>';return;}
   grid.innerHTML=list.map(g=>{
@@ -257,11 +341,14 @@ function render(){
     const perf=g.platforms[0]?.perf||'good';
     const perfLabel=perf==='good'?'✓ Smooth':perf==='warn'?'⚠ Tweak':'✗ Sorunlu';
     const isWish=g.status==='wishlist';
+    const igdbMatch=!!g.externalId;
+    const igdbRating=getLiveIgdbRating(g);
     return`<div class="game-card${isWish?' wishlist-card':''}" onclick="openModal('${g.id}')">
       <div class="boxart-wrap">
         ${cover?`<img class="boxart" src="${cover}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="boxart-fb" style="display:none"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`:`<div class="boxart-fb" style="display:flex"><div class="sys">${sys}</div><div class="ttl">${g.title}</div></div>`}
         ${g.iconic?'<div class="corner-star">★</div>':''}
         ${g.coop?'<div class="corner-coop">2P</div>':''}
+        ${igdbMatch?'<div class="igdb-match-badge">IGDB</div>':''}
         <div class="perf-badge ${perf}">${perfLabel}</div>
         <button onclick="event.stopPropagation();addToQueue('${g.id}', this)" title="Sıraya Ekle"
           style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:1px solid rgba(255,179,71,.5);border-radius:6px;color:var(--gold);font-size:.7rem;padding:3px 6px;cursor:pointer;backdrop-filter:blur(4px);z-index:2;transition:all .15s"
@@ -275,6 +362,7 @@ function render(){
           ${g.genres[0]?`<span class="badge badge-genre">${g.genres[0]}</span>`:''}
           ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
           ${g.series?`<span class="badge badge-series">${g.series}</span>`:''}
+          ${igdbRating?`<span class="igdb-rating-card">IGDB ${Number(igdbRating).toFixed(1)}</span>`:''}
         </div>
         <div class="status-btns" onclick="event.stopPropagation()">
           <button class="sbtn${g.status==='backlog'?' active backlog':''}" onclick="setStatus('${g.id}','backlog')">Yeni</button>
@@ -335,6 +423,149 @@ async function setRomUrl(platformId,url){
   await patch(`game_platforms?id=eq.${platformId}`,{rom_url:url||null});
 }
 
+async function fetchIgdbForGame(game, queryOverride=''){
+  const query=(queryOverride || game.title || '').trim();
+  const cacheKey=`${game.id}:${query.toLowerCase()}`;
+  if(IGDB_CACHE.has(cacheKey)) return IGDB_CACHE.get(cacheKey);
+  if(IGDB_IN_FLIGHT.has(cacheKey)) return IGDB_IN_FLIGHT.get(cacheKey);
+
+  const promise=(async()=>{
+    const result=await window.rp5IgdbBridge.searchGames(query);
+    if(result.status==='ok'){
+      result.results=result.results
+        .map(item=>({
+          ...item,
+          matchScore: window.rp5IgdbBridge.scoreMatch(query,item,game.year || null)
+        }))
+        .sort((a,b)=>(b.matchScore||0)-(a.matchScore||0));
+    }
+    IGDB_CACHE.set(cacheKey,result);
+    IGDB_CACHE.set(game.id,{...result, query});
+    IGDB_IN_FLIGHT.delete(cacheKey);
+    return result;
+  })();
+
+  IGDB_IN_FLIGHT.set(cacheKey,promise);
+  return promise;
+}
+
+function primeIgdbForVisible(list){
+  const targets=list.filter(g=>!IGDB_CACHE.has(g.id)).slice(0,18);
+  targets.forEach(game=>{
+    fetchIgdbForGame(game).then(()=>render()).catch(()=>{});
+  });
+}
+
+function renderIgdbPanel(game){
+  const root=document.getElementById('igdb-panel');
+  if(!root) return;
+  const state=getIgdbState(game);
+  const current=getActiveIgdbResult(game);
+  const liveRating=current?.rating ? igdbToLocalRating(current.rating) : null;
+  const matched=!!game.externalId;
+  const statusChips=matched
+    ? `<span class="igdb-chip good">● Eslesti</span><span class="igdb-chip accent">ID ${escapeHtml(game.externalId)}</span>${liveRating?`<span class="igdb-chip accent">${liveRating.toFixed(1)}/10</span>`:''}`
+    : `<span class="igdb-chip warn">● Eslesmedi</span>${liveRating?`<span class="igdb-chip accent">${liveRating.toFixed(1)}/10</span>`:''}`;
+
+  if(!state){
+    root.innerHTML=`<div class="igdb-panel"><div class="igdb-head"><div><h4>🛰️ IGDB</h4><div class="igdb-inline-note">Canli metadata yuklenmedi.</div></div><div class="igdb-status">${statusChips}</div></div></div>`;
+    return;
+  }
+
+  if(state.status!=='ok'){
+    root.innerHTML=`
+      <div class="igdb-panel">
+        <div class="igdb-head">
+          <div><h4>🛰️ IGDB</h4><div class="igdb-inline-note">Canli metadata su an gelmedi.</div></div>
+          <div class="igdb-status">${statusChips}</div>
+        </div>
+        <div class="igdb-search-row">
+          <input id="igdb-query" class="search-box" value="${escapeHtml(state.query || game.title)}" placeholder="IGDB icin yeniden ara...">
+          <button class="fbtn" onclick="searchModalIgdb('${game.id}')">Yeniden Ara</button>
+          <a class="fbtn" href="Retroid_IGDB_Bridge.html?title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}" target="_blank">Bridge Ac</a>
+        </div>
+      </div>`;
+    return;
+  }
+
+  root.innerHTML=`
+    <div class="igdb-panel">
+      <div class="igdb-head">
+        <div>
+          <h4>🛰️ IGDB</h4>
+          <div class="igdb-inline-note">Canli kaynak, ozet ve esleme akisi. Yonetici olarak secilen adayi kaydedebilirsin.</div>
+        </div>
+        <div class="igdb-status">${statusChips}</div>
+      </div>
+      <div class="igdb-search-row">
+        <input id="igdb-query" class="search-box" value="${escapeHtml(state.query || game.title)}" placeholder="IGDB icin yeniden ara...">
+        <button class="fbtn" onclick="searchModalIgdb('${game.id}')">Yeniden Ara</button>
+        <a class="fbtn" href="Retroid_IGDB_Bridge.html?title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}" target="_blank">Bridge Ac</a>
+      </div>
+      <div class="igdb-result-list">
+        ${state.results.slice(0,4).map((item,index)=>`
+          <div class="igdb-result-card">
+            <div class="igdb-result-title">${escapeHtml(item.name)}</div>
+            <div class="igdb-result-meta">
+              ${item.releaseYear?`Yil: ${escapeHtml(item.releaseYear)} · `:''}
+              ${item.rating?`IGDB: ${Number(igdbToLocalRating(item.rating)).toFixed(1)}/10 · `:''}
+              Eslesme: ${escapeHtml(item.matchScore || 0)}/100
+              ${item.platforms?.length?`<br>Platformlar: ${escapeHtml(item.platforms.join(', '))}`:''}
+            </div>
+            ${item.summary?`<div class="igdb-result-summary">${escapeHtml(item.summary)}</div>`:''}
+            <div class="igdb-result-actions">
+              ${item.igdbUrl?`<a class="fbtn" href="${item.igdbUrl}" target="_blank">IGDB Sayfasi</a>`:''}
+              <button class="fbtn" onclick="saveIgdbMatch('${game.id}',${index})">${game.externalId && String(game.externalId)===String(item.id)?'Eslesme Kayitli':'Bu Eslesmeyi Kaydet'}</button>
+              <button class="fbtn" data-summary="${encodeURIComponent(item.summary || '')}" onclick="copyIgdbSummary(this.dataset.summary)">Summary Kopyala</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+async function searchModalIgdb(gameId){
+  const game=ALL.find(x=>x.id===gameId);
+  if(!game) return;
+  const query=document.getElementById('igdb-query')?.value?.trim() || game.title;
+  const root=document.getElementById('igdb-panel');
+  if(root) root.innerHTML='<div class="igdb-panel"><div class="igdb-inline-note">IGDB araniyor...</div></div>';
+  await fetchIgdbForGame(game, query);
+  renderIgdbPanel(game);
+  render();
+}
+
+async function saveIgdbMatch(gameId,index){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'IGDB eslesmesini kaydetmek icin yonetici oturumu acik olmali.'}))) return;
+  const game=ALL.find(x=>x.id===gameId);
+  if(!game) return;
+  const state=getIgdbState(game);
+  const item=state?.results?.[index];
+  if(!item) return;
+  const payload={
+    external_id:String(item.id),
+    description:item.summary || game.desc || null,
+    rating:item.rating ? igdbToLocalRating(item.rating) : game.rating || null,
+    primary_cover_url:item.coverUrl || game.cover || null
+  };
+  const response=await patch(`games?id=eq.${gameId}`,payload);
+  if(!response.ok){
+    alert('IGDB eslesmesi kaydedilemedi.');
+    return;
+  }
+  game.externalId=payload.external_id;
+  game.desc=payload.description;
+  game.rating=payload.rating;
+  game.cover=payload.primary_cover_url;
+  render();
+  renderIgdbPanel(game);
+}
+
+async function copyIgdbSummary(summary){
+  if(!summary) return;
+  await navigator.clipboard?.writeText(decodeURIComponent(summary));
+}
+
 function showRandom(){
   const pool=getFiltered();
   if(!pool.length)return;
@@ -359,6 +590,7 @@ function openModal(id){
   const g=ALL.find(x=>x.id===id);
   if(!g)return;
   const cover=g.platforms[0]?.cover||'';
+  const displayRating=getDisplayRating(g);
   document.getElementById('modal-content').innerHTML=`
     <div class="modal-hero">
       ${cover?`<img class="modal-hero-bg" src="${cover}" onerror="this.style.display='none'"><img class="modal-hero-art" src="${cover}" onerror="this.style.opacity='.2'">`:``}
@@ -368,13 +600,16 @@ function openModal(id){
           ${g.genres.map(x=>`<span class="badge badge-genre">${x}</span>`).join('')}
           ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
           ${g.coop?'<span class="badge" style="background:rgba(46,204,113,.85);color:#fff">2P Co-op</span>':''}
-          ${g.rating?`<span class="badge badge-year">${g.rating}/10 ⭐</span>`:''}
+          ${displayRating?`<span class="badge badge-year">${displayRating}/10 ⭐</span>`:''}
         </div>
       </div>
     </div>
     <div class="modal-body">
       ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p>${g.desc}</p></div>`:''}
       ${g.series?`<div class="modal-section"><h4>🎮 Seri</h4><p>${g.series}</p></div>`:''}
+      <div class="modal-section">
+        <div id="igdb-panel"><div class="igdb-panel"><div class="igdb-inline-note">IGDB metadata yukleniyor...</div></div></div>
+      </div>
       <div class="modal-section">
         <h4>🖥️ Platformlar & ROM Durumu</h4>
         <div class="platform-list">
@@ -427,6 +662,13 @@ function openModal(id){
       </div>
     </div>`;
   document.getElementById('modal').classList.add('active');
+  renderIgdbPanel(g);
+  fetchIgdbForGame(g).then(()=>{
+    renderIgdbPanel(g);
+    render();
+  }).catch(()=>{
+    renderIgdbPanel(g);
+  });
 }
 
 function closeModal(){document.getElementById('modal').classList.remove('active');}
@@ -446,7 +688,7 @@ async function saveNotes(id){
 async function addToQueue(gameId, btn){
   if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'Oynama sirasina eklemek icin yonetici oturumu acik olmali.'}))) return;
   // Mevcut en yüksek play_order'ı bul
-  const queued=await fetch(`${SB}/rest/v1/games?select=play_order&play_order=not.is.null&order=play_order.desc&limit=1`,H).then(r=>r.json());
+  const queued=await fetch(`${SB}/rest/v1/games?select=play_order&play_order=not.is.null&order=play_order.desc&limit=1`,{headers:getRestHeaders(true)}).then(r=>r.json());
   const nextOrder=(queued[0]?.play_order||0)+1;
   await patch(`games?id=eq.${gameId}`,{play_order:nextOrder});
   // Bildir
@@ -470,7 +712,8 @@ document.getElementById('f-iconic').addEventListener('click',e=>{filters.iconic=
 document.getElementById('f-reset').addEventListener('click',()=>{
   filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,sort:'title'};
   document.getElementById('search').value='';
-  ['f-system','f-genre','f-series','f-status','f-sort'].forEach(id=>document.getElementById(id).value='');
+  ['f-system','f-genre','f-series','f-status'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-sort').value='title';
   ['f-coop','f-iconic'].forEach(id=>document.getElementById(id).classList.remove('active'));
   render();
 });
