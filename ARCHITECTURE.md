@@ -181,5 +181,6 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - `supabase/functions/igdb-search/index.ts` canlı proxy için hazır iskelet sağlar.
 - `Retroid_Library_Dashboard.html` modal icinde canli IGDB sonuclarini gosterir; liste/siralama ise DB'ye kaydedilen degerleri kullanir.
 - Kütüphane görünümü `grid / list / table` olarak değiştirilebilir; bu özellikle toplu IGDB cleanup sırasında hızlı tarama için eklendi.
+- Kütüphane filtresinde `IGDB eksik / kapak eksik / ozet eksik / yil eksik` hizli temizlik akislari bulunur.
 - IGDB kapsam kararlari `IGDB_DATA_PLAN.md` icinde tutulur.
 - RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.

@@ -217,6 +217,9 @@ footer a{color:var(--accent-2);text-decoration:none}
   <div class="stat-card"><span class="num" id="s-wish" style="color:#a855f7">—</span><div class="lbl">İstek</div></div>
   <div class="stat-card"><span class="num" id="s-playing" style="color:var(--warn)">—</span><div class="lbl">Oynuyor</div></div>
   <div class="stat-card"><span class="num" id="s-done" style="color:var(--good)">—</span><div class="lbl">Bitti</div></div>
+  <div class="stat-card"><span class="num" id="s-unmatched" style="color:#c4b5fd">—</span><div class="lbl">IGDB Eksik</div></div>
+  <div class="stat-card"><span class="num" id="s-cover-gap" style="color:var(--accent)">—</span><div class="lbl">Kapak Eksik</div></div>
+  <div class="stat-card"><span class="num" id="s-summary-gap" style="color:var(--warn)">—</span><div class="lbl">Özet Eksik</div></div>
 </div>
 
 <div class="controls">
@@ -235,6 +238,9 @@ footer a{color:var(--accent-2);text-decoration:none}
   <button class="fbtn" id="f-coop">👫 Co-op</button>
   <button class="fbtn" id="f-iconic">★ Kült</button>
   <button class="fbtn filter-accent" id="f-unmatched">🛰️ IGDB Eksik</button>
+  <button class="fbtn" id="f-cover-gap">🖼️ Kapak Eksik</button>
+  <button class="fbtn" id="f-summary-gap">📝 Ozet Eksik</button>
+  <button class="fbtn" id="f-year-gap">📅 Yil Eksik</button>
   <div class="sort-group">
     <label>Sırala:</label>
     <select class="fbtn" id="f-sort">
@@ -307,7 +313,7 @@ async function patch(ep,body){
   });
 }
 
-let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,unmatchedIgdb:false,sort:'title',view:'grid'};
+let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,unmatchedIgdb:false,coverGap:false,summaryGap:false,yearGap:false,sort:'title',view:'grid'};
 const IGDB_CACHE=new Map();
 const IGDB_IN_FLIGHT=new Map();
 
@@ -389,6 +395,9 @@ function getFiltered(){
     if(filters.coop&&!g.coop)return false;
     if(filters.iconic&&!g.iconic)return false;
     if(filters.unmatchedIgdb&&g.externalId)return false;
+    if(filters.coverGap&&getGameCover(g))return false;
+    if(filters.summaryGap&&g.desc && String(g.desc).trim())return false;
+    if(filters.yearGap&&g.year)return false;
     return true;
   });
   list.sort((a,b)=>{
@@ -442,6 +451,9 @@ function getMetaSummary(list){
   if(filters.coop) filtersUsed.push('Co-op');
   if(filters.iconic) filtersUsed.push('Kult');
   if(filters.unmatchedIgdb) filtersUsed.push('IGDB eksik');
+  if(filters.coverGap) filtersUsed.push('Kapak eksik');
+  if(filters.summaryGap) filtersUsed.push('Ozet eksik');
+  if(filters.yearGap) filtersUsed.push('Yil eksik');
   return {
     title:`${list.length} oyun gorunuyor`,
     detail:filtersUsed.length ? `Aktif filtreler: ${filtersUsed.join(' · ')}` : 'Tum kutuphane acik. Grid, liste ve tablo modlari arasinda gecis yapabilirsin.'
@@ -569,6 +581,9 @@ function render(){
   document.getElementById('s-wish').textContent=ALL.filter(g=>g.status==='wishlist').length;
   document.getElementById('s-playing').textContent=ALL.filter(g=>g.status==='playing').length;
   document.getElementById('s-done').textContent=ALL.filter(g=>g.status==='completed').length;
+  document.getElementById('s-unmatched').textContent=ALL.filter(g=>!g.externalId).length;
+  document.getElementById('s-cover-gap').textContent=ALL.filter(g=>!getGameCover(g)).length;
+  document.getElementById('s-summary-gap').textContent=ALL.filter(g=>!(g.desc && String(g.desc).trim())).length;
   document.getElementById('igdb-sort-note').style.display=filters.sort==='igdb-rating' ? 'block' : 'none';
   const list=getFiltered();
   const grid=document.getElementById('grid');
@@ -942,17 +957,20 @@ document.getElementById('f-sort').addEventListener('change',e=>{filters.sort=e.t
 document.getElementById('f-coop').addEventListener('click',e=>{filters.coop=!filters.coop;e.target.classList.toggle('active');render();});
 document.getElementById('f-iconic').addEventListener('click',e=>{filters.iconic=!filters.iconic;e.target.classList.toggle('active');render();});
 document.getElementById('f-unmatched').addEventListener('click',e=>{filters.unmatchedIgdb=!filters.unmatchedIgdb;e.target.classList.toggle('active');render();});
+document.getElementById('f-cover-gap').addEventListener('click',e=>{filters.coverGap=!filters.coverGap;e.target.classList.toggle('active');render();});
+document.getElementById('f-summary-gap').addEventListener('click',e=>{filters.summaryGap=!filters.summaryGap;e.target.classList.toggle('active');render();});
+document.getElementById('f-year-gap').addEventListener('click',e=>{filters.yearGap=!filters.yearGap;e.target.classList.toggle('active');render();});
 document.querySelectorAll('.view-btn').forEach(btn=>btn.addEventListener('click',()=>{
   filters.view=btn.dataset.view;
   document.querySelectorAll('.view-btn').forEach(item=>item.classList.toggle('active', item===btn));
   render();
 }));
 document.getElementById('f-reset').addEventListener('click',()=>{
-  filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,unmatchedIgdb:false,sort:'title',view:'grid'};
+  filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,unmatchedIgdb:false,coverGap:false,summaryGap:false,yearGap:false,sort:'title',view:'grid'};
   document.getElementById('search').value='';
   ['f-system','f-genre','f-series','f-status'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-sort').value='title';
-  ['f-coop','f-iconic','f-unmatched'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  ['f-coop','f-iconic','f-unmatched','f-cover-gap','f-summary-gap','f-year-gap'].forEach(id=>document.getElementById(id).classList.remove('active'));
   document.querySelectorAll('.view-btn').forEach(item=>item.classList.toggle('active', item.dataset.view==='grid'));
   render();
 });

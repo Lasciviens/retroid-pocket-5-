@@ -20,6 +20,7 @@ Bu handoff sonrasinda kütüphane yüzeyi üzerinde güvenli UX iyilestirmeleri 
 - `Retroid_Library_Dashboard.html`
   - `grid / list / table` gorunum modlari eklendi
   - `IGDB Eksik` filtresi eklendi
+  - `Kapak Eksik / Ozet Eksik / Yil Eksik` filtreleri eklendi
   - sonuc ozeti / aktif filtre ozeti eklendi
 - `Retroid_IGDB_Bridge.html`
   - eslestirme sonuc kartlarinda yerel platformlar, IGDB platformlari ve yeni alternatif platformlar daha net gosteriliyor

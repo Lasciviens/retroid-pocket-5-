@@ -14,7 +14,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 
 
-- [ ] **Library bulk cleanup görünümü** — özellikle eşleşmemiş / metadata eksiği olan oyunlar için daha yoğun admin görünümü
+- [ ] **Library bulk cleanup görünümü** — özellikle eşleşmemiş / metadata eksiği olan oyunlar için daha yoğun admin görünümü (ilk faz: grid/list/table + gap filtreleri tamam)
 - [ ] **ROM klasör yapısını hazırla** — `ROM_Folder_Guide.md` dosyası oluşturuldu (bkz. aşağı). Dashboard'da her oyunun hangi klasöre gideceği görünmeli.
 
 ---
@@ -47,6 +47,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] Dashboard'a release year eklendi
 - [x] Dashboard'a sorting eklendi (A-Z, yıl, rating, IGDB rating)
 - [x] Kütüphane için grid / liste / tablo görünümü eklendi
+- [x] Kütüphaneye metadata gap filtreleri eklendi (IGDB / kapak / ozet / yil eksik)
 - [x] Co-op Dashboard (19 oyun, rastgele öneri)
 - [x] Series Roadmap (10 seri, timeline)
 - [x] Emülatör Matrix (17 sistem, deep-dive notlar)

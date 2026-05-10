@@ -19,7 +19,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 
 | Page | Description |
 |------|-------------|
-| 📚 **Library** | 100+ games with cover art, filters (system, genre, series, IGDB eksik), grid/list/table görünümleri, year/rating sorting, play status |
+| 📚 **Library** | 100+ games with cover art, filters (system, genre, series, IGDB/kapak/özet/yıl eksikleri), grid/list/table görünümleri, year/rating sorting, play status |
 | 👫 **Co-op Hub** | Filtered view of 2-player games with random suggestion engine |
 | 🗺️ **Series Roadmap** | Chronological game list per series — where to start each franchise |
 | 🎮 **Play Queue** | Drag-and-drop play order, synced across devices |
@@ -37,7 +37,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 - Server-side RLS hardening is prepared in `supabase_rls_hardening.sql` and should be applied in Supabase next.
 - Legacy migration/import tools are archived and no longer part of the live product surface.
 - The main Library modal includes live IGDB summary and bridge controls, but sorting uses DB-stored values rather than live IGDB fetches.
-- The Library now supports grid, list, and table browsing modes for faster scanning during cleanup and matching sessions.
+- The Library now supports grid, list, and table browsing modes plus metadata-gap filters for faster scanning during cleanup and matching sessions.
 - `Retroid_IGDB_Bridge.html` now supports IGDB page link import, admin-side candidate creation, and matching existing local games.
 
 ---
