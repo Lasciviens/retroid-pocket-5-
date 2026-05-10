@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>Retroid Pocket 5 — Library</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <style>
 :root{--bg-1:#0a0e1a;--bg-2:#131829;--bg-3:#1c2238;--accent:#ff4655;--accent-2:#00d4ff;--gold:#ffb347;--good:#2ecc71;--warn:#f39c12;--bad:#e74c3c;--text:#e8eaf0;--muted:#8c93a8;--border:#2a3149}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -278,7 +281,7 @@ function getActiveIgdbResult(game){
 }
 
 function getDisplayRating(game){
-  return game.rating || 0;
+  return game.igdbRating ? Number(game.igdbRating) : 0;
 }
 
 function getLiveIgdbRating(game){
@@ -595,7 +598,6 @@ function openModal(id){
   // Cover: primary_cover_url (IGDB) → platform cover → nothing
   const heroCover=g.cover||g.platforms[0]?.cover||'';
   const preferred=g.platforms.find(p=>p.isPreferred)||null;
-  const displayRating=getDisplayRating(g);
   const romColors={installed:'#2ecc71',sd_card:'#f97316',found:'#eab308',missing:'#e74c3c'};
   const romLabels={installed:'📲 Cihazda',sd_card:'💾 SD',found:'📁 Bulundu',missing:'❌ Yok'};
   const statusColors={backlog:'var(--muted)',playing:'var(--warn)',completed:'var(--good)',dropped:'var(--bad)',wishlist:'#a855f7'};
@@ -610,7 +612,6 @@ function openModal(id){
           ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
           ${g.genres.slice(0,3).map(x=>`<span class="badge badge-genre">${escapeHtml(x)}</span>`).join('')}
           ${g.coop?'<span class="badge" style="background:rgba(46,204,113,.85);color:#fff">2P</span>':''}
-          ${displayRating?`<span class="badge" style="background:rgba(255,179,71,.2);color:var(--gold);border:1px solid rgba(255,179,71,.4)">${displayRating}/10 ⭐</span>`:''}
           ${g.igdbRating?`<span class="badge" style="background:rgba(124,58,237,.2);color:#c4b5fd;border:1px solid rgba(124,58,237,.35)">IGDB ${(Number(g.igdbRating)/10).toFixed(1)}/10</span>`:g.externalId?'<span class="badge" style="background:rgba(124,58,237,.1);color:#c4b5fd;border:1px solid rgba(124,58,237,.25)">IGDB ✓</span>':''}
         </div>
         <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
@@ -631,7 +632,6 @@ function openModal(id){
           ${g.developer?`<div class="info-cell"><div class="lbl">Geliştirici</div><div class="val">${escapeHtml(g.developer)}</div></div>`:''}
           ${g.series?`<div class="info-cell"><div class="lbl">Seri</div><div class="val">${escapeHtml(g.series)}</div></div>`:''}
           ${g.genres.length?`<div class="info-cell"><div class="lbl">Tür</div><div class="val">${g.genres.map(escapeHtml).join(', ')}</div></div>`:''}
-          ${displayRating?`<div class="info-cell"><div class="lbl">Kişisel Puan</div><div class="val">${displayRating}/10 ⭐</div></div>`:''}
           ${g.igdbRating?`<div class="info-cell"><div class="lbl">IGDB Puanı</div><div class="val" style="color:#c4b5fd">${(Number(g.igdbRating)/10).toFixed(1)}/10</div></div>`:''}
           <div class="info-cell"><div class="lbl">Durum</div><div class="val" style="color:${statusColors[g.status]}">${statusLabels[g.status]||g.status}</div></div>
           ${g.coop?`<div class="info-cell"><div class="lbl">Co-op</div><div class="val">👫 Evet${g.coopNotes?' · '+escapeHtml(g.coopNotes):''}</div></div>`:''}
