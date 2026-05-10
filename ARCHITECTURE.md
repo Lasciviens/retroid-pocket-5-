@@ -80,7 +80,11 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── rp5_igdb.js                     # IGDB bridge helper
 ├── IGDB_INTEGRATION.md             # IGDB proxy ve sync mimarisi
 ├── IGDB_DATA_PLAN.md               # IGDB veri kapsami ve sonraki urun yolu
+├── INTEGRATIONS_ROADMAP.md         # Yeni entegrasyonlar icin karar ve oncelik notu
 ├── supabase/functions/igdb-search  # IGDB proxy scaffold
+├── supabase/functions/retroachievements-player  # RetroAchievements proxy scaffold
+├── supabase/functions/steamgriddb-art          # SteamGridDB proxy scaffold
+├── supabase/functions/rawg-discover            # RAWG proxy scaffold
 ├── ROM_Folder_Guide.md             # ROM klasör yapısı rehberi
 ├── game_wishlist.md                # Eklenecek oyunlar listesi
 ├── project_todo.md                 # Geliştirme to-do listesi
@@ -179,8 +183,10 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - Legacy migration araçları `legacy_tools/` altında düz metin olarak tutulur.
 - `Retroid_IGDB_Bridge.html` artik admin oturumu ile aday ekleme ve mevcut oyunu eslestirme akislarini da tasir.
 - `supabase/functions/igdb-search/index.ts` canlı proxy için hazır iskelet sağlar.
+- Yeni entegrasyonlar icin proxy iskeletleri `supabase/functions/` altinda acildi.
 - `Retroid_Library_Dashboard.html` modal icinde canli IGDB sonuclarini gosterir; liste/siralama ise DB'ye kaydedilen degerleri kullanir.
 - Kütüphane görünümü `grid / list / table` olarak değiştirilebilir; bu özellikle toplu IGDB cleanup sırasında hızlı tarama için eklendi.
 - Kütüphane filtresinde `IGDB eksik / kapak eksik / ozet eksik / yil eksik` hizli temizlik akislari bulunur.
 - IGDB kapsam kararlari `IGDB_DATA_PLAN.md` icinde tutulur.
+- Diger entegrasyon karar ve fizibilite notlari `INTEGRATIONS_ROADMAP.md` icinde tutulur.
 - RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.

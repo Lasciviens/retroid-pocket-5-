@@ -26,6 +26,12 @@ Bu handoff sonrasinda kütüphane yüzeyi üzerinde güvenli UX iyilestirmeleri 
   - eslestirme sonuc kartlarinda yerel platformlar, IGDB platformlari ve yeni alternatif platformlar daha net gosteriliyor
 - `README.md`, `ARCHITECTURE.md`, `project_todo.md`
   - GitHub Actions deploy modeli ve yeni kutuphane davranislariyla guncellendi
+- Yeni entegrasyon zemini:
+  - `INTEGRATIONS_ROADMAP.md`
+  - `supabase/functions/.env.example`
+  - `supabase/functions/retroachievements-player/`
+  - `supabase/functions/steamgriddb-art/`
+  - `supabase/functions/rawg-discover/`
 
 Not:
 - `migration_v6.sql` hala repo'da duruyor ama `igdb_url` ve `igdb_rating` alanlari artik canli DB'de mevcut. Bu migration uygulanmadan once mevcut schema ile tekrar reconcile edilmeli.

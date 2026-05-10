@@ -1,21 +1,46 @@
 # Supabase Functions
 
-Bu klasor IGDB proxy gibi server-side kopecikler icin hazirlandi.
+Bu klasor browser'a secret koymadan dis servislerle konusmak icin server-side proxy katmani olarak kullanilir.
 
-Su an ekli iskelet:
+## Hazir Function'lar
 
 - `igdb-search/`
+- `retroachievements-player/`
+- `steamgriddb-art/`
+- `rawg-discover/`
 
-Bu function:
+## Secret Listesi
 
-- tarayicidan gelen `title` query'sini alir
-- Twitch `client_credentials` ile access token alir
-- IGDB `games` endpoint'ine server-side sorgu atar
-- sonucu browser'a CORS ile geri doner
+Ornek secret dosyasi:
 
-Gerekli secret'lar:
+- `.env.example`
+
+Muhtemel secret'lar:
 
 - `TWITCH_CLIENT_ID`
 - `TWITCH_CLIENT_SECRET`
+- `RETROACHIEVEMENTS_USERNAME`
+- `RETROACHIEVEMENTS_WEB_API_KEY`
+- `STEAMGRIDDB_API_KEY`
+- `RAWG_API_KEY`
+- `MOBYGAMES_API_KEY`
+- `SCREENSCRAPER_USER`
+- `SCREENSCRAPER_PASSWORD`
 
-Bkz: `IGDB_INTEGRATION.md`
+## Hedef
+
+- browser sadece bu function'lari cagirir
+- ucuncu taraf anahtarlar frontend'e gomulmez
+- her entegrasyon kademeli olarak acilir
+
+## Oncelik Sirasi
+
+1. IGDB
+2. RetroAchievements
+3. SteamGridDB
+4. RAWG
+
+Bkz:
+
+- `IGDB_INTEGRATION.md`
+- `INTEGRATIONS_ROADMAP.md`

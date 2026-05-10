@@ -39,6 +39,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 - The main Library modal includes live IGDB summary and bridge controls, but sorting uses DB-stored values rather than live IGDB fetches.
 - The Library now supports grid, list, and table browsing modes plus metadata-gap filters for faster scanning during cleanup and matching sessions.
 - `Retroid_IGDB_Bridge.html` now supports IGDB page link import, admin-side candidate creation, and matching existing local games.
+- Groundwork for `RetroAchievements`, `SteamGridDB`, and `RAWG` proxies now lives under `supabase/functions/`.
 
 ---
 
@@ -84,6 +85,7 @@ Security follow-up: `SECURITY_NEXT_STEPS.md`
 RLS apply checklist: `SUPABASE_RLS_APPLY.md`
 IGDB bridge notes: `IGDB_INTEGRATION.md`
 IGDB data plan: `IGDB_DATA_PLAN.md`
+Integrations roadmap: `INTEGRATIONS_ROADMAP.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
 IGDB schema expansion: `migration_v6.sql`
 
