@@ -115,9 +115,9 @@
     if(!queryNorm || !nameNorm)return 0;
 
     let score=0;
-    if(queryNorm===nameNorm)score+=100;
-    else if(nameNorm.startsWith(queryNorm) || queryNorm.startsWith(nameNorm))score+=82;
-    else if(nameNorm.includes(queryNorm) || queryNorm.includes(nameNorm))score+=68;
+    if(queryNorm===nameNorm)score+=78;
+    else if(nameNorm.startsWith(queryNorm) || queryNorm.startsWith(nameNorm))score+=66;
+    else if(nameNorm.includes(queryNorm) || queryNorm.includes(nameNorm))score+=54;
 
     const queryTokens=queryNorm.split(' ').filter(Boolean);
     const nameTokens=new Set(nameNorm.split(' ').filter(Boolean));
@@ -129,9 +129,11 @@
     const itemYear=item?.releaseYear || null;
     if(expectedYear && itemYear){
       const diff=Math.abs(Number(expectedYear) - Number(itemYear));
-      if(diff===0)score+=18;
-      else if(diff===1)score+=10;
-      else if(diff<=3)score+=4;
+      if(diff===0)score+=22;
+      else if(diff===1)score+=14;
+      else if(diff<=3)score+=6;
+      else if(diff<=8)score-=10;
+      else score-=22;
     }
 
     return Math.max(0, Math.min(100, score));

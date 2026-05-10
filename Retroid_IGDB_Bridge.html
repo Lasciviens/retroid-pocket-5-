@@ -160,7 +160,12 @@ function renderResults(items,query,message){
     root.innerHTML=`<div class="empty">${message || 'Sonuc bulunamadi.'}</div>`;
     return;
   }
-  root.innerHTML=items.map(item=>{
+  const rankedItems=[...items].sort((a,b)=>{
+    const scoreA=selectedCandidate ? window.rp5IgdbBridge.scoreMatch(query,a,selectedCandidate.releaseYear) : 0;
+    const scoreB=selectedCandidate ? window.rp5IgdbBridge.scoreMatch(query,b,selectedCandidate.releaseYear) : 0;
+    return scoreB-scoreA;
+  });
+  root.innerHTML=rankedItems.map(item=>{
     const score=selectedCandidate ? window.rp5IgdbBridge.scoreMatch(query,item,selectedCandidate.releaseYear) : 0;
     const scoreBadge=selectedCandidate
       ? `<span class="badge ${score>=90?'match-strong':score>=70?'match-mid':'match-low'}">Eslesme ${score}/100</span>`
