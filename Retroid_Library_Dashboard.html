@@ -375,7 +375,7 @@ function render(){
           ${g.genres[0]?`<span class="badge badge-genre">${g.genres[0]}</span>`:''}
           ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
           ${g.series?`<span class="badge badge-series">${g.series}</span>`:''}
-          ${g.igdbRating?`<span class="igdb-rating-card">IGDB ${Number(g.igdbRating).toFixed(1)}</span>`:''}
+          ${g.igdbRating?`<span class="igdb-rating-card">IGDB ${(Number(g.igdbRating)/10).toFixed(1)}/10</span>`:''}
         </div>
         <div class="status-btns" onclick="event.stopPropagation()">
           <button class="sbtn${g.status==='backlog'?' active backlog':''}" onclick="setStatus('${g.id}','backlog')">Yeni</button>
@@ -613,7 +613,7 @@ function openModal(id){
           ${g.genres.slice(0,3).map(x=>`<span class="badge badge-genre">${escapeHtml(x)}</span>`).join('')}
           ${g.coop?'<span class="badge" style="background:rgba(46,204,113,.85);color:#fff">2P</span>':''}
           ${displayRating?`<span class="badge" style="background:rgba(255,179,71,.2);color:var(--gold);border:1px solid rgba(255,179,71,.4)">${displayRating}/10 ⭐</span>`:''}
-          ${g.igdbRating?`<span class="badge" style="background:rgba(124,58,237,.2);color:#c4b5fd;border:1px solid rgba(124,58,237,.35)">IGDB ${Number(g.igdbRating).toFixed(1)}</span>`:g.externalId?'<span class="badge" style="background:rgba(124,58,237,.1);color:#c4b5fd;border:1px solid rgba(124,58,237,.25)">IGDB ✓</span>':''}
+          ${g.igdbRating?`<span class="badge" style="background:rgba(124,58,237,.2);color:#c4b5fd;border:1px solid rgba(124,58,237,.35)">IGDB ${(Number(g.igdbRating)/10).toFixed(1)}/10</span>`:g.externalId?'<span class="badge" style="background:rgba(124,58,237,.1);color:#c4b5fd;border:1px solid rgba(124,58,237,.25)">IGDB ✓</span>':''}
         </div>
         <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
           ${g.developer?`<span style="color:rgba(255,255,255,.55);font-size:.76rem">🏢 ${escapeHtml(g.developer)}</span>`:''}
@@ -634,7 +634,7 @@ function openModal(id){
           ${g.series?`<div class="info-cell"><div class="lbl">Seri</div><div class="val">${escapeHtml(g.series)}</div></div>`:''}
           ${g.genres.length?`<div class="info-cell"><div class="lbl">Tür</div><div class="val">${g.genres.map(escapeHtml).join(', ')}</div></div>`:''}
           ${displayRating?`<div class="info-cell"><div class="lbl">Kişisel Puan</div><div class="val">${displayRating}/10 ⭐</div></div>`:''}
-          ${g.igdbRating?`<div class="info-cell"><div class="lbl">IGDB Puanı</div><div class="val" style="color:#c4b5fd">${Number(g.igdbRating).toFixed(1)}/100</div></div>`:''}
+          ${g.igdbRating?`<div class="info-cell"><div class="lbl">IGDB Puanı</div><div class="val" style="color:#c4b5fd">${(Number(g.igdbRating)/10).toFixed(1)}/10</div></div>`:''}
           <div class="info-cell"><div class="lbl">Durum</div><div class="val" style="color:${statusColors[g.status]}">${statusLabels[g.status]||g.status}</div></div>
           ${g.coop?`<div class="info-cell"><div class="lbl">Co-op</div><div class="val">👫 Evet${g.coopNotes?' · '+escapeHtml(g.coopNotes):''}</div></div>`:''}
         </div>
