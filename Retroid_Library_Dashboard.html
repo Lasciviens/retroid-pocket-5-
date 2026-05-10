@@ -537,7 +537,7 @@ async function saveIgdbMatch(gameId,index){
   const state=getIgdbState(game);
   const item=state?.results?.[index];
   if(!item) return;
-  const payload={ external_id:String(item.id) };
+  const payload={ external_id:Number(item.id) };
   if(!game.desc && (item.combinedSummary || item.summary)) payload.description=item.combinedSummary || item.summary;
   if((game.rating==null || game.rating==='') && item.rating) payload.rating=igdbToDbRating(item.rating);
   if(!game.cover && item.coverUrl) payload.primary_cover_url=item.coverUrl;

@@ -321,7 +321,7 @@ async function createGameFromIgdb(item){
     play_status:'wishlist',
     rating:item.rating ? igdbToDbRating(item.rating) : null,
     primary_cover_url:item.coverUrl || null,
-    external_id:String(item.id),
+    external_id:Number(item.id),
     series_id:seriesId,
     is_coop:coop.isCoop,
     coop_notes:coop.coopNotes
@@ -340,7 +340,7 @@ async function updateGameFromIgdb(gameId, item){
   if(!current) throw new Error('Yerel oyun bulunamadi');
   const seriesId=await ensureSeriesId(item.franchises?.[0] || item.collections?.[0] || '');
   const coop=deriveCoop(item);
-  const patch={ external_id:String(item.id) };
+  const patch={ external_id:Number(item.id) };
   if(!current.release_year && item.releaseYear) patch.release_year=item.releaseYear;
   if(!current.developer && extractDeveloper(item)) patch.developer=extractDeveloper(item);
   if(!current.description && buildDbDescription(item)) patch.description=buildDbDescription(item);
