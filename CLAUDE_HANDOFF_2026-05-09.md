@@ -71,14 +71,21 @@ Related docs:
 - The IGDB proxy is now actually deployed at `https://bniqmxbtvgwkaoswugds.supabase.co/functions/v1/igdb-search`
 - The bridge page now points to that deployed proxy by default using the public anon headers
 - The main Library modal now loads live IGDB summary/rating/link data and shows admin match buttons
-- Library sorting now includes `IGDB Rating`, which hydrates visible games in the background
+- Library sorting uses DB-backed values rather than live IGDB hydration
+- `Retroid_IGDB_Bridge.html` now supports:
+  - search by title
+  - import by IGDB page link / slug
+  - `Ana DB'ye Aday Olarak Ekle`
+  - `Var Olan Oyunla Eslestir`
+  - local genre / series / platform merge against the current schema
 
 ## Important Constraints
 
 - Do not assume service-role or raw DB credentials are available in repo
 - Do not expose secret keys in frontend
 - Supabase data is considered sensitive; avoid casual write testing
-- Do not do DB-level IGDB sync until credentials and matching rules are explicitly agreed
+- Do not reintroduce live IGDB list hydration for sorting/cards; the product direction is DB-first persistence
+- Follow `IGDB_DATA_PLAN.md` before expanding schema or bulk sync behavior
 
 ## Files Worth Reading First
 
@@ -86,16 +93,18 @@ Related docs:
 2. `ARCHITECTURE.md`
 3. `rp5_auth.js`
 4. `rp5_igdb.js`
-5. `IGDB_INTEGRATION.md`
-6. `supabase/functions/igdb-search/index.ts`
-7. `supabase_rls_hardening.sql`
-8. `SECURITY_NEXT_STEPS.md`
-9. `SUPABASE_RLS_APPLY.md`
+5. `IGDB_DATA_PLAN.md`
+6. `IGDB_INTEGRATION.md`
+7. `supabase/functions/igdb-search/index.ts`
+8. `supabase_rls_hardening.sql`
+9. `SECURITY_NEXT_STEPS.md`
+10. `SUPABASE_RLS_APPLY.md`
 
 ## Suggested Next Steps
 
-Small, safe next moves:
+Next-product moves:
 
-1. UX polish for `Retroid_Queue.html` and `Retroid_Tierlist.html`
-2. Add approved field-level IGDB -> DB sync now that the proxy is live
-3. Optional stronger admin-role model later
+1. Use the live bridge add/match flow on more games
+2. Build a bulk `DB <-> IGDB` audit tool
+3. Expand schema for screenshots / videos / websites if desired
+4. Optional stronger admin-role model later

@@ -33,6 +33,26 @@
     return slug?`https://www.igdb.com/games/${slug}`:'';
   }
 
+  function extractRef(value){
+    const raw=(value||'').trim();
+    if(!raw)return null;
+    if(/^\d+$/.test(raw)) return { type:'id', value:raw };
+    if(raw.includes('igdb.com')){
+      try{
+        const url=new URL(raw);
+        const parts=url.pathname.split('/').filter(Boolean);
+        const gameIdx=parts.findIndex(part=>part==='games');
+        if(gameIdx>=0 && parts[gameIdx+1]){
+          return { type:'slug', value:parts[gameIdx+1] };
+        }
+      }catch(_error){}
+    }
+    if(/^[a-z0-9-]+$/i.test(raw) && raw.includes('-')){
+      return { type:'slug', value:raw.toLowerCase() };
+    }
+    return null;
+  }
+
   function normalizeCover(url){
     if(!url)return '';
     const full=url.startsWith('//')?`https:${url}`:url;
@@ -47,22 +67,54 @@
   function normalizeItem(item){
     const releaseTs=item.first_release_date || item.releaseDate || item.release_date || null;
     const releaseYear=releaseTs ? new Date(releaseTs * 1000).getFullYear() : (item.year || null);
-    const companies=normalizeList(item.involved_companies || item.companies, entry=>{
+    const companyRows=Array.isArray(item.involved_companies) ? item.involved_companies : [];
+    const companies=normalizeList(companyRows.length ? companyRows : (item.companies || []), entry=>{
       if(typeof entry==='string')return entry;
       return entry.company?.name || entry.name || '';
     });
+    const developers=normalizeList(companyRows, entry=>entry.developer ? (entry.company?.name || entry.name || '') : '');
+    const publishers=normalizeList(companyRows, entry=>entry.publisher ? (entry.company?.name || entry.name || '') : '');
+    const franchises=normalizeList(item.franchises || item.franchise, entry=>typeof entry==='string'?entry:(entry.name || ''));
+    const collections=normalizeList(item.collections || item.collection, entry=>typeof entry==='string'?entry:(entry.name || ''));
+    const screenshots=normalizeList(item.screenshots, entry=>normalizeCover(entry?.url || entry?.image_id || ''));
+    const videos=normalizeList(item.videos, entry=>{
+      const videoId=entry?.video_id || entry?.id || '';
+      return videoId ? `https://www.youtube.com/watch?v=${videoId}` : '';
+    });
+    const websites=normalizeList(item.websites, entry=>entry?.url || '');
+    const multiplayerModes=Array.isArray(item.multiplayer_modes) ? item.multiplayer_modes : [];
+    const multiplayerSignals=[];
+    multiplayerModes.forEach(mode=>{
+      if(mode?.offlinecoop) multiplayerSignals.push(`Offline co-op${mode.offlinecoopmax?` (${mode.offlinecoopmax})`:''}`);
+      if(mode?.onlinecoop) multiplayerSignals.push(`Online co-op${mode.onlinecoopmax?` (${mode.onlinecoopmax})`:''}`);
+      if(mode?.offlinemax) multiplayerSignals.push(`Offline max ${mode.offlinemax}`);
+      if(mode?.onlinemax) multiplayerSignals.push(`Online max ${mode.onlinemax}`);
+    });
+    const summary=item.summary || '';
+    const storyline=item.storyline || '';
+    const combinedSummary=[summary, storyline ? `Storyline: ${storyline}` : ''].filter(Boolean).join('\n\n');
 
     return {
       id:item.id || null,
       name:item.name || item.title || 'Bilinmeyen oyun',
       slug:item.slug || item.seo_slug || '',
-      summary:item.summary || item.storyline || item.description || '',
+      summary,
+      storyline,
+      combinedSummary:combinedSummary || item.description || '',
       rating:item.total_rating ?? item.rating ?? null,
       releaseYear,
       coverUrl:normalizeCover(item.cover?.url || item.coverUrl || item.cover_url || ''),
       genres:normalizeList(item.genres, entry=>typeof entry==='string'?entry:(entry.name || '')),
       platforms:normalizeList(item.platforms, entry=>typeof entry==='string'?entry:(entry.abbreviation || entry.name || '')),
       companies,
+      developers,
+      publishers,
+      franchises,
+      collections,
+      screenshots,
+      videos,
+      websites,
+      multiplayerSignals,
       igdbUrl:item.url || buildGameUrl(item.slug || item.seo_slug || '')
     };
   }
@@ -97,6 +149,31 @@
       return {status:'ok',query,results,fallbackUrl:buildFallbackUrl(query),raw:payload};
     }catch(error){
       return {status:'network_error',query,results:[],fallbackUrl:buildFallbackUrl(query),error:String(error)};
+    }
+  }
+
+  async function fetchByRef(refInput){
+    const ref=typeof refInput === 'string' ? extractRef(refInput) : refInput;
+    if(!ref || !ref.type || !ref.value){
+      return {status:'invalid_ref',results:[]};
+    }
+    const proxyUrl=getProxyUrl();
+    if(!proxyUrl){
+      return {status:'unconfigured',results:[]};
+    }
+    try{
+      const glue=proxyUrl.includes('?')?'&':'?';
+      const response=await fetch(`${proxyUrl}${glue}${ref.type}=${encodeURIComponent(ref.value)}`,{
+        headers:{Accept:'application/json', ...getHeaders()}
+      });
+      if(!response.ok){
+        return {status:'http_error',results:[],code:response.status};
+      }
+      const payload=await response.json();
+      const results=extractItems(payload).map(normalizeItem).filter(item=>item.name);
+      return {status:'ok',results,raw:payload,ref};
+    }catch(error){
+      return {status:'network_error',results:[],error:String(error),ref};
     }
   }
 
@@ -152,7 +229,9 @@
     clearProxyUrl,
     buildFallbackUrl,
     buildGameUrl,
+    extractRef,
     searchGames,
+    fetchByRef,
     scoreMatch
   };
 })();

@@ -53,7 +53,7 @@ footer a{color:var(--accent-2);text-decoration:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="rp5_auth.js"></script>
-<script src="rp5_igdb.js?v=20260510b"></script>
+<script src="rp5_igdb.js?v=20260510c"></script>
 </head>
 <body>
 <header>
@@ -65,7 +65,7 @@ footer a{color:var(--accent-2);text-decoration:none}
     <a href="admin.html" data-auth-required-link>⚙️ Admin</a>
   </div>
   <div data-auth-mount></div>
-  <div class="helper-note">Bu sayfa DB'ye yazmaz. Su an sadece arama, metadata onizleme ve IGDB baglantisi icin hazirlandi. Tarayicidan IGDB API'ye dogrudan gidilemedigi icin canli arama proxy URL varsa calisir.</div>
+  <div class="helper-note">Bu sayfa artik admin oturumuyla IGDB verisini DB'ye tasiyabilir: linkten ice alma, aday oyun ekleme ve mevcut oyunla eslestirme burada toplanir.</div>
 </header>
 
 <div class="panel">
@@ -95,7 +95,23 @@ footer a{color:var(--accent-2);text-decoration:none}
     <button class="btn primary" onclick="runSearch()">IGDB Ara</button>
     <button class="btn gold" onclick="openWebSearch()">Web'de Ara</button>
   </div>
+  <div class="controls" style="margin-top:10px">
+    <input id="igdb-url" class="url-box" placeholder="IGDB oyun linki yapistir: https://www.igdb.com/games/...">
+    <button class="btn primary" onclick="runUrlImport()">Linkten Getir</button>
+  </div>
   <div class="suggestions" id="suggestions"></div>
+</div>
+
+<div class="panel" id="sync-panel">
+  <div class="section-head">
+    <h2>DB Sync</h2>
+    <div class="status-row">
+      <span class="pill accent" id="sync-mode">Misafir mod</span>
+      <span class="pill" id="sync-target">Aday secilmedi</span>
+    </div>
+  </div>
+  <div class="helper-note">Canli IGDB aramasindan sonra admin olarak iki ana akis var: secili yerel oyunla eslestir veya oyunu ana veritabanina aday olarak ekle.</div>
+  <div id="sync-msg" class="helper-note" style="margin-top:12px"></div>
 </div>
 
 <div id="results" class="results">
@@ -117,6 +133,222 @@ window.RP5_IGDB = {
   }
 };
 let libraryGames=[], selectedCandidate=null;
+let cachedSystems=null;
+window.__rp5LastResults=[];
+const SYSTEM_ALIASES={
+  'playstation':'PS1',
+  'playstation 2':'PS2',
+  'playstation portable':'PSP',
+  'game boy advance':'GBA',
+  'game boy color':'GBC',
+  'nintendo ds':'DS',
+  'nintendo 3ds':'3DS',
+  'nintendo 64':'N64',
+  'nintendo gamecube':'GameCube',
+  'gamecube':'GameCube',
+  'wii':'Wii',
+  'super nintendo entertainment system':'SNES',
+  'snes':'SNES',
+  'nintendo entertainment system':'NES',
+  'nes':'NES',
+  'sega genesis':'Genesis',
+  'genesis':'Genesis',
+  'sega mega drive/genesis':'Genesis',
+  'dreamcast':'Dreamcast',
+  'windows pc':'PC',
+  'pc (microsoft windows)':'PC',
+  'pc':'PC'
+};
+
+function getSessionToken(){
+  return window.rp5Auth?.getSession?.()?.access_token || '';
+}
+
+function setSyncMessage(text, tone=''){
+  const el=document.getElementById('sync-msg');
+  el.textContent=text || '';
+  el.style.color=tone==='ok' ? 'var(--good)' : tone==='err' ? '#ff8f8f' : 'var(--muted)';
+}
+
+function refreshSyncStatus(){
+  const token=!!getSessionToken();
+  document.getElementById('sync-mode').textContent=token ? 'Admin oturumu acik' : 'Misafir mod';
+  document.getElementById('sync-mode').className=`pill ${token?'good':'accent'}`;
+  document.getElementById('sync-target').textContent=selectedCandidate
+    ? `${selectedCandidate.title}${selectedCandidate.releaseYear?` (${selectedCandidate.releaseYear})`:''}`
+    : 'Aday secilmedi';
+}
+
+async function ensureAdminWrite(){
+  if(!(await window.rp5Auth.requireAuth({title:'Yonetici girisi gerekli',message:'IGDB verisini veritabanina yazmak icin yonetici oturumu acik olmali.'}))) return null;
+  return true;
+}
+
+function getWriteHeaders(){
+  const token=getSessionToken();
+  return {
+    apikey: KEY,
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    Prefer: 'return=representation'
+  };
+}
+
+async function apiRequest(path,{method='GET',body=null,headers={}}={}){
+  const response=await fetch(`${SB}/rest/v1/${path}`,{
+    method,
+    headers:{...(method==='GET'?window.RP5_IGDB.headers:getWriteHeaders()),...headers},
+    body:body ? JSON.stringify(body) : undefined
+  });
+  const text=await response.text();
+  const data=text ? JSON.parse(text) : null;
+  if(!response.ok){
+    const detail=data?.message || data?.error || text || `HTTP ${response.status}`;
+    throw new Error(detail);
+  }
+  return data;
+}
+
+function normalizePlatformName(value){
+  const raw=String(value || '').trim();
+  if(!raw)return '';
+  return SYSTEM_ALIASES[raw.toLowerCase()] || raw;
+}
+
+function defaultPerformance(systemName){
+  return systemName==='PS2' ? 'warn' : 'good';
+}
+
+function defaultPerformanceNote(systemName){
+  return systemName==='PS2' ? 'RP5 tarafinda genelde calisir; oyun bazli tweak gerekebilir.' : null;
+}
+
+function buildDbDescription(item){
+  return [item.summary || '', item.storyline ? `Storyline: ${item.storyline}` : ''].filter(Boolean).join('\n\n') || null;
+}
+
+function extractDeveloper(item){
+  if(item.developers?.length) return item.developers[0];
+  if(item.publishers?.length) return item.publishers[0];
+  if(item.companies?.length) return item.companies[0];
+  return null;
+}
+
+function deriveCoop(item){
+  const signals=item.multiplayerSignals || [];
+  return {
+    isCoop: signals.some(text=>String(text).toLowerCase().includes('co-op')),
+    coopNotes: signals.length ? signals.join(' · ') : null
+  };
+}
+
+async function ensureSeriesId(name){
+  const clean=String(name || '').trim();
+  if(!clean) return null;
+  const existing=await apiRequest('series?select=id,name');
+  const found=(existing || []).find(row=>row.name===clean);
+  if(found?.id) return found.id;
+  const created=await apiRequest('series',{method:'POST',body:{name:clean}});
+  const row=Array.isArray(created) ? created[0] : created;
+  return row?.id || null;
+}
+
+async function ensureGenreIds(names){
+  const unique=[...new Set((names || []).map(name=>String(name).trim()).filter(Boolean))];
+  if(!unique.length) return [];
+  const existing=await apiRequest('genres?select=id,name');
+  const found=new Map((existing || []).map(row=>[row.name,row.id]));
+  for(const name of unique){
+    if(found.has(name)) continue;
+    const created=await apiRequest('genres',{method:'POST',body:{name,description:`IGDB import: ${name}`}});
+    const row=Array.isArray(created) ? created[0] : created;
+    if(row?.id) found.set(name, row.id);
+  }
+  return unique.map(name=>found.get(name)).filter(Boolean);
+}
+
+async function syncGameGenres(gameId, genreNames){
+  const genreIds=await ensureGenreIds(genreNames);
+  if(!genreIds.length) return;
+  const existing=await apiRequest(`game_genres?select=genre_id&game_id=eq.${gameId}`);
+  const existingIds=new Set((existing || []).map(row=>row.genre_id));
+  const inserts=genreIds.filter(id=>!existingIds.has(id)).map(genre_id=>({game_id:gameId,genre_id}));
+  if(inserts.length) await apiRequest('game_genres',{method:'POST',body:inserts});
+}
+
+async function getSystems(){
+  if(cachedSystems) return cachedSystems;
+  cachedSystems=await apiRequest('systems?select=id,name');
+  return cachedSystems;
+}
+
+async function syncGamePlatforms(gameId, item, coverUrl){
+  const systems=await getSystems();
+  const systemMap=new Map((systems || []).map(row=>[row.name,row.id]));
+  const platformNames=[...new Set((item.platforms || []).map(normalizePlatformName).filter(Boolean))];
+  if(!platformNames.length) return;
+  const existing=await apiRequest(`game_platforms?select=system_id&game_id=eq.${gameId}`);
+  const existingIds=new Set((existing || []).map(row=>row.system_id));
+  const inserts=platformNames
+    .map(name=>({name,id:systemMap.get(name) || null}))
+    .filter(row=>row.id && !existingIds.has(row.id))
+    .map(row=>({
+      game_id:gameId,
+      system_id:row.id,
+      emulator_id:null,
+      performance:defaultPerformance(row.name),
+      performance_notes:defaultPerformanceNote(row.name),
+      region:'USA',
+      cover_url:coverUrl || null,
+      rom_status:'missing'
+    }));
+  if(inserts.length) await apiRequest('game_platforms',{method:'POST',body:inserts});
+}
+
+async function createGameFromIgdb(item){
+  const seriesId=await ensureSeriesId(item.franchises?.[0] || item.collections?.[0] || '');
+  const coop=deriveCoop(item);
+  const payload={
+    title:item.name,
+    release_year:item.releaseYear || null,
+    developer:extractDeveloper(item),
+    description:buildDbDescription(item),
+    play_status:'wishlist',
+    rating:item.rating ? Math.round(Number(item.rating))/10 : null,
+    primary_cover_url:item.coverUrl || null,
+    external_id:String(item.id),
+    series_id:seriesId,
+    is_coop:coop.isCoop,
+    coop_notes:coop.coopNotes
+  };
+  const created=await apiRequest('games',{method:'POST',body:payload});
+  const game=Array.isArray(created) ? created[0] : created;
+  if(!game?.id) throw new Error('Oyun eklenemedi');
+  await syncGameGenres(game.id, item.genres || []);
+  await syncGamePlatforms(game.id, item, item.coverUrl || null);
+  return game;
+}
+
+async function updateGameFromIgdb(gameId, item){
+  const currentList=await apiRequest(`games?select=id,title,release_year,developer,description,rating,primary_cover_url,is_coop,coop_notes&id=eq.${gameId}`);
+  const current=currentList?.[0];
+  if(!current) throw new Error('Yerel oyun bulunamadi');
+  const seriesId=await ensureSeriesId(item.franchises?.[0] || item.collections?.[0] || '');
+  const coop=deriveCoop(item);
+  const patch={ external_id:String(item.id) };
+  if(!current.release_year && item.releaseYear) patch.release_year=item.releaseYear;
+  if(!current.developer && extractDeveloper(item)) patch.developer=extractDeveloper(item);
+  if(!current.description && buildDbDescription(item)) patch.description=buildDbDescription(item);
+  if((current.rating==null) && item.rating) patch.rating=Math.round(Number(item.rating))/10;
+  if(!current.primary_cover_url && item.coverUrl) patch.primary_cover_url=item.coverUrl;
+  if(!current.is_coop && coop.isCoop) patch.is_coop=true;
+  if(!current.coop_notes && coop.coopNotes) patch.coop_notes=coop.coopNotes;
+  if(seriesId) patch.series_id=seriesId;
+  await apiRequest(`games?id=eq.${gameId}`,{method:'PATCH',body:patch,headers:{Prefer:'return=minimal'}});
+  await syncGameGenres(gameId, item.genres || []);
+  await syncGamePlatforms(gameId, item, item.coverUrl || null);
+  return current;
+}
 
 function readQuery(){
   const params=new URLSearchParams(window.location.search);
@@ -127,6 +359,11 @@ function readYear(){
   const params=new URLSearchParams(window.location.search);
   const raw=(params.get('year') || '').trim();
   return raw ? Number(raw) : null;
+}
+
+function readGameId(){
+  const params=new URLSearchParams(window.location.search);
+  return (params.get('gameId') || '').trim();
 }
 
 function renderStatus(){
@@ -154,8 +391,21 @@ function openWebSearch(){
   window.open(window.rp5IgdbBridge.buildFallbackUrl(q),'_blank');
 }
 
+async function runUrlImport(){
+  const raw=document.getElementById('igdb-url').value.trim();
+  if(!raw)return;
+  document.getElementById('results').innerHTML='<div class="empty">IGDB linki cozuluyor...</div>';
+  const result=await window.rp5IgdbBridge.fetchByRef(raw);
+  if(result.status==='ok'){
+    renderResults(result.results, result.ref?.value || raw, result.results.length ? '' : 'IGDB linkinde sonuc bulunamadi.');
+    return;
+  }
+  renderResults([], raw, 'IGDB linki su an getirilemedi.');
+}
+
 function renderResults(items,query,message){
   const root=document.getElementById('results');
+  window.__rp5LastResults=items;
   if(!items.length){
     root.innerHTML=`<div class="empty">${message || 'Sonuc bulunamadi.'}</div>`;
     return;
@@ -191,11 +441,21 @@ function renderResults(items,query,message){
           ${item.platforms.length?`Platformlar: ${item.platforms.join(', ')}`:''}
         </div>
         ${(item.genres.length || selectedCandidate)?`<div class="badge-row">${scoreBadge}${item.genres.slice(0,5).map(g=>`<span class="badge">${g}</span>`).join('')}</div>`:''}
-        ${item.summary?`<div class="summary">${item.summary.slice(0,260)}${item.summary.length>260?'...':''}</div>`:''}
+        ${item.combinedSummary?`<div class="summary">${item.combinedSummary.slice(0,320)}${item.combinedSummary.length>320?'...':''}</div>`:''}
+        ${(item.developers?.length || item.publishers?.length || item.franchises?.length || item.collections?.length || item.multiplayerSignals?.length)?`
+          <div class="meta">
+            ${item.developers?.length?`Developer: ${item.developers.join(', ')}<br>`:''}
+            ${item.publishers?.length?`Publisher: ${item.publishers.join(', ')}<br>`:''}
+            ${item.franchises?.length?`Franchise: ${item.franchises.join(', ')}<br>`:''}
+            ${item.collections?.length?`Collection: ${item.collections.join(', ')}<br>`:''}
+            ${item.multiplayerSignals?.length?`Co-op: ${item.multiplayerSignals.join(' · ')}`:''}
+          </div>`:''}
         <div class="actions">
           ${item.igdbUrl?`<a class="btn" href="${item.igdbUrl}" target="_blank">IGDB Sayfasi</a>`:''}
           <a class="btn" href="Retroid_Library_Dashboard.html?search=${encodeURIComponent(item.name)}">Kutuphane Ara</a>
           <a class="btn" href="${window.rp5IgdbBridge.buildFallbackUrl(item.name)}" target="_blank">Web'de Ara</a>
+          <button class="btn primary" onclick="addIgdbCandidate(${Number(item.id)})">Ana DB'ye Aday Olarak Ekle</button>
+          <button class="btn gold" onclick="matchIgdbToSelected(${Number(item.id)})" ${selectedCandidate?'':'disabled'}>Var Olan Oyunla Eslestir</button>
           <button class="btn" data-payload="${mappingPayload}" onclick="copyMapping(this.dataset.payload, this)">JSON Kopyala</button>
         </div>
       </div>
@@ -208,9 +468,42 @@ function pickCandidate(title){
   Array.from(document.querySelectorAll('#candidate-chips .chip')).forEach(chip=>{
     chip.classList.toggle('active', chip.dataset.title===title);
   });
+  refreshSyncStatus();
   if(selectedCandidate){
     document.getElementById('search').value=selectedCandidate.title;
     runSearch(selectedCandidate.title);
+  }
+}
+
+async function addIgdbCandidate(igdbId){
+  try{
+    if(!(await ensureAdminWrite())) return;
+    setSyncMessage('IGDB adayi veritabanina ekleniyor...');
+    const item=(window.__rp5LastResults || []).find(row=>Number(row.id)===Number(igdbId));
+    if(!item) throw new Error('IGDB sonucu bulunamadi');
+    const game=await createGameFromIgdb(item);
+    setSyncMessage(`✓ "${game.title}" ana DB'ye aday olarak eklendi.`, 'ok');
+    await loadSuggestions();
+  }catch(error){
+    setSyncMessage(`Hata: ${error.message || error}`, 'err');
+  }
+}
+
+async function matchIgdbToSelected(igdbId){
+  if(!selectedCandidate){
+    setSyncMessage('Once yerel bir aday oyun sec.', 'err');
+    return;
+  }
+  try{
+    if(!(await ensureAdminWrite())) return;
+    setSyncMessage(`"${selectedCandidate.title}" IGDB verisiyle eslestiriliyor...`);
+    const item=(window.__rp5LastResults || []).find(row=>Number(row.id)===Number(igdbId));
+    if(!item) throw new Error('IGDB sonucu bulunamadi');
+    const game=await updateGameFromIgdb(selectedCandidate.id, item);
+    setSyncMessage(`✓ "${game.title}" IGDB ile eslesti.`, 'ok');
+    await loadSuggestions();
+  }catch(error){
+    setSyncMessage(`Hata: ${error.message || error}`, 'err');
   }
 }
 
@@ -251,18 +544,19 @@ async function copyMapping(payload, btn){
 
 async function loadSuggestions(){
   try{
-    const response=await fetch(`${SB}/rest/v1/games?select=title,release_year,is_iconic,external_id&order=is_iconic.desc,title.asc&limit=80`,{
+    const response=await fetch(`${SB}/rest/v1/games?select=id,title,release_year,is_iconic,external_id&order=is_iconic.desc,title.asc&limit=120`,{
       headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}
     });
     const games=await response.json();
     libraryGames=games.map(game=>({
+      id:game.id,
       title:game.title,
       releaseYear:game.release_year || null,
       iconic:!!game.is_iconic,
       matched:!!game.external_id
     }));
     const featured=libraryGames.slice(0,18);
-    document.getElementById('suggestions').innerHTML=featured.map(game=>`<button class="chip" data-title="${game.title.replace(/"/g,'&quot;')}" onclick="selectedCandidate=null;runSearch(this.dataset.title)">${game.iconic?'★ ':''}${game.title}</button>`).join('');
+    document.getElementById('suggestions').innerHTML=featured.map(game=>`<button class="chip" data-title="${game.title.replace(/"/g,'&quot;')}" onclick="selectedCandidate=null;refreshSyncStatus();runSearch(this.dataset.title)">${game.iconic?'★ ':''}${game.title}</button>`).join('');
 
     const unmatched=libraryGames.filter(game=>!game.matched);
     document.getElementById('candidate-stats').innerHTML=`
@@ -273,6 +567,14 @@ async function loadSuggestions(){
       <button class="chip" data-title="${game.title.replace(/"/g,'&quot;')}" onclick="pickCandidate(this.dataset.title)">
         ${game.iconic?'★ ':''}${game.title}${game.releaseYear?` (${game.releaseYear})`:''}
       </button>`).join('');
+    const requestedGameId=readGameId();
+    if(requestedGameId){
+      selectedCandidate=libraryGames.find(game=>String(game.id)===String(requestedGameId)) || selectedCandidate;
+      Array.from(document.querySelectorAll('#candidate-chips .chip')).forEach(chip=>{
+        chip.classList.toggle('active', selectedCandidate && chip.dataset.title===selectedCandidate.title);
+      });
+    }
+    refreshSyncStatus();
   }catch(error){
     document.getElementById('suggestions').innerHTML='<span class="helper-note">Kutuphane onerileri yuklenemedi.</span>';
     document.getElementById('candidate-chips').innerHTML='<span class="helper-note">Esleme adaylari yuklenemedi.</span>';
@@ -281,13 +583,19 @@ async function loadSuggestions(){
 
 renderStatus();
 loadSuggestions();
+refreshSyncStatus();
 const initialQuery=readQuery();
+const initialGameId=readGameId();
 if(initialQuery){
   document.getElementById('search').value=initialQuery;
   const initialYear=readYear();
-  if(initialYear){
-    selectedCandidate={title:initialQuery,releaseYear:initialYear};
+  if(initialGameId){
+    selectedCandidate=libraryGames.find(game=>String(game.id)===String(initialGameId)) || null;
   }
+  if(!selectedCandidate && initialYear){
+    selectedCandidate={id:initialGameId || null,title:initialQuery,releaseYear:initialYear};
+  }
+  refreshSyncStatus();
   runSearch(initialQuery);
 }
 </script>

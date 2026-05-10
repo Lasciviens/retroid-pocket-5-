@@ -185,7 +185,7 @@ footer a{color:var(--accent-2);text-decoration:none}
   <button class="random-btn" onclick="showRandom()">🎲 Şans Eseri</button>
   <button class="fbtn" id="f-reset">↺ Sıfırla</button>
 </div>
-<div class="igdb-sort-note" id="igdb-sort-note" style="display:none">IGDB rating siralamasi secilince gorunen oyunlar icin puanlar canli yuklenir.</div>
+<div class="igdb-sort-note" id="igdb-sort-note" style="display:none">IGDB rating siralamasi sadece veritabanina kaydedilmis puanlari kullanir. Canli IGDB sorgusu siralama icin calismaz.</div>
 
 <div class="game-grid" id="grid"><div class="loading">⏳ Oyunlar yükleniyor...</div></div>
 
@@ -267,13 +267,11 @@ function getActiveIgdbResult(game){
 }
 
 function getDisplayRating(game){
-  const live=getActiveIgdbResult(game);
-  return live?.rating ? igdbToLocalRating(live.rating) : (game.rating || 0);
+  return game.rating || 0;
 }
 
 function getLiveIgdbRating(game){
-  const live=getActiveIgdbResult(game);
-  return live?.rating ? igdbToLocalRating(live.rating) : null;
+  return game.externalId && game.rating ? Number(game.rating) : null;
 }
 
 async function load(){
@@ -332,7 +330,6 @@ function render(){
   document.getElementById('s-done').textContent=ALL.filter(g=>g.status==='completed').length;
   document.getElementById('igdb-sort-note').style.display=filters.sort==='igdb-rating' ? 'block' : 'none';
   const list=getFiltered();
-  if(filters.sort==='igdb-rating') primeIgdbForVisible(list);
   const grid=document.getElementById('grid');
   if(!list.length){grid.innerHTML='<div class="empty">Filtreyle eşleşen oyun bulunamadı.</div>';return;}
   grid.innerHTML=list.map(g=>{
@@ -449,13 +446,6 @@ async function fetchIgdbForGame(game, queryOverride=''){
   return promise;
 }
 
-function primeIgdbForVisible(list){
-  const targets=list.filter(g=>!IGDB_CACHE.has(g.id)).slice(0,18);
-  targets.forEach(game=>{
-    fetchIgdbForGame(game).then(()=>render()).catch(()=>{});
-  });
-}
-
 function renderIgdbPanel(game){
   const root=document.getElementById('igdb-panel');
   if(!root) return;
@@ -482,7 +472,7 @@ function renderIgdbPanel(game){
         <div class="igdb-search-row">
           <input id="igdb-query" class="search-box" value="${escapeHtml(state.query || game.title)}" placeholder="IGDB icin yeniden ara...">
           <button class="fbtn" onclick="searchModalIgdb('${game.id}')">Yeniden Ara</button>
-          <a class="fbtn" href="Retroid_IGDB_Bridge.html?title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}" target="_blank">Bridge Ac</a>
+          <a class="fbtn" href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(game.id)}&title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}" target="_blank">Bridge Ac</a>
         </div>
       </div>`;
     return;
@@ -500,7 +490,7 @@ function renderIgdbPanel(game){
       <div class="igdb-search-row">
         <input id="igdb-query" class="search-box" value="${escapeHtml(state.query || game.title)}" placeholder="IGDB icin yeniden ara...">
         <button class="fbtn" onclick="searchModalIgdb('${game.id}')">Yeniden Ara</button>
-        <a class="fbtn" href="Retroid_IGDB_Bridge.html?title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}" target="_blank">Bridge Ac</a>
+        <a class="fbtn" href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(game.id)}&title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}" target="_blank">Bridge Ac</a>
       </div>
       <div class="igdb-result-list">
         ${state.results.slice(0,4).map((item,index)=>`
@@ -657,7 +647,7 @@ function openModal(id){
       <div class="modal-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button onclick="saveNotes('${g.id}')" style="background:var(--accent-2);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">💾 Kaydet</button>
         <button onclick="addToQueue('${g.id}', this)" style="background:var(--gold);color:var(--bg-1);border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer;font-weight:700">🎮 Sıraya Ekle</button>
-        <a href="Retroid_IGDB_Bridge.html?title=${encodeURIComponent(g.title)}${g.year?`&year=${encodeURIComponent(g.year)}`:''}" target="_blank" style="background:var(--bg-3);color:var(--accent-2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🛰️ IGDB Koprusu</a>
+        <a href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(g.id)}&title=${encodeURIComponent(g.title)}${g.year?`&year=${encodeURIComponent(g.year)}`:''}" target="_blank" style="background:var(--bg-3);color:var(--accent-2);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:.85rem;text-decoration:none;font-weight:700">🛰️ IGDB Koprusu</a>
         <span id="save-status" style="font-size:.8rem;color:var(--good);display:none">✓ Kaydedildi</span>
       </div>
     </div>`;

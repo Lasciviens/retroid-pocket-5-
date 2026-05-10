@@ -6,7 +6,10 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 ## 🔴 Öncelikli (High Priority)
 
-- [ ] **IGDB proxy + DB sync** — Bridge ve Supabase function scaffold hazir. Sonraki adim Twitch/IGDB Client ID + Secret ile proxy deployment, sonra alan bazli DB esleme.
+- [ ] **IGDB data-first akisi** — Canli sort yerine DB'ye kaydedilmis IGDB metadata kullan. Karar kaydi: `IGDB_DATA_PLAN.md`
+- [ ] **Bridge uzerinden kontrollu eslestirme turu** — mevcut DB oyunlarini tek tek veya kucuk partilerle eslestir
+- [ ] **Toplu IGDB audit araci** — eslesmeyen / dusuk skorlu / eksik metadata kayitlarini listele
+- [ ] **Schema degerlendirmesi** — screenshots, videos, websites, publisher gibi alanlar icin yeni kolon veya iliski gerekirse planla
 
 
 
@@ -49,6 +52,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] ROM klasör yapısı rehberi oluşturuldu
 - [x] IGDB Bridge iskeleti kuruldu (proxy-ready arama yüzeyi + kutuphaneden kopru)
 - [x] Supabase Edge Function IGDB proxy scaffold eklendi
+- [x] IGDB link import + aday ekleme + mevcut oyun eslestirme akisi kuruldu
 
 ---
 

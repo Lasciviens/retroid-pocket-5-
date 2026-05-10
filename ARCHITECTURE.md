@@ -70,14 +70,15 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── Retroid_Tierlist.html           # Tier listesi
 ├── Retroid_Tips.html               # İpuçları (notes tablosu, category=tip)
 ├── Retroid_Request_Tracker.html    # İstekler (notes tablosu, category=request/done)
-├── Retroid_IGDB_Bridge.html        # IGDB bridge ve metadata lookup yüzeyi
+├── Retroid_IGDB_Bridge.html        # IGDB arama, link import, aday ekleme ve eslestirme
 ├── admin.html                      # Oyun ekle/düzenle/sil
 ├── migration_v3.sql                # DB migration (Supabase SQL Editor'de çalıştırıldı)
 ├── Retroid_Legacy_Tools.html       # Legacy araçlar için güvenli indeks sayfası
 ├── legacy_tools/*.html.txt         # Çalıştırılmayan arsiv snapshot'ları
 ├── Retroid_Cover_Test.html         # Yönetici aracı
 ├── rp5_igdb.js                     # IGDB bridge helper
-├── IGDB_INTEGRATION.md             # IGDB mimari ve sonraki adımlar
+├── IGDB_INTEGRATION.md             # IGDB proxy ve sync mimarisi
+├── IGDB_DATA_PLAN.md               # IGDB veri kapsami ve sonraki urun yolu
 ├── supabase/functions/igdb-search  # IGDB proxy scaffold
 ├── ROM_Folder_Guide.md             # ROM klasör yapısı rehberi
 ├── game_wishlist.md                # Eklenecek oyunlar listesi
@@ -173,14 +174,15 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - [ ] emulators.supported_systems kolonunu DROP et (junction tablosu dolduktan sonra)
 - [ ] Dashboard'a v_games_full geçişi (şu an nested select ile çalışıyor, her ikisi de doğru)
 - [ ] ROM durumu takibi UI (game_platforms.rom_status kolonu hazır)
-- [ ] IGDB proxy deployment ve DB sync akışı
+- [ ] toplu IGDB <-> DB denetim / bulk esleme araci
 - [ ] Admin'e emülatör ekleme formu
 
 ## Operasyon Notu
 
 - Normal kullanıcı akışı `index.html` üzerinden başlar.
 - Legacy migration araçları `legacy_tools/` altında düz metin olarak tutulur.
-- `Retroid_IGDB_Bridge.html` DB'ye yazmadan harici metadata köprüsü görevi görür.
+- `Retroid_IGDB_Bridge.html` artik admin oturumu ile aday ekleme ve mevcut oyunu eslestirme akislarini da tasir.
 - `supabase/functions/igdb-search/index.ts` canlı proxy için hazır iskelet sağlar.
-- `Retroid_Library_Dashboard.html` artık modal içinde canlı IGDB sonuçlarını gösterir ve admin eşleme akışı sunar.
+- `Retroid_Library_Dashboard.html` modal icinde canli IGDB sonuclarini gosterir; liste/siralama ise DB'ye kaydedilen degerleri kullanir.
+- IGDB kapsam kararlari `IGDB_DATA_PLAN.md` icinde tutulur.
 - RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.

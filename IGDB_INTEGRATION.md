@@ -24,9 +24,13 @@ Bu yuzden GitHub Pages uzerindeki bu statik site, secret'i frontend'e koymadan c
 
 - `Retroid_IGDB_Bridge.html`
   - oyun adi ile arama
+  - IGDB sayfasi linkinden ice alma
   - proxy varsa canli sonuc gosterme
+  - `Ana DB'ye Aday Olarak Ekle`
+  - `Var Olan Oyunla Eslestir`
   - proxy yoksa IGDB web aramasina kopru
   - kutuphaneden query string ile acilabilme: `?title=Chrono%20Trigger`
+  - kutuphaneden `gameId` ile acilabilme
   - `external_id` bos olan kutuphane oyunlarini one cikarir
   - aday sonuclarda basit eslesme skoru gosterir
   - sonuc kartindan mapping JSON kopyalayabilir
@@ -113,19 +117,21 @@ Bu projede frontend varsayilan olarak su endpoint'e baglidir:
 
 ## Sonraki adim: DB sync
 
-DB senkronu bu turda bilerek yapilmadi.
+DB senkronu artik bridge icindeki admin aksiyonlariyla baslatilabilir.
 
 Daha sonra Claude veya baska bir agent su akisi ekleyebilir:
 
-1. Kutuphanedeki oyunu IGDB ile eslestir
-2. Aday sonucu goster
-3. Onaylanan alanlari yaz:
+1. bridge tarafindaki add/match akislarini kullanarak kontrollu veri girisi
+2. Kutuphanedeki oyunu IGDB ile eslestir
+3. Aday sonucu goster
+4. Onaylanan alanlari yaz:
    - `games.external_id`
    - `games.description`
    - `games.rating`
    - gerekirse `games.primary_cover_url`
-4. Otomatik overwrite yerine alan bazli onay kullan
+   - `series`, `genres`, `game_platforms` tarafinda kontrollu merge
+5. Otomatik overwrite yerine alan bazli onay kullan
 
 ## Not
 
-Bu dosya mimari karar notudur. Su anki canli site DB'ye yazmadan, sadece bridge ve kaynak baglantisi tarafini hazir tutar.
+Bu dosya mimari karar notudur. Veri kapsami ve urun yonu icin `IGDB_DATA_PLAN.md` esas referanstir.

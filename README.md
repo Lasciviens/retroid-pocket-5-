@@ -24,7 +24,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 | 🗺️ **Series Roadmap** | Chronological game list per series — where to start each franchise |
 | 🎮 **Play Queue** | Drag-and-drop play order, synced across devices |
 | ♡ **Wishlist** | Track games to add, emulator requests, features — with priority levels |
-| 🛰️ **IGDB Bridge** | Optional live metadata bridge, IGDB lookup, and future sync staging surface |
+| 🛰️ **IGDB Bridge** | IGDB arama, link import, aday ekleme, ve mevcut oyun eslestirme yuzeyi |
 | ⚙️ **Emulator Matrix** | Which emulator for which system, pulled from DB |
 | 📖 **Glossary** | Technical terms (ROM, BIOS, JIT...) explained for developers |
 | ➕ **Admin Panel** | Add/edit/delete games with full form UI |
@@ -36,7 +36,8 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 - The browser keeps your admin session so you are not asked on every visit.
 - Server-side RLS hardening is prepared in `supabase_rls_hardening.sql` and should be applied in Supabase next.
 - Legacy migration/import tools are archived and no longer part of the live product surface.
-- The main Library modal now includes live IGDB summary, rating, link, and admin match/apply controls.
+- The main Library modal includes live IGDB summary and bridge controls, but sorting uses DB-stored values rather than live IGDB fetches.
+- `Retroid_IGDB_Bridge.html` now supports IGDB page link import, admin-side candidate creation, and matching existing local games.
 
 ---
 
@@ -87,6 +88,7 @@ Migration notes: `GITHUB_PAGES_MIGRATION.md`
 Security follow-up: `SECURITY_NEXT_STEPS.md`
 RLS apply checklist: `SUPABASE_RLS_APPLY.md`
 IGDB bridge notes: `IGDB_INTEGRATION.md`
+IGDB data plan: `IGDB_DATA_PLAN.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
 
 ---

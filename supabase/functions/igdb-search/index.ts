@@ -40,14 +40,80 @@ async function getAccessToken() {
   return (await response.json()) as IgdbTokenResponse
 }
 
-function buildApicalypseQuery(title: string) {
+function sharedFields() {
+  return [
+    'name',
+    'slug',
+    'summary',
+    'storyline',
+    'total_rating',
+    'first_release_date',
+    'cover.url',
+    'genres.name',
+    'platforms.name',
+    'platforms.abbreviation',
+    'involved_companies.developer',
+    'involved_companies.publisher',
+    'involved_companies.company.name',
+    'franchises.name',
+    'collections.name',
+    'multiplayer_modes.offlinecoop',
+    'multiplayer_modes.offlinecoopmax',
+    'multiplayer_modes.onlinecoop',
+    'multiplayer_modes.onlinecoopmax',
+    'multiplayer_modes.offlinemax',
+    'multiplayer_modes.onlinemax',
+    'screenshots.url',
+    'videos.video_id',
+    'websites.url',
+    'url',
+  ].join(',')
+}
+
+function buildSearchQuery(title: string) {
   const escaped = title.replace(/"/g, '\\"')
   return [
-    'fields name,slug,summary,total_rating,first_release_date,cover.url,genres.name,platforms.abbreviation,involved_companies.company.name;',
+    `fields ${sharedFields()};`,
     `search "${escaped}";`,
     'where version_parent = null;',
-    'limit 8;',
+    'limit 12;',
   ].join(' ')
+}
+
+function buildSlugQuery(slug: string) {
+  const escaped = slug.replace(/"/g, '\\"')
+  return [
+    `fields ${sharedFields()};`,
+    `where slug = "${escaped}" & version_parent = null;`,
+    'limit 1;',
+  ].join(' ')
+}
+
+function buildIdQuery(id: string) {
+  return [
+    `fields ${sharedFields()};`,
+    `where id = ${Number(id)};`,
+    'limit 1;',
+  ].join(' ')
+}
+
+async function fetchIgdb(query: string, token: IgdbTokenResponse) {
+  const igdbResponse = await fetch('https://api.igdb.com/v4/games', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Client-ID': TWITCH_CLIENT_ID,
+      Authorization: `Bearer ${token.access_token}`,
+    },
+    body: query,
+  })
+
+  if (!igdbResponse.ok) {
+    const details = await igdbResponse.text()
+    throw new Error(`IGDB request failed: ${igdbResponse.status} ${details}`)
+  }
+
+  return await igdbResponse.json()
 }
 
 Deno.serve(async (req) => {
@@ -67,36 +133,30 @@ Deno.serve(async (req) => {
 
   const { searchParams } = new URL(req.url)
   const title = (searchParams.get('title') || '').trim()
-  if (!title) {
-    return json({ error: 'Missing title query parameter' }, 400)
+  const slug = (searchParams.get('slug') || '').trim()
+  const id = (searchParams.get('id') || '').trim()
+  if (!title && !slug && !id) {
+    return json({ error: 'Missing title, slug, or id query parameter' }, 400)
   }
 
   try {
     const token = await getAccessToken()
-    const igdbResponse = await fetch('https://api.igdb.com/v4/games', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Client-ID': TWITCH_CLIENT_ID,
-        'Authorization': `Bearer ${token.access_token}`,
-      },
-      body: buildApicalypseQuery(title),
-    })
+    let queryType = 'title'
+    let queryValue = title
+    let query = buildSearchQuery(title)
 
-    if (!igdbResponse.ok) {
-      const details = await igdbResponse.text()
-      return json(
-        {
-          error: 'IGDB request failed',
-          status: igdbResponse.status,
-          details,
-        },
-        502,
-      )
+    if (id) {
+      queryType = 'id'
+      queryValue = id
+      query = buildIdQuery(id)
+    } else if (slug) {
+      queryType = 'slug'
+      queryValue = slug
+      query = buildSlugQuery(slug)
     }
 
-    const results = await igdbResponse.json()
-    return json({ query: title, results })
+    const results = await fetchIgdb(query, token)
+    return json({ queryType, query: queryValue, results })
   } catch (error) {
     return json(
       {
