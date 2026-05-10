@@ -247,6 +247,19 @@ function deriveCoop(item){
   };
 }
 
+function getExistingSystemsForSelected(){
+  return new Set((selectedCandidate?.systems || []).map(name=>String(name).trim()).filter(Boolean));
+}
+
+function getIncomingSystems(item){
+  return [...new Set((item.platforms || []).map(normalizePlatformName).filter(Boolean))];
+}
+
+function getAlternativeSystems(item){
+  const existing=getExistingSystemsForSelected();
+  return getIncomingSystems(item).filter(name=>!existing.has(name));
+}
+
 async function ensureSeriesId(name){
   const clean=String(name || '').trim();
   if(!clean) return null;
@@ -292,7 +305,8 @@ async function syncGamePlatforms(gameId, item, coverUrl){
   const systemMap=new Map((systems || []).map(row=>[row.name,row.id]));
   const platformNames=[...new Set((item.platforms || []).map(normalizePlatformName).filter(Boolean))];
   if(!platformNames.length) return;
-  const existing=await apiRequest(`game_platforms?select=system_id&game_id=eq.${gameId}`);
+  const existing=await apiRequest(`game_platforms?select=id,system_id,cover_url,performance_notes,performance&game_id=eq.${gameId}`);
+  const existingBySystem=new Map((existing || []).map(row=>[row.system_id,row]));
   const existingIds=new Set((existing || []).map(row=>row.system_id));
   const inserts=platformNames
     .map(name=>({name,id:systemMap.get(name) || null}))
@@ -307,6 +321,16 @@ async function syncGamePlatforms(gameId, item, coverUrl){
       cover_url:coverUrl || null,
       rom_status:'missing'
     }));
+  for(const row of platformNames.map(name=>({name,id:systemMap.get(name) || null})).filter(row=>row.id && existingIds.has(row.id))){
+    const current=existingBySystem.get(row.id);
+    const patch={};
+    if(!current?.cover_url && coverUrl) patch.cover_url=coverUrl;
+    if(!current?.performance_notes && defaultPerformanceNote(row.name)) patch.performance_notes=defaultPerformanceNote(row.name);
+    if(current?.performance==null && defaultPerformance(row.name)) patch.performance=defaultPerformance(row.name);
+    if(Object.keys(patch).length){
+      await apiRequest(`game_platforms?id=eq.${current.id}`,{method:'PATCH',body:patch,headers:{Prefer:'return=minimal'}});
+    }
+  }
   if(inserts.length) await apiRequest('game_platforms',{method:'POST',body:inserts});
 }
 
@@ -422,6 +446,8 @@ function renderResults(items,query,message){
   });
   root.innerHTML=rankedItems.map(item=>{
     const score=selectedCandidate ? window.rp5IgdbBridge.scoreMatch(query,item,selectedCandidate.releaseYear) : 0;
+    const alternativeSystems=getAlternativeSystems(item);
+    const incomingSystems=getIncomingSystems(item);
     const scoreBadge=selectedCandidate
       ? `<span class="badge ${score>=90?'match-strong':score>=70?'match-mid':'match-low'}">Eslesme ${score}/100</span>`
       : '';
@@ -445,7 +471,7 @@ function renderResults(items,query,message){
           ${item.rating?`Rating: ${item.rating.toFixed ? item.rating.toFixed(1) : item.rating}<br>`:''}
           ${item.platforms.length?`Platformlar: ${item.platforms.join(', ')}`:''}
         </div>
-        ${(item.genres.length || selectedCandidate)?`<div class="badge-row">${scoreBadge}${item.genres.slice(0,5).map(g=>`<span class="badge">${g}</span>`).join('')}</div>`:''}
+        ${(item.genres.length || selectedCandidate || incomingSystems.length)?`<div class="badge-row">${scoreBadge}${item.genres.slice(0,5).map(g=>`<span class="badge">${g}</span>`).join('')}${alternativeSystems.length?`<span class="badge match-strong">+ ${alternativeSystems.length} alternatif platform</span>`:''}</div>`:''}
         ${item.combinedSummary?`<div class="summary">${item.combinedSummary.slice(0,320)}${item.combinedSummary.length>320?'...':''}</div>`:''}
         ${(item.developers?.length || item.publishers?.length || item.franchises?.length || item.collections?.length || item.multiplayerSignals?.length)?`
           <div class="meta">
@@ -455,6 +481,7 @@ function renderResults(items,query,message){
             ${item.collections?.length?`Collection: ${item.collections.join(', ')}<br>`:''}
             ${item.multiplayerSignals?.length?`Co-op: ${item.multiplayerSignals.join(' · ')}`:''}
           </div>`:''}
+        ${selectedCandidate ? `<div class="meta">Yerel platformlar: ${(selectedCandidate.systems || []).join(', ') || '—'}<br>IGDB platformlar: ${incomingSystems.join(', ') || '—'}${alternativeSystems.length?`<br>Yeni alternatifler: ${alternativeSystems.join(', ')}`:''}</div>`:''}
         <div class="actions">
           ${item.igdbUrl?`<a class="btn" href="${item.igdbUrl}" target="_blank">IGDB Sayfasi</a>`:''}
           <a class="btn" href="Retroid_Library_Dashboard.html?search=${encodeURIComponent(item.name)}">Kutuphane Ara</a>
@@ -549,7 +576,7 @@ async function copyMapping(payload, btn){
 
 async function loadSuggestions(){
   try{
-    const response=await fetch(`${SB}/rest/v1/games?select=id,title,release_year,is_iconic,external_id&order=is_iconic.desc,title.asc&limit=120`,{
+    const response=await fetch(`${SB}/rest/v1/games?select=id,title,release_year,is_iconic,external_id,game_platforms(systems(name))&order=is_iconic.desc,title.asc&limit=120`,{
       headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}
     });
     const games=await response.json();
@@ -558,7 +585,8 @@ async function loadSuggestions(){
       title:game.title,
       releaseYear:game.release_year || null,
       iconic:!!game.is_iconic,
-      matched:!!game.external_id
+      matched:!!game.external_id,
+      systems:(game.game_platforms || []).map(p=>p.systems?.name).filter(Boolean)
     }));
     const featured=libraryGames.slice(0,18);
     document.getElementById('suggestions').innerHTML=featured.map(game=>`<button class="chip" data-title="${game.title.replace(/"/g,'&quot;')}" onclick="selectedCandidate=null;refreshSyncStatus();runSearch(this.dataset.title)">${game.iconic?'★ ':''}${game.title}</button>`).join('');

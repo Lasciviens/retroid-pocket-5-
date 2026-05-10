@@ -65,7 +65,7 @@ Bu dosya, IGDB yonu icin net karar kaydidir.
 
 ## Sonraki Mantikli Isler
 
-1. `games` ve gerekirse yeni iliski tablolarinda IGDB metadata genisletmesi
+1. `migration_v6.sql` ile `storyline`, `publisher`, `igdb_url`, `igdb_rating`, `igdb_synced_at` alanlarini acmak
 2. toplu `DB <-> IGDB` denetim araci
 3. mevcut DB oyunlari icin kontrollu eslestirme turu
-4. screenshots / videos / external links icin kalici saklama modeli
+4. `game_media_assets` uzerinden screenshots / videos / external links saklamak

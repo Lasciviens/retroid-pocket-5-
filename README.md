@@ -90,6 +90,7 @@ RLS apply checklist: `SUPABASE_RLS_APPLY.md`
 IGDB bridge notes: `IGDB_INTEGRATION.md`
 IGDB data plan: `IGDB_DATA_PLAN.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
+IGDB schema expansion: `migration_v6.sql`
 
 ---
 

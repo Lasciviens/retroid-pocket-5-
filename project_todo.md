@@ -8,6 +8,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 - [ ] **IGDB data-first akisi** — Canli sort yerine DB'ye kaydedilmis IGDB metadata kullan. Karar kaydi: `IGDB_DATA_PLAN.md`
 - [ ] **Bridge uzerinden kontrollu eslestirme turu** — mevcut DB oyunlarini tek tek veya kucuk partilerle eslestir
+- [ ] **migration_v6.sql uygula** — storyline, publisher, igdb_url, igdb_rating, igdb_synced_at ve `game_media_assets`
 - [ ] **Toplu IGDB audit araci** — eslesmeyen / dusuk skorlu / eksik metadata kayitlarini listele
 - [ ] **Schema degerlendirmesi** — screenshots, videos, websites, publisher gibi alanlar icin yeni kolon veya iliski gerekirse planla
 

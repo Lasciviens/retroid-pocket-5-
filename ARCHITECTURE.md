@@ -73,6 +73,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── Retroid_IGDB_Bridge.html        # IGDB arama, link import, aday ekleme ve eslestirme
 ├── admin.html                      # Oyun ekle/düzenle/sil
 ├── migration_v3.sql                # DB migration (Supabase SQL Editor'de çalıştırıldı)
+├── migration_v6.sql                # IGDB metadata genisletme paketi
 ├── Retroid_Legacy_Tools.html       # Legacy araçlar için güvenli indeks sayfası
 ├── legacy_tools/*.html.txt         # Çalıştırılmayan arsiv snapshot'ları
 ├── Retroid_Cover_Test.html         # Yönetici aracı
@@ -174,6 +175,7 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - [ ] emulators.supported_systems kolonunu DROP et (junction tablosu dolduktan sonra)
 - [ ] Dashboard'a v_games_full geçişi (şu an nested select ile çalışıyor, her ikisi de doğru)
 - [ ] ROM durumu takibi UI (game_platforms.rom_status kolonu hazır)
+- [ ] migration_v6.sql ile IGDB metadata alanlarini ac
 - [ ] toplu IGDB <-> DB denetim / bulk esleme araci
 - [ ] Admin'e emülatör ekleme formu
 

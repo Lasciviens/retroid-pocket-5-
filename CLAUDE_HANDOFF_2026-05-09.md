@@ -78,6 +78,7 @@ Related docs:
   - `Ana DB'ye Aday Olarak Ekle`
   - `Var Olan Oyunla Eslestir`
   - local genre / series / platform merge against the current schema
+  - highlights incoming alternative platforms relative to the selected local game
 
 ## Important Constraints
 
@@ -99,12 +100,14 @@ Related docs:
 8. `supabase_rls_hardening.sql`
 9. `SECURITY_NEXT_STEPS.md`
 10. `SUPABASE_RLS_APPLY.md`
+11. `migration_v6.sql`
 
 ## Suggested Next Steps
 
 Next-product moves:
 
 1. Use the live bridge add/match flow on more games
-2. Build a bulk `DB <-> IGDB` audit tool
-3. Expand schema for screenshots / videos / websites if desired
-4. Optional stronger admin-role model later
+2. Apply `migration_v6.sql` if richer IGDB metadata should become first-class
+3. Build a bulk `DB <-> IGDB` audit tool
+4. Expand schema for screenshots / videos / websites if desired
+5. Optional stronger admin-role model later
