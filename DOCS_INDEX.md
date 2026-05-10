@@ -30,5 +30,6 @@ Bu dosya repo icindeki markdown notlarini hizli bulmak icin var.
 - `INTEGRATIONS_ROADMAP.md` — yeni entegrasyon oncelikleri
 - `PRODUCT_IDEAS_FROM_REFERENCES.md` — referanslardan cikan urun fikirleri
 - `scripts/igdb_bulk_match.py` — canonical + platform_variants bulk eslestirme araci
+- `scripts/igdb_repair_missing.py` — exact ID ile eksik IGDB alanlarini dolduran onarim araci
 - `ROM_Folder_Guide.md` — ROM klasor mantigi
 - `game_wishlist.md` — eklenecek oyunlar

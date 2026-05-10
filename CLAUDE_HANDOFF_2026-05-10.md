@@ -72,6 +72,7 @@ Ayrica:
 - `Retroid_Library_Dashboard.html`
   - manuel `saveIgdbMatch` akisi artik platform varyant alanlarini da gunceller
 - `scripts/igdb_bulk_match.py`
+  - `scripts/igdb_repair_missing.py`
   - repo icine alindi
   - bulk match artik canonical patch + variant patch mantigiyla calisiyor
 - `~/retroid-project/igdb_bulk_match.py`
@@ -79,6 +80,14 @@ Ayrica:
 
 Canli backfill kontrolden gecti:
 - `game_platforms.igdb_game_id` dolu satir: `228`
+
+Ek not:
+- Library modalina onceki / sonraki oyun gezinmesi eklendi
+- klavyede `←` / `→` ile modal icinde dolasilabilir
+- ornek repair turu su oyunlarda dogrulandi:
+  - `Ben 10: Alien Force`
+  - `Blitz: Overtime`
+  - `Crash: Mind Over Mutant`
 
 ### 1. GitHub Pages Deploy Sorunu Çözüldü
 Commit `abeb714`'ten sonra GitHub Pages otomatik deploy durmuştu (4 commit birikti, hiç deploy edilmedi). `.github/workflows/pages.yml` custom workflow oluşturuldu. GitHub repo Settings → Pages → Source **"GitHub Actions"** olarak değiştirildi (kullanıcı yaptı). Artık her push'ta otomatik deploy çalışıyor.
