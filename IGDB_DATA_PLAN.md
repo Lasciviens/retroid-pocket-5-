@@ -71,3 +71,5 @@ Bu dosya, IGDB yonu icin net karar kaydidir.
 2. toplu `DB <-> IGDB` denetim araci
 3. mevcut DB oyunlari icin kontrollu eslestirme turu
 4. `game_media_assets` uzerinden screenshots / videos / external links saklamak
+5. ayni isim / farkli platform oyunlari icin `migration_v7.sql` ve varyant modeli
+6. tum IGDB import akislarinda ortak field seti ve query kaliplari icin `IGDB_QUERY_PRESETS.md`

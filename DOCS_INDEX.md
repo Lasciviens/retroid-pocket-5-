@@ -13,7 +13,11 @@ Bu dosya repo icindeki markdown notlarini hizli bulmak icin var.
 
 - `IGDB_INTEGRATION.md` — proxy ve sync mimarisi
 - `IGDB_DATA_PLAN.md` — veri kapsam kararlari
+- `IGDB_IMPORT_PLAYBOOK.md` — standart import akisi ve duplicate kurali
+- `IGDB_FIELD_MAP.md` — alan bazli mapping
+- `IGDB_QUERY_PRESETS.md` — tekrar kullanilacak query kaliplari
 - `migration_v6.sql` — ileri metadata genisletme taslagi
+- `migration_v7.sql` — platform varyant / duplicate onleme taslagi
 
 ## Guvenlik ve Deploy
 

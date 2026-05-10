@@ -11,6 +11,8 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [ ] **migration_v6.sql uygula** — storyline, publisher, igdb_url, igdb_rating, igdb_synced_at ve `game_media_assets`
 - [ ] **Toplu IGDB audit araci** — eslesmeyen / dusuk skorlu / eksik metadata kayitlarini listele
 - [ ] **Schema degerlendirmesi** — screenshots, videos, websites, publisher gibi alanlar icin yeni kolon veya iliski gerekirse planla
+- [ ] **IGDB varyant modeli** — ayni isim/farkli platform oyunlari icin `migration_v7.sql` mantigina gecis
+- [ ] **IGDB normalize write flow** — import oncesi `canonical_game + platform_variants` formatina oturt
 - [ ] **RetroAchievements entegrasyonu** — user progress / completion / game progress proxy + modal enrichment
 - [ ] **SteamGridDB entegrasyonu** — alternatif kapak / hero / logo onerileri
 - [ ] **RAWG discovery entegrasyonu** — benzer oyunlar / dis linkler / discovery katmani
@@ -66,6 +68,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] IGDB link import + aday ekleme + mevcut oyun eslestirme akisi kuruldu
 - [x] Yeni entegrasyonlar icin roadmap ve function scaffold'lari eklendi
 - [x] Dis referanslardan urun fikirleri derlendi (`PRODUCT_IDEAS_FROM_REFERENCES.md`)
+- [x] IGDB import playbook ve field map hazirlandi
 
 ---
 

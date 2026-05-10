@@ -81,6 +81,9 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── rp5_igdb.js                     # IGDB bridge helper
 ├── IGDB_INTEGRATION.md             # IGDB proxy ve sync mimarisi
 ├── IGDB_DATA_PLAN.md               # IGDB veri kapsami ve sonraki urun yolu
+├── IGDB_IMPORT_PLAYBOOK.md         # IGDB import standardi ve duplicate kurali
+├── IGDB_FIELD_MAP.md               # IGDB alan -> DB alan esleme tablosu
+├── IGDB_QUERY_PRESETS.md           # tekrar kullanilacak query setleri
 ├── INTEGRATIONS_ROADMAP.md         # Yeni entegrasyonlar icin karar ve oncelik notu
 ├── PRODUCT_IDEAS_FROM_REFERENCES.md # Tonkatsu Box ve benzeri urunlerden cikan fikirler
 ├── DOCS_INDEX.md                   # Markdown notlari icin hizli indeks
@@ -191,6 +194,8 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - Kütüphane görünümü `grid / list / table` olarak değiştirilebilir; bu özellikle toplu IGDB cleanup sırasında hızlı tarama için eklendi.
 - Kütüphane filtresinde `IGDB eksik / kapak eksik / ozet eksik / yil eksik` hizli temizlik akislari bulunur.
 - IGDB kapsam kararlari `IGDB_DATA_PLAN.md` icinde tutulur.
+- IGDB import kurallari ve duplicate onleme kararlari `IGDB_IMPORT_PLAYBOOK.md` icinde tutulur.
+- Tekrar kullanilacak IGDB field / search kaliplari `IGDB_QUERY_PRESETS.md` icinde tutulur.
 - Diger entegrasyon karar ve fizibilite notlari `INTEGRATIONS_ROADMAP.md` icinde tutulur.
 - Dis referanslardan uretilen urun gelistirme fikirleri `PRODUCT_IDEAS_FROM_REFERENCES.md` icinde tutulur.
 - RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.

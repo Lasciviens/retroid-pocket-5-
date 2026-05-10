@@ -35,6 +35,10 @@ Bu handoff sonrasinda kütüphane yüzeyi üzerinde güvenli UX iyilestirmeleri 
 - Yeni entegrasyon zemini:
   - `INTEGRATIONS_ROADMAP.md`
   - `PRODUCT_IDEAS_FROM_REFERENCES.md`
+  - `IGDB_IMPORT_PLAYBOOK.md`
+  - `IGDB_FIELD_MAP.md`
+  - `IGDB_QUERY_PRESETS.md`
+  - `migration_v7.sql`
   - `supabase/functions/.env.example`
   - `supabase/functions/retroachievements-player/`
   - `supabase/functions/steamgriddb-art/`
