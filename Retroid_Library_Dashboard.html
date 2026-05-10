@@ -259,7 +259,7 @@ function escapeHtml(value){
 
 function igdbToLocalRating(value){
   if(value==null || Number.isNaN(Number(value))) return null;
-  return Math.round(Number(value))/10;
+  return parseFloat((Number(value)/10).toFixed(1));
 }
 
 function igdbToDbRating(value){
