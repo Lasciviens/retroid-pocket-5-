@@ -782,6 +782,7 @@ async function saveIgdbMatch(gameId,index){
   }
   const incomingSystems=new Set((normalized.platform_variants || []).map(v=>v.platform));
   const primaryPlatform=primaryVariant.platform || '';
+  console.log('[autoAdvance] incomingSystems=',Array.from(incomingSystems),'primaryPlatform=',primaryPlatform,'game.platforms=',game.platforms.map(p=>p.system));
   if(primaryPlatform){
     for(const platform of game.platforms){
       if(platform.isPrimaryVariant && platform.system!==primaryPlatform){
@@ -789,6 +790,7 @@ async function saveIgdbMatch(gameId,index){
         if(!clearResponse.ok){
           const details=await clearResponse.text().catch(()=>'');
           alert(`Primary varyant guncellenemedi.${details?`\n\n${details}`:''}`);
+          console.error('[autoAdvance] EARLY RETURN: primary clear failed');
           return;
         }
         platform.isPrimaryVariant=false;
@@ -811,6 +813,7 @@ async function saveIgdbMatch(gameId,index){
     if(!variantResponse.ok){
       const details=await variantResponse.text().catch(()=>'');
       alert(`Platform varyanti kaydedilemedi.${details?`\n\n${details}`:''}`);
+      console.error('[autoAdvance] EARLY RETURN: variant patch failed',details);
       return;
     }
     platform.igdbGameId=variantPatch.igdb_game_id;
@@ -823,6 +826,7 @@ async function saveIgdbMatch(gameId,index){
     platform.isPrimaryVariant=variantPatch.is_primary_variant;
   }
   const preIdx=getFiltered().findIndex(x=>x.id===gameId);
+  console.log('[autoAdvance] preIdx=',preIdx,'filters.unmatchedIgdb=',filters.unmatchedIgdb,'game.externalId before=',game.externalId);
   game.externalId=payload.external_id;
   if(payload.description) game.desc=payload.description;
   if(payload.primary_cover_url) game.cover=payload.primary_cover_url;
@@ -831,9 +835,11 @@ async function saveIgdbMatch(gameId,index){
   if(payload.title) game.title=payload.title;
   render();
   const stillVisible=getFiltered().some(x=>x.id===gameId);
+  console.log('[autoAdvance] stillVisible=',stillVisible,'preIdx=',preIdx,'will advance=',(!stillVisible && preIdx>=0));
   if(!stillVisible && preIdx>=0){
     const newList=getFiltered();
     const targetIdx=Math.min(preIdx,newList.length-1);
+    console.log('[autoAdvance] newList.length=',newList.length,'targetIdx=',targetIdx);
     if(targetIdx>=0) openModal(newList[targetIdx].id);
     else closeModal();
   } else {
