@@ -223,6 +223,11 @@ function defaultPerformanceNote(systemName){
   return systemName==='PS2' ? 'RP5 tarafinda genelde calisir; oyun bazli tweak gerekebilir.' : null;
 }
 
+function igdbToDbRating(value){
+  if(value==null || Number.isNaN(Number(value))) return null;
+  return Math.max(1, Math.min(10, Math.round(Number(value)/10)));
+}
+
 function buildDbDescription(item){
   return [item.summary || '', item.storyline ? `Storyline: ${item.storyline}` : ''].filter(Boolean).join('\n\n') || null;
 }
@@ -314,7 +319,7 @@ async function createGameFromIgdb(item){
     developer:extractDeveloper(item),
     description:buildDbDescription(item),
     play_status:'wishlist',
-    rating:item.rating ? Math.round(Number(item.rating))/10 : null,
+    rating:item.rating ? igdbToDbRating(item.rating) : null,
     primary_cover_url:item.coverUrl || null,
     external_id:String(item.id),
     series_id:seriesId,
@@ -339,7 +344,7 @@ async function updateGameFromIgdb(gameId, item){
   if(!current.release_year && item.releaseYear) patch.release_year=item.releaseYear;
   if(!current.developer && extractDeveloper(item)) patch.developer=extractDeveloper(item);
   if(!current.description && buildDbDescription(item)) patch.description=buildDbDescription(item);
-  if((current.rating==null) && item.rating) patch.rating=Math.round(Number(item.rating))/10;
+  if((current.rating==null) && item.rating) patch.rating=igdbToDbRating(item.rating);
   if(!current.primary_cover_url && item.coverUrl) patch.primary_cover_url=item.coverUrl;
   if(!current.is_coop && coop.isCoop) patch.is_coop=true;
   if(!current.coop_notes && coop.coopNotes) patch.coop_notes=coop.coopNotes;

@@ -253,6 +253,11 @@ function igdbToLocalRating(value){
   return Math.round(Number(value))/10;
 }
 
+function igdbToDbRating(value){
+  if(value==null || Number.isNaN(Number(value))) return null;
+  return Math.max(1, Math.min(10, Math.round(Number(value)/10)));
+}
+
 function getIgdbState(game){
   return IGDB_CACHE.get(game.id) || null;
 }
@@ -532,21 +537,20 @@ async function saveIgdbMatch(gameId,index){
   const state=getIgdbState(game);
   const item=state?.results?.[index];
   if(!item) return;
-  const payload={
-    external_id:String(item.id),
-    description:item.summary || game.desc || null,
-    rating:item.rating ? igdbToLocalRating(item.rating) : game.rating || null,
-    primary_cover_url:item.coverUrl || game.cover || null
-  };
+  const payload={ external_id:String(item.id) };
+  if(!game.desc && (item.combinedSummary || item.summary)) payload.description=item.combinedSummary || item.summary;
+  if((game.rating==null || game.rating==='') && item.rating) payload.rating=igdbToDbRating(item.rating);
+  if(!game.cover && item.coverUrl) payload.primary_cover_url=item.coverUrl;
   const response=await patch(`games?id=eq.${gameId}`,payload);
   if(!response.ok){
-    alert('IGDB eslesmesi kaydedilemedi.');
+    const details=await response.text().catch(()=>'');
+    alert(`IGDB eslesmesi kaydedilemedi.${details?`\n\n${details}`:''}`);
     return;
   }
   game.externalId=payload.external_id;
-  game.desc=payload.description;
-  game.rating=payload.rating;
-  game.cover=payload.primary_cover_url;
+  if(payload.description) game.desc=payload.description;
+  if(payload.rating!=null) game.rating=payload.rating;
+  if(payload.primary_cover_url) game.cover=payload.primary_cover_url;
   render();
   renderIgdbPanel(game);
 }
