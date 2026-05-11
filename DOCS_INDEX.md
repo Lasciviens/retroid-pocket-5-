@@ -1,35 +1,30 @@
-# Docs Index
+# Docs Index — Retroid RP5
 
-Bu dosya repo icindeki markdown notlarini hizli bulmak icin var.
+Tüm markdown dokümantasyona hızlı erişim.
 
-## Baslangic
+## Mimari & Teknik
+- [ARCHITECTURE.md](../ARCHITECTURE.md) — DB schema, dosya yapısı, API
+- [TEAM_HANDOFF.md](../TEAM_HANDOFF.md) — AI ajan koordinasyon protokolü
 
-- `README.md` — genel proje tanimi
-- `ARCHITECTURE.md` — mimari ve dosya yapisi
-- `project_todo.md` — aktif yol haritasi
-- `TEAM_HANDOFF.md` — tum ajanlar (Claude/Codex/Web) icin ortak handoff ve operasyon notlari
+## IGDB Entegrasyonu
+- [docs/IGDB_INTEGRATION.md](IGDB_INTEGRATION.md) — Proxy ve sync mimarisi
+- [docs/IGDB_DATA_PLAN.md](IGDB_DATA_PLAN.md) — Veri kapsamı ve ürün yolu
+- [docs/IGDB_IMPORT_PLAYBOOK.md](IGDB_IMPORT_PLAYBOOK.md) — Import standardı ve duplicate kuralı
+- [docs/IGDB_FIELD_MAP.md](IGDB_FIELD_MAP.md) — IGDB alan → DB alan eşleme
+- [docs/IGDB_QUERY_PRESETS.md](IGDB_QUERY_PRESETS.md) — Tekrar kullanılacak query setleri
 
-## IGDB
+## Entegrasyon & Yol Haritası
+- [docs/INTEGRATIONS_ROADMAP.md](INTEGRATIONS_ROADMAP.md) — Yeni entegrasyonlar için karar ve öncelik
+- [docs/PRODUCT_IDEAS_FROM_REFERENCES.md](PRODUCT_IDEAS_FROM_REFERENCES.md) — Ürün fikirleri
 
-- `IGDB_INTEGRATION.md` — proxy ve sync mimarisi
-- `IGDB_DATA_PLAN.md` — veri kapsam kararlari
-- `IGDB_IMPORT_PLAYBOOK.md` — standart import akisi ve duplicate kurali
-- `IGDB_FIELD_MAP.md` — alan bazli mapping
-- `IGDB_QUERY_PRESETS.md` — tekrar kullanilacak query kaliplari
-- `migration_v6.sql` — ileri metadata genisletme taslagi
-- `migration_v7.sql` — platform varyant / duplicate onleme taslagi
+## Güvenlik & Deployment
+- [docs/SECURITY_NEXT_STEPS.md](SECURITY_NEXT_STEPS.md) — RLS ve güvenlik planı
+- [docs/SUPABASE_RLS_APPLY.md](SUPABASE_RLS_APPLY.md) — RLS uygulama adımları
+- [docs/GITHUB_PAGES_MIGRATION.md](GITHUB_PAGES_MIGRATION.md) — Netlify → GitHub Pages geçişi
 
-## Guvenlik ve Deploy
+## ROM & Klasör
+- [docs/ROM_Folder_Guide.md](ROM_Folder_Guide.md) — ROM klasör yapısı rehberi
 
-- `SUPABASE_RLS_APPLY.md` — RLS uygulama notu
-- `SECURITY_NEXT_STEPS.md` — sonraki guvenlik adimlari
-- `GITHUB_PAGES_MIGRATION.md` — Pages gecis notlari
-
-## Uygulama ve Urun
-
-- `INTEGRATIONS_ROADMAP.md` — yeni entegrasyon oncelikleri
-- `PRODUCT_IDEAS_FROM_REFERENCES.md` — referanslardan cikan urun fikirleri
-- `scripts/igdb_bulk_match.py` — canonical + platform_variants bulk eslestirme araci
-- `scripts/igdb_repair_missing.py` — exact ID ile eksik IGDB alanlarini dolduran onarim araci
-- `ROM_Folder_Guide.md` — ROM klasor mantigi
-- `game_wishlist.md` — eklenecek oyunlar
+## Migration Geçmişi
+Tüm SQL migration dosyaları: `migrations/` klasörü
+- migration_v3 → v7: DB schema evrim geçmişi
