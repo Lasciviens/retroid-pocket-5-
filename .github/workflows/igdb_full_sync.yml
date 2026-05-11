@@ -44,12 +44,30 @@ jobs:
           print(f"Sync: {FIELDS} | limit={LIMIT} | oyunlar={GAME_IDS or 'tümü'}")
 
           # IGDB genre ID -> bizim genre adı
+          # IGDB genre ID'leri — IGDB API belgelerinden doğrulanmış
+          # https://api-docs.igdb.com/#genre
           IGDB_GENRE_MAP = {
-            2:'Platformer',4:'Fighting',5:'FPS',7:'Puzzle',8:'Racing',
-            9:'RPG',10:'Strategy',11:'Sports',12:'RPG',14:'Sports',
-            15:'Strategy',16:'Metroidvania',24:'Action',25:'Action',
-            26:'Action',31:'Action-Adventure',32:'Action-Adventure',
-            33:'Action-Adventure',34:'FPS',35:'FPS',
+            2: None,           # Point-and-click → skip
+            4: 'Fighting',     # Fighting
+            5: 'FPS',          # Shooter
+            7: None,           # Music → skip
+            8: 'Platformer',   # Platform
+            9: 'Puzzle',       # Puzzle
+            10: 'Racing',      # Racing
+            11: 'Strategy',    # Real Time Strategy
+            12: 'RPG',         # Role-playing (RPG)
+            13: None,           # Simulator → skip
+            14: 'Sports',      # Sport
+            15: 'Strategy',    # Strategy
+            16: 'Strategy',    # Turn-based strategy (TBS) — eskisi Metroidvania hataydı!
+            24: 'Strategy',    # Tactical
+            25: 'Action',      # Hack and slash/Beat 'em up
+            26: None,           # Quiz/Trivia → skip
+            31: 'Action-Adventure', # Adventure
+            32: None,           # Indie → skip (genre değil tag)
+            33: 'Action',      # Arcade
+            34: None,           # Visual Novel → skip
+            35: 'FPS',         # Shooter (alt kategori)
           }
           with urllib.request.urlopen(urllib.request.Request(
               SB+'/rest/v1/genres?select=id,name&limit=50',
