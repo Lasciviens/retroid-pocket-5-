@@ -371,8 +371,8 @@ async function load(){
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,developer:g.developer||null,
     coop:g.is_coop,coopNotes:g.coop_notes,
-    status:g.play_status||'backlog',rating:g.rating,igdbRating:g.igdb_rating||null,iconic:g.is_iconic,desc:g.description,
-    playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',externalId:g.external_id||null,igdbUrl:g.igdb_url||null,
+    status:g.play_status||'backlog',rating:g.rating,igdbRating:g.igdb_rating_canonical||null,iconic:g.is_iconic,desc:g.description,
+    playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',externalId:g.external_id||null,igdbUrl:g.igdb_url_canonical||null,
     cover:g.primary_cover_url||null,
     series:g.series_name||null,
     genres:Array.isArray(g.genres)?g.genres:[],
