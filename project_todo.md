@@ -10,6 +10,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [ ] **Bridge uzerinden kontrollu eslestirme turu** — mevcut DB oyunlarini tek tek veya kucuk partilerle eslestir
 - [x] **migration_v6.sql uygulandi** — storyline, publisher, igdb_url, igdb_rating, igdb_synced_at canli DB'de mevcut
 - [ ] **Toplu IGDB audit araci** — eslesmeyen / dusuk skorlu / eksik metadata kayitlarini listele
+- [ ] **IGDB enrich pass** — `scripts/igdb_enrich_missing.py` ile dry-run -> hedefli apply -> tam apply akisini tamamla
 - [ ] **Schema degerlendirmesi** — screenshots, videos, websites, publisher gibi alanlar icin yeni kolon veya iliski gerekirse planla
 - [x] **IGDB varyant modeli** — ayni isim/farkli platform oyunlari icin `migration_v7.sql` mantigina gecis
 - [x] **IGDB normalize write flow** — import oncesi `canonical_game + platform_variants` formatina oturt

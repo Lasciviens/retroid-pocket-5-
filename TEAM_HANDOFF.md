@@ -113,6 +113,7 @@ Dosya: `Retroid_Library_Dashboard.html`
 - [ ] Library Dashboard modal'ına yeni alanları göster
 - [ ] Library içinde multiplayer/co-op sunumunu güçlendir
 - [ ] Genres eksikliği — sync sonrası kontrol et, hâlâ boşsa manuel ekle
+- [ ] `scripts/igdb_enrich_missing.py` ile eksik canonical metadata için dry-run ve apply turu yap
 
 ### Orta Öncelik
 - [ ] Session Log — oyun başına ne zaman oynadım tablosu
