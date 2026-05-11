@@ -1,0 +1,63 @@
+name: IGDB Screenshots Sync
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync IGDB screenshots and keywords
+        run: |
+          python3 << 'PYEOF'
+          import json, urllib.request, time
+
+          SB = 'https://bniqmxbtvgwkaoswugds.supabase.co'
+          AK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs'
+          SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Nzg1MTExNiwiZXhwIjoyMDkzNDI3MTE2fQ.j7fQEewwxb_IRicNOmYTwsEJONvHbrj3TvqGyNozVwM'
+          P = SB + '/functions/v1/igdb-search'
+          nc = lambda u: (u if not u.startswith('//') else 'https:' + u).replace('/t_thumb/', '/t_cover_big/') if u else ''
+
+          offset = 0
+          total_ok = 0
+          while True:
+              r = urllib.request.Request(
+                  SB + '/rest/v1/games?select=id,external_id&external_id=not.is.null&order=title&limit=50&offset=' + str(offset),
+                  headers={'apikey': AK, 'Authorization': 'Bearer ' + AK})
+              with urllib.request.urlopen(r) as x:
+                  gs = json.load(x)
+              if not gs:
+                  break
+              ok = 0
+              for g in gs:
+                  try:
+                      with urllib.request.urlopen(urllib.request.Request(
+                          P + '?id=' + str(g['external_id']),
+                          headers={'apikey': AK, 'Authorization': 'Bearer ' + AK}), timeout=8) as x:
+                          d = (json.load(x).get('results') or [None])[0]
+                      if not d:
+                          continue
+                      ss = [nc(s.get('url', '')) for s in (d.get('screenshots') or []) if s.get('url')][:10]
+                      kw = [k.get('name', '') for k in (d.get('keywords') or []) if k.get('name')][:20]
+                      p = {}
+                      if ss:
+                          p['screenshots'] = ss
+                      if kw:
+                          p['keywords'] = kw
+                      if p:
+                          with urllib.request.urlopen(urllib.request.Request(
+                              SB + '/rest/v1/games?id=eq.' + g['id'],
+                              data=json.dumps(p).encode(), method='PATCH',
+                              headers={'apikey': SK, 'Authorization': 'Bearer ' + SK,
+                                       'Content-Type': 'application/json', 'Prefer': 'return=minimal'})) as x:
+                              ok += 1
+                      time.sleep(0.1)
+                  except Exception as e:
+                      print(f'ERR: {e}')
+              print(f'offset={offset}: {ok}/{len(gs)}')
+              total_ok += ok
+              offset += 50
+              if len(gs) < 50:
+                  break
+          print(f'TOPLAM: {total_ok}')
+          PYEOF
