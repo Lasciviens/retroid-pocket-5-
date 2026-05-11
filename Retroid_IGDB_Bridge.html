@@ -277,6 +277,11 @@ function buildCanonicalPatch(item, normalized, current={}){
   if(!current.is_coop && coop.isCoop) patch.is_coop=true;
   if(!current.coop_notes && coop.coopNotes) patch.coop_notes=coop.coopNotes;
   if(item.name && item.name!==current.title) patch.title=item.name;
+  // keywords ve screenshots (yeni alanlar)
+  if(Array.isArray(canonical.keywords) && canonical.keywords.length)
+    patch.keywords = canonical.keywords.slice(0, 20); // max 20 keyword
+  if(Array.isArray(canonical.screenshots) && canonical.screenshots.length)
+    patch.screenshots = canonical.screenshots.slice(0, 10); // max 10 screenshot URL
   patch.igdb_synced_at=new Date().toISOString();
   return patch;
 }
