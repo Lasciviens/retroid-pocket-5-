@@ -373,7 +373,7 @@ function getLiveIgdbRating(game){
 
 async function load(){
   // screenshots/keywords modal açılınca lazy yüklenir
-  const games=await sb('v_games_full?select=id,title,release_year,developer,publisher,is_coop,coop_notes,play_status,rating,igdb_rating_canonical,igdb_url_canonical,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series_id,series_name,genres,platforms,multiplayer_info&order=title');
+  const games=await sb('v_games_full?select=id,title,release_year,developer,publisher,is_coop,coop_notes,play_status,rating,igdb_rating_canonical,igdb_url_canonical,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series_id,external_id,series_name,genres,platforms,multiplayer_info&order=title');
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,developer:g.developer||null,
     coop:g.is_coop,coopNotes:g.coop_notes,
