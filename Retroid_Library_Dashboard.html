@@ -606,7 +606,22 @@ function render(){
   grid.className=`game-grid view-${filters.view}`;
   if(!list.length){grid.innerHTML='<div class="empty">Filtreyle eşleşen oyun bulunamadı.</div>';return;}
   if(filters.view==='list'){
-    grid.innerHTML=list.map(renderGameListItem).join('');
+    // Chunked render — 50'şer kart, tarayıcıyı dondurmaz
+  grid.innerHTML='';
+  const chunkSize=50;
+  let offset=0;
+  function renderChunk(){
+    const chunk=list.slice(offset,offset+chunkSize);
+    if(!chunk.length)return;
+    const frag=document.createDocumentFragment();
+    const tmp=document.createElement('div');
+    tmp.innerHTML=chunk.map(renderGameListItem).join('');
+    while(tmp.firstChild)frag.appendChild(tmp.firstChild);
+    grid.appendChild(frag);
+    offset+=chunkSize;
+    if(offset<list.length)requestAnimationFrame(renderChunk);
+  }
+  renderChunk();
     return;
   }
   if(filters.view==='table'){
