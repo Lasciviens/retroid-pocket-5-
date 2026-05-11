@@ -372,7 +372,8 @@ function getLiveIgdbRating(game){
 }
 
 async function load(){
-  const games=await sb('v_games_full?select=*&order=title');
+  // screenshots/keywords liste görünümü için gerekmez — modal açılınca lazy yüklenir
+  const games=await sb('v_games_full?select=id,title,release_year,developer,publisher,is_coop,coop_notes,play_status,rating,igdb_rating_canonical,igdb_url_canonical,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series_id,series_name,genres,platforms,multiplayer_info&order=title');
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,developer:g.developer||null,
     coop:g.is_coop,coopNotes:g.coop_notes,
@@ -888,6 +889,12 @@ function navigateModal(direction){
   openModal(target.id);
 }
 
+async function fetchModalScreenshots(gameId){
+  try{
+    const data=await sb('v_games_full?select=id,screenshots,keywords&id=eq.'+gameId);
+    return data&&data[0]?{screenshots:data[0].screenshots||[],keywords:data[0].keywords||[]}:{screenshots:[],keywords:[]};
+  }catch(e){return{screenshots:[],keywords:[]};}
+}
 function openModal(id){
   const g=ALL.find(x=>x.id===id);
   if(!g)return;
@@ -927,7 +934,7 @@ function openModal(id){
 
       ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p style="line-height:1.65;font-size:.88rem">${escapeHtml(g.desc)}</p></div>`:''}
 
-      \${g.screenshots&&g.screenshots.length?`<div class="modal-section">
+      \<div id="ss-${g.id}" class="modal-section"></div>${false&&`<div class="modal-section">
         <h4>🖼️ Ekran Görüntüleri</h4>
         <div class="screenshot-gallery">
           \${g.screenshots.map(url=>`<img src="\${escapeHtml(url)}" loading="lazy" onerror="this.style.display='none'" alt="screenshot">`).join('')}
