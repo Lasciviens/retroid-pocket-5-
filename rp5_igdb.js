@@ -64,6 +64,21 @@
     return value.map(mapper).filter(Boolean);
   }
 
+
+  function parseAgeRating(ratings){
+    if(!Array.isArray(ratings)) return null;
+    // PEGI: category=2, ESRB: category=1
+    const pegiMap={1:'3',2:'7',3:'12',4:'16',5:'18'};
+    const esrbMap={6:'E',7:'E10+',8:'T',9:'M',10:'AO'};
+    for(const r of ratings){
+      if(r.category===2 && pegiMap[r.rating]) return 'PEGI '+pegiMap[r.rating];
+    }
+    for(const r of ratings){
+      if(r.category===1 && esrbMap[r.rating]) return 'ESRB '+esrbMap[r.rating];
+    }
+    return null;
+  }
+
   function normalizeItem(item){
     const releaseTs=item.first_release_date || item.releaseDate || item.release_date || null;
     const releaseYear=releaseTs ? new Date(releaseTs * 1000).getFullYear() : (item.year || null);
@@ -121,7 +136,10 @@
       videos,
       websites,
       multiplayerSignals,
-      igdbUrl:item.url || buildGameUrl(item.slug || item.seo_slug || '')
+      igdbUrl:item.url || buildGameUrl(item.slug || item.seo_slug || ''),
+      ageRating:parseAgeRating(item.age_ratings),
+      ratingCount:item.total_rating_count ?? item.rating_count ?? null,
+      genres:normalizeList(item.genres, entry=>typeof entry==='string'?entry:(entry.name || '')),
     };
   }
 
