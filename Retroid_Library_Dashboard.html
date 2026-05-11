@@ -952,7 +952,7 @@ function openModal(id){
 
       ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p style="line-height:1.65;font-size:.88rem">${escapeHtml(g.desc)}</p></div>`:''}
 
-      <div id="ss-${g.id}" class="modal-section"></div>
+      <div id="media-${g.id}" class="modal-section"></div>
 
       <div class="modal-section">
         <h4>ℹ️ Bilgiler</h4>
@@ -1033,14 +1033,27 @@ function openModal(id){
   if(modalBox) modalBox.scrollTop=0;
   renderIgdbPanel(g);
   fetchIgdbForGame(g).then(()=>{renderIgdbPanel(g);render();}).catch(()=>renderIgdbPanel(g));
-  // Screenshots lazy load
-  const ssEl=document.getElementById('ss-'+g.id);
-  if(ssEl&&ssEl.children.length===0){
-    fetchModalScreenshots(g.id).then(({screenshots})=>{
+  // Screenshots + keywords lazy load
+  const mediaEl=document.getElementById('media-'+g.id);
+  if(mediaEl&&mediaEl.children.length===0){
+    fetchModalScreenshots(g.id).then(({screenshots,keywords})=>{
+      const blocks=[];
       if(screenshots&&screenshots.length){
-        ssEl.innerHTML='<h4>🖼️ Ekran Görüntüleri</h4><div class="screenshot-gallery">'+
+        blocks.push(
+          '<div class="modal-section"><h4>🖼️ Ekran Görüntüleri</h4><div class="screenshot-gallery">'+
           screenshots.map(url=>'<img src="'+escapeHtml(url)+'" loading="lazy" onerror="this.style.display=\'none\'">').join('')+
-          '</div>';
+          '</div></div>'
+        );
+      }
+      if(keywords&&keywords.length){
+        blocks.push(
+          '<div class="modal-section"><h4>🏷️ Keywords</h4><div class="badges" style="margin-top:8px">'+
+          keywords.map(word=>'<span class="badge badge-year">'+escapeHtml(word)+'</span>').join('')+
+          '</div></div>'
+        );
+      }
+      if(blocks.length){
+        mediaEl.innerHTML=blocks.join('');
       }
     });
   }
