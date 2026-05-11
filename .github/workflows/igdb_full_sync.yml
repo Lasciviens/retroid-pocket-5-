@@ -1,0 +1,202 @@
+name: IGDB Full Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      fields:
+        description: 'Sync edilecek alanlar (virgülle ayır): screenshots,keywords,genres,description,developer,publisher,storyline,rating,cover'
+        required: false
+        default: 'screenshots,keywords,genres'
+      game_ids:
+        description: 'Spesifik oyun ID listesi (boşsa tümü) - UUID virgülle: id1,id2,id3'
+        required: false
+        default: ''
+      limit:
+        description: 'Max oyun sayısı (boşsa tümü)'
+        required: false
+        default: ''
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: IGDB Full Sync
+        env:
+          FIELDS: ${{ github.event.inputs.fields }}
+          GAME_IDS: ${{ github.event.inputs.game_ids }}
+          LIMIT: ${{ github.event.inputs.limit }}
+        run: |
+          python3 << 'PYEOF'
+          import json, urllib.request, time, os
+
+          SB = 'https://bniqmxbtvgwkaoswugds.supabase.co'
+          AK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NTExMTYsImV4cCI6MjA5MzQyNzExNn0.VXjnGv3uV8A2XfAW5jOBAkxyzc9c9q6adrA64JfwrQs'
+          SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Nzg1MTExNiwiZXhwIjoyMDkzNDI3MTE2fQ.j7fQEewwxb_IRicNOmYTwsEJONvHbrj3TvqGyNozVwM'
+          P = SB + '/functions/v1/igdb-search'
+
+          FIELDS = [f.strip() for f in os.environ.get('FIELDS', 'screenshots,keywords,genres').split(',') if f.strip()]
+          GAME_IDS = [g.strip() for g in os.environ.get('GAME_IDS', '').split(',') if g.strip()]
+          LIMIT_STR = os.environ.get('LIMIT', '').strip()
+          LIMIT = int(LIMIT_STR) if LIMIT_STR else None
+
+          print(f"Sync alanları: {FIELDS}")
+          print(f"Spesifik oyunlar: {GAME_IDS or 'tümü'}")
+          print(f"Limit: {LIMIT or 'sınırsız'}")
+
+          # IGDB genre mapping
+          IGDB_GENRE_MAP = {
+            2: 'Platformer', 4: 'Fighting', 5: 'FPS', 7: 'Puzzle', 8: 'Racing',
+            9: 'RPG', 10: 'Strategy', 11: 'Sports', 12: 'RPG', 14: 'Sports',
+            15: 'Strategy', 16: 'Metroidvania', 24: 'Action', 25: 'Action',
+            26: 'Action', 31: 'Action-Adventure', 32: 'Action-Adventure',
+            33: 'Action-Adventure', 34: 'FPS', 35: 'FPS',
+          }
+
+          # Bizim genre adı -> id
+          with urllib.request.urlopen(urllib.request.Request(
+              SB+'/rest/v1/genres?select=id,name&limit=50',
+              headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
+              our_genres = {g['name']: g['id'] for g in json.load(x)}
+
+          def nc(url):
+              if not url: return ''
+              return (url if not url.startswith('//') else 'https:'+url).replace('/t_thumb/','/t_cover_big/')
+
+          def igdb_fetch(igdb_id):
+              with urllib.request.urlopen(urllib.request.Request(
+                  P+'?id='+str(igdb_id),
+                  headers={'apikey':AK,'Authorization':'Bearer '+AK}), timeout=10) as x:
+                  return (json.load(x).get('results') or [None])[0]
+
+          def patch_game(gid, payload):
+              with urllib.request.urlopen(urllib.request.Request(
+                  SB+'/rest/v1/games?id=eq.'+gid,
+                  data=json.dumps(payload).encode(), method='PATCH',
+                  headers={'apikey':SK,'Authorization':'Bearer '+SK,
+                           'Content-Type':'application/json','Prefer':'return=minimal'})) as x:
+                  return x.status
+
+          def get_existing_genres(game_id):
+              with urllib.request.urlopen(urllib.request.Request(
+                  SB+'/rest/v1/game_genres?select=genre_id&game_id=eq.'+game_id,
+                  headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
+                  return {row['genre_id'] for row in json.load(x)}
+
+          def insert_genre(game_id, genre_id):
+              with urllib.request.urlopen(urllib.request.Request(
+                  SB+'/rest/v1/game_genres',
+                  data=json.dumps({'game_id':game_id,'genre_id':genre_id}).encode(), method='POST',
+                  headers={'apikey':SK,'Authorization':'Bearer '+SK,
+                           'Content-Type':'application/json','Prefer':'return=minimal'})) as x:
+                  return x.status
+
+          # Oyunları çek
+          if GAME_IDS:
+              games = []
+              for gid in GAME_IDS:
+                  with urllib.request.urlopen(urllib.request.Request(
+                      SB+'/rest/v1/games?select=id,title,external_id&id=eq.'+gid,
+                      headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
+                      games.extend(json.load(x))
+          else:
+              games = []
+              offset = 0
+              while True:
+                  url = SB+'/rest/v1/games?select=id,title,external_id&external_id=not.is.null&order=title&limit=50&offset='+str(offset)
+                  with urllib.request.urlopen(urllib.request.Request(url, headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
+                      batch = json.load(x)
+                  games.extend(batch)
+                  if len(batch) < 50: break
+                  offset += 50
+
+          if LIMIT:
+              games = games[:LIMIT]
+
+          print(f"{len(games)} oyun işlenecek")
+          stats = {f: 0 for f in FIELDS}
+          stats['errors'] = 0
+
+          for i, g in enumerate(games):
+              try:
+                  d = igdb_fetch(g['external_id'])
+                  if not d:
+                      print(f"  [{i+1}] {g['title']}: IGDB sonuç yok")
+                      continue
+
+                  game_patch = {}
+
+                  if 'screenshots' in FIELDS:
+                      ss = [nc(s.get('url','')) for s in (d.get('screenshots') or []) if s.get('url')][:10]
+                      if ss: game_patch['screenshots'] = ss; stats['screenshots'] += 1
+
+                  if 'keywords' in FIELDS:
+                      kw = [k.get('name','') for k in (d.get('keywords') or []) if k.get('name')][:20]
+                      if kw: game_patch['keywords'] = kw; stats['keywords'] += 1
+
+                  if 'description' in FIELDS and not g.get('description'):
+                      desc = d.get('summary','')
+                      if desc: game_patch['description'] = desc; stats['description'] = stats.get('description',0)+1
+
+                  if 'developer' in FIELDS:
+                      devs = [r.get('company',{}).get('name','') for r in (d.get('involved_companies') or []) if r.get('developer')]
+                      if devs: game_patch['developer'] = devs[0]; stats['developer'] = stats.get('developer',0)+1
+
+                  if 'publisher' in FIELDS:
+                      pubs = [r.get('company',{}).get('name','') for r in (d.get('involved_companies') or []) if r.get('publisher')]
+                      if pubs: game_patch['publisher'] = pubs[0]; stats['publisher'] = stats.get('publisher',0)+1
+
+                  if 'storyline' in FIELDS:
+                      sl = d.get('storyline','')
+                      if sl: game_patch['storyline'] = sl; stats['storyline'] = stats.get('storyline',0)+1
+
+                  if 'rating' in FIELDS:
+                      rt = d.get('total_rating') or d.get('rating')
+                      if rt is not None: game_patch['igdb_rating'] = rt; stats['rating'] = stats.get('rating',0)+1
+
+                  if 'cover' in FIELDS:
+                      cover = d.get('cover',{}).get('url','')
+                      if cover: game_patch['primary_cover_url'] = nc(cover); stats['cover'] = stats.get('cover',0)+1
+
+                  if game_patch:
+                      patch_game(g['id'], game_patch)
+
+                  if 'genres' in FIELDS:
+                      igdb_genres = d.get('genres') or []
+                      existing = get_existing_genres(g['id'])
+                      added = 0
+                      for ig in igdb_genres:
+                          our_name = IGDB_GENRE_MAP.get(ig.get('id'))
+                          if not our_name:
+                              n = ig.get('name','').lower()
+                              if 'hack' in n or 'beat' in n or 'action' in n: our_name = 'Action'
+                              elif 'rpg' in n or 'role' in n: our_name = 'RPG'
+                              elif 'platform' in n: our_name = 'Platformer'
+                              elif 'racing' in n: our_name = 'Racing'
+                              elif 'strateg' in n or 'tactic' in n: our_name = 'Strategy'
+                              elif 'puzzle' in n: our_name = 'Puzzle'
+                              elif 'fight' in n: our_name = 'Fighting'
+                              elif 'shoot' in n or 'fps' in n: our_name = 'FPS'
+                              elif 'adventure' in n: our_name = 'Action-Adventure'
+                              elif 'horror' in n or 'survival' in n: our_name = 'Survival Horror'
+                              elif 'stealth' in n: our_name = 'Stealth'
+                              elif 'sport' in n: our_name = 'Sports'
+                          if our_name and our_name in our_genres:
+                              gid = our_genres[our_name]
+                              if gid not in existing:
+                                  insert_genre(g['id'], gid)
+                                  existing.add(gid)
+                                  added += 1
+                      if added: stats['genres'] += 1
+
+                  if (i+1) % 20 == 0:
+                      print(f"  [{i+1}/{len(games)}] İşlendi — {stats}")
+                  time.sleep(0.15)
+
+              except Exception as e:
+                  stats['errors'] += 1
+                  print(f"  ERR [{i+1}] {g.get('title','?')}: {e}")
+
+          print(f"\n=== TAMAMLANDI ===")
+          for k, v in stats.items():
+              print(f"  {k}: {v}")
+          PYEOF
