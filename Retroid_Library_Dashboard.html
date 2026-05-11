@@ -372,17 +372,17 @@ function getLiveIgdbRating(game){
 }
 
 async function load(){
-  // games + nested join — hızlı, screenshots lazy
-  const games=await sb('games?select=id,title,release_year,developer,publisher,is_coop,coop_notes,play_status,rating,igdb_rating,igdb_url,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series(id,name),game_genres(genres(id,name)),game_platforms(id,cover_url,performance,performance_notes,rom_status,rom_url,region,is_primary_variant,igdb_rating,igdb_url,systems(id,name),emulators(id,name))&order=title');
+  // screenshots/keywords modal açılınca lazy yüklenir
+  const games=await sb('v_games_full?select=id,title,release_year,developer,publisher,is_coop,coop_notes,play_status,rating,igdb_rating_canonical,igdb_url_canonical,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series_id,series_name,genres,platforms,multiplayer_info&order=title');
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,developer:g.developer||null,
     coop:g.is_coop,coopNotes:g.coop_notes,
-    status:g.play_status||'backlog',rating:g.rating,igdbRating:g.igdb_rating||null,iconic:g.is_iconic,desc:g.description,
-    playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',externalId:g.external_id||null,igdbUrl:g.igdb_url||null,
+    status:g.play_status||'backlog',rating:g.rating,igdbRating:g.igdb_rating_canonical||null,iconic:g.is_iconic,desc:g.description,
+    playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',externalId:g.external_id||null,igdbUrl:g.igdb_url_canonical||null,
     cover:g.primary_cover_url||null,
-    series:g.series?.name||null,
-    genres:(g.game_genres||[]).map(gg=>gg.genres?.name).filter(Boolean),
-    platforms:(g.game_platforms||[]).sort((a,b)=>(b.is_primary_variant?1:0)-(a.is_primary_variant?1:0)).map(p=>({id:p.id,system:p.systems?.name,emulator:p.emulators?.name,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing',romUrl:p.rom_url||'',igdbRating:p.igdb_rating||null,igdbUrl:p.igdb_url||null,isPrimary:p.is_primary_variant||false,romUrl:p.rom_url||'',region:p.region||'',isPreferred:p.is_preferred||false,igdbGameId:p.igdb_game_id||null,igdbSlug:p.igdb_slug||'',igdbUrl:p.igdb_url||'',igdbRating:p.igdb_rating||null,igdbReleaseYear:p.igdb_release_year||null,igdbFirstReleaseDate:p.igdb_first_release_date||null,versionTitle:p.version_title||'',isPrimaryVariant:p.is_primary_variant||false}))
+    series:g.series_name||null,
+    genres:Array.isArray(g.genres)?g.genres:[],
+    platforms:(g.platforms||[]).map(p=>({id:p.id,system:p.system,emulator:p.emulator,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing',romUrl:p.rom_url||'',igdbRating:p.igdb_rating||null,igdbUrl:p.igdb_url||null,isPrimary:p.is_primary_variant||false,romUrl:p.rom_url||'',region:p.region||'',isPreferred:p.is_preferred||false,igdbGameId:p.igdb_game_id||null,igdbSlug:p.igdb_slug||'',igdbUrl:p.igdb_url||'',igdbRating:p.igdb_rating||null,igdbReleaseYear:p.igdb_release_year||null,igdbFirstReleaseDate:p.igdb_first_release_date||null,versionTitle:p.version_title||'',isPrimaryVariant:p.is_primary_variant||false}))
   }));
   const fSys=document.getElementById('f-system');
   const fGen=document.getElementById('f-genre');
