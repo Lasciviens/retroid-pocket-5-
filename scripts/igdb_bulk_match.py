@@ -62,6 +62,20 @@ def unique_list(values):
     return out
 
 
+def merge_unique_strings(current_value, incoming_value, limit=None):
+    current = current_value if isinstance(current_value, list) else []
+    incoming = incoming_value if isinstance(incoming_value, list) else []
+    merged = []
+    seen = set()
+    for value in current + incoming:
+        clean = str(value or "").strip()
+        if not clean or clean in seen:
+            continue
+        seen.add(clean)
+        merged.append(clean)
+    return merged[:limit] if limit else merged
+
+
 def score_match(query, item_name, item_year, expected_year):
     qn = normalize(query)
     nn = normalize(item_name)
@@ -220,7 +234,7 @@ def build_multiplayer_signals(modes):
 def fetch_games_without_external_id(limit=None):
     select = (
         "id,title,release_year,description,developer,publisher,storyline,igdb_rating,igdb_url,"
-        "primary_cover_url,external_id,is_coop,coop_notes,"
+        "primary_cover_url,external_id,is_coop,coop_notes,themes,age_rating,rating_count,multiplayer_info,keywords,screenshots,"
         "game_genres(genres(name)),"
         "game_platforms(id,system_id,is_preferred,cover_url,systems(name),igdb_game_id)"
     )
@@ -315,6 +329,22 @@ def build_canonical_patch(game, normalized, item):
         patch["is_coop"] = any("co-op" in signal.lower() for signal in normalized["canonical_game"]["multiplayer_signals"])
     if not game.get("coop_notes") and normalized["canonical_game"].get("multiplayer_signals"):
         patch["coop_notes"] = " · ".join(normalized["canonical_game"]["multiplayer_signals"])
+    if not game.get("age_rating") and item.get("age_rating"):
+        patch["age_rating"] = item["age_rating"]
+    if game.get("rating_count") is None and item.get("rating_count") is not None:
+        patch["rating_count"] = item["rating_count"]
+    themes = merge_unique_strings(game.get("themes"), canonical.get("themes"))
+    if themes:
+        patch["themes"] = themes
+    keywords = merge_unique_strings(game.get("keywords"), canonical.get("keywords"), 20)
+    if keywords:
+        patch["keywords"] = keywords
+    screenshots = merge_unique_strings(game.get("screenshots"), canonical.get("screenshots"), 10)
+    if screenshots:
+        patch["screenshots"] = screenshots
+    multiplayer = merge_unique_strings(game.get("multiplayer_info"), canonical.get("multiplayer_signals"), 12)
+    if multiplayer:
+        patch["multiplayer_info"] = multiplayer
     return patch
 
 

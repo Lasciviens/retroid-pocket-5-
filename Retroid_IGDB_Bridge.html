@@ -231,6 +231,13 @@ function buildDbDescription(item){
   return [item.summary || '', item.storyline ? `Storyline: ${item.storyline}` : ''].filter(Boolean).join('\n\n') || null;
 }
 
+function mergeUniqueStrings(currentValue, incomingValue, limit=null){
+  const current=Array.isArray(currentValue) ? currentValue : [];
+  const incoming=Array.isArray(incomingValue) ? incomingValue : [];
+  const merged=[...new Set([...current, ...incoming].map(value=>String(value || '').trim()).filter(Boolean))];
+  return limit ? merged.slice(0, limit) : merged;
+}
+
 function getPreferredPlatformName(localGame){
   const preferred=(localGame?.systems || []).find(Boolean);
   return preferred || '';
@@ -275,12 +282,17 @@ function buildCanonicalPatch(item, normalized, current={}){
   if(!current.external_id && primaryVariant.igdb_game_id) patch.external_id=String(primaryVariant.igdb_game_id);
   if(!current.is_coop && coop.isCoop) patch.is_coop=true;
   if(!current.coop_notes && coop.coopNotes) patch.coop_notes=coop.coopNotes;
+  if(!current.age_rating && item.ageRating) patch.age_rating=item.ageRating;
+  if((current.rating_count==null) && item.ratingCount!=null) patch.rating_count=item.ratingCount;
+  const mergedThemes=mergeUniqueStrings(current.themes, canonical.themes);
+  if(mergedThemes.length) patch.themes=mergedThemes;
+  const mergedKeywords=mergeUniqueStrings(current.keywords, canonical.keywords, 20);
+  if(mergedKeywords.length) patch.keywords=mergedKeywords;
+  const mergedScreenshots=mergeUniqueStrings(current.screenshots, canonical.screenshots, 10);
+  if(mergedScreenshots.length) patch.screenshots=mergedScreenshots;
+  const mergedMultiplayer=mergeUniqueStrings(current.multiplayer_info, canonical.multiplayer_signals, 12);
+  if(mergedMultiplayer.length) patch.multiplayer_info=mergedMultiplayer;
   if(item.name && item.name!==current.title) patch.title=item.name;
-  // keywords ve screenshots (yeni alanlar)
-  if(Array.isArray(canonical.keywords) && canonical.keywords.length)
-    patch.keywords = canonical.keywords.slice(0, 20); // max 20 keyword
-  if(Array.isArray(canonical.screenshots) && canonical.screenshots.length)
-    patch.screenshots = canonical.screenshots.slice(0, 10); // max 10 screenshot URL
   patch.igdb_synced_at=new Date().toISOString();
   return patch;
 }
@@ -419,7 +431,7 @@ async function createGameFromIgdb(item){
 
 async function updateGameFromIgdb(gameId, item){
   const normalized=normalizeIgdbPayload(item, selectedCandidate);
-  const currentList=await apiRequest(`games?select=id,title,release_year,developer,publisher,storyline,description,igdb_rating,igdb_url,primary_cover_url,is_coop,coop_notes,external_id&id=eq.${gameId}`);
+  const currentList=await apiRequest(`games?select=id,title,release_year,developer,publisher,storyline,description,igdb_rating,igdb_url,primary_cover_url,is_coop,coop_notes,external_id,themes,age_rating,rating_count,multiplayer_info,keywords,screenshots&id=eq.${gameId}`);
   const current=currentList?.[0];
   if(!current) throw new Error('Yerel oyun bulunamadi');
   const seriesId=await ensureSeriesId(item.franchises?.[0] || item.collections?.[0] || '');

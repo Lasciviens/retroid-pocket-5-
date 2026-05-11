@@ -372,7 +372,7 @@ function getLiveIgdbRating(game){
 
 async function load(){
   // screenshots/keywords modal açılınca lazy yüklenir
-  const games=await sb('v_games_full?select=id,title,release_year,developer,publisher,is_coop,coop_notes,play_status,rating,igdb_rating_canonical,igdb_url_canonical,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series_id,external_id,series_name,genres,platforms,multiplayer_info&order=title');
+  const games=await sb('v_games_full?select=id,title,release_year,developer,publisher,is_coop,coop_notes,play_status,rating,igdb_rating_canonical,igdb_url_canonical,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series_id,external_id,series_name,genres,platforms,multiplayer_info,themes,age_rating,rating_count&order=title');
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,developer:g.developer||null,
     coop:g.is_coop,coopNotes:g.coop_notes,
@@ -381,6 +381,10 @@ async function load(){
     cover:g.primary_cover_url||null,
     series:g.series_name||null,
     genres:Array.isArray(g.genres)?g.genres:[],
+    themes:Array.isArray(g.themes)?g.themes:[],
+    ageRating:g.age_rating||null,
+    ratingCount:g.rating_count||null,
+    multiplayerInfo:Array.isArray(g.multiplayer_info)?g.multiplayer_info:[],
     platforms:(g.platforms||[]).map(p=>({id:p.id,system:p.system,emulator:p.emulator,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing',romUrl:p.rom_url||'',igdbRating:p.igdb_rating||null,igdbUrl:p.igdb_url||null,isPrimary:p.is_primary_variant||false,romUrl:p.rom_url||'',region:p.region||'',isPreferred:p.is_preferred||false,igdbGameId:p.igdb_game_id||null,igdbSlug:p.igdb_slug||'',igdbUrl:p.igdb_url||'',igdbRating:p.igdb_rating||null,igdbReleaseYear:p.igdb_release_year||null,igdbFirstReleaseDate:p.igdb_first_release_date||null,versionTitle:p.version_title||'',isPrimaryVariant:p.is_primary_variant||false}))
   }));
   const fSys=document.getElementById('f-system');
@@ -955,13 +959,19 @@ function openModal(id){
         <div class="info-grid">
           ${g.year?`<div class="info-cell"><div class="lbl">Yıl</div><div class="val">${g.year}</div></div>`:''}
           ${g.developer?`<div class="info-cell"><div class="lbl">Geliştirici</div><div class="val">${escapeHtml(g.developer)}</div></div>`:''}
+          ${g.publisher?`<div class="info-cell"><div class="lbl">Publisher</div><div class="val">${escapeHtml(g.publisher)}</div></div>`:''}
           ${g.series?`<div class="info-cell"><div class="lbl">Seri</div><div class="val">${escapeHtml(g.series)}</div></div>`:''}
           ${g.genres.length?`<div class="info-cell"><div class="lbl">Tür</div><div class="val">${g.genres.map(escapeHtml).join(', ')}</div></div>`:''}
+          ${g.themes?.length?`<div class="info-cell"><div class="lbl">Temalar</div><div class="val">${g.themes.map(escapeHtml).join(', ')}</div></div>`:''}
           ${g.igdbRating?`<div class="info-cell"><div class="lbl">IGDB Puanı</div><div class="val" style="color:#c4b5fd">${(Number(g.igdbRating)/10).toFixed(1)}/10</div></div>`:''}
+          ${g.ratingCount?`<div class="info-cell"><div class="lbl">Oy Sayısı</div><div class="val">${escapeHtml(g.ratingCount.toLocaleString('tr-TR'))}</div></div>`:''}
+          ${g.ageRating?`<div class="info-cell"><div class="lbl">Yaş Sınırı</div><div class="val">${escapeHtml(g.ageRating)}</div></div>`:''}
           <div class="info-cell"><div class="lbl">Durum</div><div class="val" style="color:${statusColors[g.status]}">${statusLabels[g.status]||g.status}</div></div>
           ${g.coop?`<div class="info-cell"><div class="lbl">Co-op</div><div class="val">👫 Evet${g.coopNotes?' · '+escapeHtml(g.coopNotes):''}</div></div>`:''}
         </div>
       </div>
+
+      ${g.multiplayerInfo?.length?`<div class="modal-section"><h4>🎮 Multiplayer</h4><p>${g.multiplayerInfo.map(escapeHtml).join(' · ')}</p></div>`:''}
 
       <div class="modal-section">
         <h4>🖥️ Platformlar</h4>
