@@ -101,7 +101,7 @@
 
 > Buraya aktif görevleri yaz. Format: `- [ ] GÖREV — ajan: X — başlangıç: YYYY-MM-DD`
 
-- [ ] Repo organizasyonu (migrations/, docs/ taşıma) — ajan: claude — 2026-05-11
+
 
 ---
 
@@ -115,6 +115,8 @@
 - [x] migration_v7 (platform variant model) — ajan: codex — 2026-05-11
 - [x] PR #3 merge (TEAM_HANDOFF ortak yapıya geçiş) — ajan: furkan — 2026-05-11
 - [x] migrations/ klasörü, migrate_ HTML temizliği — ajan: claude — 2026-05-11
+- [x] AI_RULES.md oluşturuldu, ARCHITECTURE.md ve DOCS_INDEX.md güncellendi — ajan: claude — 2026-05-11
+- [x] SQL_Guide_Retroid.pdf silindi — ajan: claude — 2026-05-11
 - [x] TEAM_HANDOFF protokol güçlendirmesi — ajan: claude — 2026-05-11
 
 ---
