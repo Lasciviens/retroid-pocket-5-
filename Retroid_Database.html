@@ -248,7 +248,7 @@ function applyFilters(){
   filtered=ALL.filter(g=>{
     if(q&&!(g.title+' '+(g.series_name||'')+' '+(g.developer||'')).toLowerCase().includes(q))return false;
     if(st&&g.play_status!==st)return false;
-    if(sys&&!g.game_platforms?.some(p=>p.systems?.name===sys))return false;
+    if(sys&&!g.platforms?.some(p=>p.system===sys))return false;
     if(gen&&!g.game_genres?.some(gg=>gg.genres?.name===gen))return false;
     if(coop==='yes'&&!g.is_coop)return false;
     if(coop==='no'&&g.is_coop)return false;
@@ -277,10 +277,10 @@ function render(){
   if(!sorted.length){tbody.innerHTML='<tr><td colspan="11" class="loading">Sonuç bulunamadı.</td></tr>';return;}
   tbody.innerHTML=sorted.map(g=>{
     const cover=g.primary_cover_url||'';
-    const systems=[...new Set((g.game_platforms||[]).map(p=>p.systems?.name).filter(Boolean))];
+    const systems=[...new Set((g.platforms||[]).map(p=>p.system).filter(Boolean))];
     const genres=Array.isArray(g.genres)?g.genres:[];
-    const perf=g.game_platforms?.[0]?.performance||'good';
-    const romUrl=g.game_platforms?.[0]?.rom_url||'';
+    const perf=g.platforms?.[0]?.performance||'good';
+    const romUrl=g.platforms?.[0]?.rom_url||'';
     const statusClass={backlog:'status-backlog',playing:'status-playing',completed:'status-completed',dropped:'status-dropped',wishlist:'status-wishlist'}[g.play_status]||'status-backlog';
     const statusLabel={backlog:'Backlog',playing:'Oynuyor',completed:'Bitti',dropped:'Bıktım',wishlist:'İstek'}[g.play_status]||g.play_status;
     return`<tr>
@@ -297,12 +297,12 @@ function render(){
       <td>${g.is_coop?'<span class="badge badge-coop">2P</span>':''}</td>
       <td style="max-width:160px">
         ${romUrl
-          ?`<span class="editable" title="${romUrl}" onclick="editRomUrl('${g.id}',this,'${(g.game_platforms?.[0]?.id||'')}')">🔗 ${romUrl.split('/').pop().substring(0,20)}...</span>`
-          :`<span class="editable" style="color:var(--muted);font-size:.75rem" onclick="editRomUrl('${g.id}',this,'${(g.game_platforms?.[0]?.id||'')}')">+ ROM ekle</span>`
+          ?`<span class="editable" title="${romUrl}" onclick="editRomUrl('${g.id}',this,'${(g.platforms?.[0]?.id||'')}')">🔗 ${romUrl.split('/').pop().substring(0,20)}...</span>`
+          :`<span class="editable" style="color:var(--muted);font-size:.75rem" onclick="editRomUrl('${g.id}',this,'${(g.platforms?.[0]?.id||'')}')">+ ROM ekle</span>`
         }
       </td>
       <td onclick="event.stopPropagation()">
-        <div class="rom-row">${(g.game_platforms||[]).map(p=>{
+        <div class="rom-row">${(g.platforms||[]).map(p=>{
           const rs=p.rom_status||'missing';
           const pid=p.id;
           return '<div class="rom-btns">'+
@@ -324,7 +324,7 @@ function render(){
 
 // ── ROM STATUS ──
 async function setRomStatus(platformId, romStatus){
-  ALL.forEach(g=>g.game_platforms?.forEach(p=>{if(p.id===platformId)p.rom_status=romStatus;}));
+  ALL.forEach(g=>g.platforms?.forEach(p=>{if(p.id===platformId)p.rom_status=romStatus;}));
   render();
   await patch(`game_platforms?id=eq.${platformId}`,{rom_status:romStatus});
   toast('ROM durumu güncellendi');
@@ -345,7 +345,7 @@ function editRomUrl(gameId, el, platformId){
       await patch(`game_platforms?id=eq.${platformId}`,{rom_url:val||null});
     }
     const g=ALL.find(x=>x.id===gameId);
-    if(g&&g.game_platforms?.[0]) g.game_platforms[0].rom_url=val;
+    if(g&&g.platforms?.[0]) g.platforms[0].rom_url=val;
     filtered=[...ALL]; applyFilters();
     toast('ROM URL kaydedildi');
   }
@@ -415,11 +415,11 @@ function buildDrawerForm(g){
       <div class="pb-grid">
         <div><div class="field-label">Sistem</div>
           <select class="field-input pb-sys">
-            <option value="">Seç...</option>${sysOpts.replace(`value="${p.systems?.id||''}"`,`value="${p.systems?.id||''}" selected`)}
+            <option value="">Seç...</option>${sysOpts.replace(`value="${p.system_id||''}"`,`value="${p.system_id||''}" selected`)}
           </select></div>
         <div><div class="field-label">Emülatör</div>
           <select class="field-input pb-emu">
-            <option value="">—</option>${emuOpts.replace(`value="${p.emulators?.id||''}"`,`value="${p.emulators?.id||''}" selected`)}
+            <option value="">—</option>${emuOpts.replace(`value="${p.emulator_id||''}"`,`value="${p.emulator_id||''}" selected`)}
           </select></div>
         <div><div class="field-label">Performans</div>
           <select class="field-input pb-perf">
