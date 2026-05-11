@@ -142,14 +142,14 @@ async function api(ep,method='GET',body=null){
 }
 
 async function load(){
-  const games=await api('games?select=id,title,release_year,is_coop,coop_notes,play_status,rating,is_iconic,description,primary_cover_url,series(name),game_genres(genres(name)),game_platforms(performance,systems(name))&is_coop=eq.true&order=title');
+  const games=await api('v_games_full?select=*&is_coop=eq.true&order=title');
   ALL=(games||[]).map(g=>({
     id:g.id,title:g.title,year:g.release_year,coopNotes:g.coop_notes,
     status:g.play_status||'backlog',rating:g.rating,iconic:g.is_iconic,desc:g.description,
-    series:g.series?.name||null,
-    genres:(g.game_genres||[]).map(gg=>gg.genres?.name).filter(Boolean),
+    series:g.series_name||null,
+    genres:Array.isArray(g.genres)?g.genres:[],
     cover:g.primary_cover_url||null,
-    platforms:(g.game_platforms||[]).map(p=>({system:p.systems?.name,perf:p.performance}))
+    platforms:(g.platforms||[]).map(p=>({system:p.system,perf:p.performance}))
   }));
 
   // Populate filters
