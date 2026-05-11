@@ -21,22 +21,17 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 |------|-------------|
 | 📚 **Library** | 100+ games with cover art, filters (system, genre, series, IGDB/kapak/özet/yıl eksikleri), grid/list/table görünümleri, year/rating sorting, play status |
 | 🧹 **Cleanup Workspace** | Yoğun admin görünümü; IGDB, kapak, özet, yıl ve ROM yolu eksiklerini hızlı denetleme |
-| 👫 **Co-op Hub** | Filtered view of 2-player games with random suggestion engine |
 | 🗺️ **Series Roadmap** | Chronological game list per series — where to start each franchise |
 | 🎮 **Play Queue** | Drag-and-drop play order, synced across devices |
 | ♡ **Wishlist** | Track games to add, emulator requests, features — with priority levels |
 | 🛰️ **IGDB Bridge** | IGDB arama, link import, aday ekleme, ve mevcut oyun eslestirme yuzeyi |
 | ⚙️ **Emulator Matrix** | Which emulator for which system, pulled from DB |
 | 📖 **Glossary** | Technical terms (ROM, BIOS, JIT...) explained for developers |
-| ➕ **Admin Panel** | Add/edit/delete games with full form UI |
 
 ## Access Model
 
 - Public visitors can browse the site without logging in.
-- Write actions and admin pages use a remembered Supabase Auth session.
-- The browser keeps your admin session so you are not asked on every visit.
 - Server-side RLS hardening is prepared in `supabase_rls_hardening.sql` and should be applied in Supabase next.
-- Legacy migration/import tools are archived and no longer part of the live product surface.
 - The main Library modal includes live IGDB summary and bridge controls, but sorting uses DB-stored values rather than live IGDB fetches.
 - The Library now supports grid, list, and table browsing modes plus metadata-gap filters for faster scanning during cleanup and matching sessions.
 - `Retroid_IGDB_Bridge.html` now supports IGDB page link import, admin-side candidate creation, and matching existing local games.
@@ -95,8 +90,7 @@ Docs index: `DOCS_INDEX.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
 Bulk IGDB matcher: `scripts/igdb_bulk_match.py`
 IGDB repair pass: `scripts/igdb_repair_missing.py`
-IGDB schema expansion: `migration_v6.sql`
-IGDB platform-variant schema draft: `migration_v7.sql`
+Current schema reference: `migration_v7.sql`
 
 ---
 

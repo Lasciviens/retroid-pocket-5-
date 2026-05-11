@@ -66,63 +66,56 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 
 ```
 /
-├── index.html                       # Ana hub sayfası
-├── Retroid_Library_Dashboard.html   # Ana kütüphane — grid/list/table görünüm
-├── Retroid_Database.html            # Tam DB UI — filtrele, düzenle, ROM URL ekle
-├── Retroid_IGDB_Bridge.html         # IGDB eşleştirme ve import
-├── Retroid_Cleanup_Workspace.html   # Metadata denetim yüzeyi
-├── Retroid_Coop_Dashboard.html      # Co-op oyun seçici
-├── Retroid_Series_Roadmap.html      # Seri yol haritası
-├── Retroid_Emulator_Matrix.html     # Emülatör rehberi
-├── Retroid_Cover_Test.html          # Cover URL test ve güncelleme
-├── Retroid_Queue.html               # Oyun sırası
-├── Retroid_Tierlist.html            # Tier listesi
-├── Retroid_Glossary.html            # Teknik terimler
-├── Retroid_Tips.html                # İpuçları (notes.category=tip)
-├── Retroid_Request_Tracker.html     # İstekler (notes.category=request)
-├── Retroid_Legacy_Tools.html        # Eski araçlara erişim sayfası
-├── admin.html                       # Oyun ekle/düzenle/sil
-├── rp5_auth.js                      # Supabase Auth helper
-├── rp5_igdb.js                      # IGDB Bridge helper
-│
-├── migrations/                      # Tüm SQL migration geçmişi
-│   ├── migration_v3.sql             # emulator_systems, roms DROP, v_games_full
-│   ├── migration_v4.sql             # primary_cover_url kolonu
-│   ├── migration_v5.sql             # rom_url kolonu
-│   ├── migration_v6.sql             # IGDB metadata alanları
-│   ├── migration_v7.sql             # Platform variant model
-│   └── cover_url_update.sql         # Cover URL güncelleme şablonu
-│
-├── scripts/                         # Python araçları
-│   ├── igdb_bulk_match.py           # Toplu IGDB eşleştirme
-│   ├── igdb_repair_missing.py       # Eksik IGDB data onarımı
-│   └── igdb_top_import.py           # Top oyun import
-│
-├── docs/                            # Tüm MD dokümantasyon
-│   ├── IGDB_INTEGRATION.md
-│   ├── IGDB_DATA_PLAN.md
-│   ├── IGDB_IMPORT_PLAYBOOK.md
-│   ├── IGDB_FIELD_MAP.md
-│   ├── IGDB_QUERY_PRESETS.md
-│   ├── INTEGRATIONS_ROADMAP.md
-│   ├── PRODUCT_IDEAS_FROM_REFERENCES.md
-│   ├── SECURITY_NEXT_STEPS.md
-│   ├── SUPABASE_RLS_APPLY.md
-│   ├── GITHUB_PAGES_MIGRATION.md
-│   ├── ROM_Folder_Guide.md
-│   └── TEAM_HANDOFF_ARCHIVE_2026-05-09.md
-│
-├── legacy_tools/                    # Arşiv (.txt olarak, çalıştırılmaz)
-├── supabase/functions/              # Edge function scaffold'ları
-├── .github/workflows/               # GitHub Actions (Pages deploy)
-│
-├── ARCHITECTURE.md                  # Bu dosya
-├── TEAM_HANDOFF.md                  # AI ajan koordinasyon protokolü ← OKUMAK ZORUNLU
-├── DOCS_INDEX.md                    # Dokümanlara hızlı index
-├── README.md                        # Proje tanıtımı
-├── project_todo.md                  # Görev backlog'u (tek kaynak)
-└── game_wishlist.md                 # Eklenecek oyun kuyruğu
+├── index.html                      # Ana hub sayfası
+├── Retroid_Library_Dashboard.html  # Ana kütüphane — grid/list/table görünüm
+├── Retroid_Cleanup_Workspace.html  # Metadata denetim yüzeyi
+├── Retroid_IGDB_Bridge.html        # IGDB eşleştirme ve import
+├── Retroid_Series_Roadmap.html     # Seri yol haritası
+├── Retroid_Emulator_Matrix.html    # Emülatör rehberi
+├── Retroid_Queue.html              # Oyun sırası
+├── Retroid_Tierlist.html           # Tier listesi
+├── Retroid_Glossary.html           # Teknik terimler
+├── Retroid_Tips.html               # İpuçları (notes.category=tip)
+├── Retroid_Request_Tracker.html    # İstekler (notes.category=request)
+├── rp5_auth.js                     # Supabase Auth helper
+├── rp5_igdb.js                     # IGDB Bridge helper
+├── scripts/                        # Python araçları
+│   ├── igdb_bulk_match.py
+│   ├── igdb_repair_missing.py
+│   └── igdb_top_import.py
+├── migrations/                     # Kalan SQL dosyaları
+│   ├── migration_v7.sql
+│   ├── migration_v8.sql
+│   ├── migration_v9.sql
+│   ├── migration_v10.sql
+│   ├── migration_v11.sql
+│   └── cover_url_update.sql
+├── supabase/functions/igdb-search  # IGDB proxy
+├── TEAM_HANDOFF.md                 # Ortak ajan protokolü
+├── README.md
+├── ARCHITECTURE.md
+├── project_todo.md
+└── game_wishlist.md
 ```
+
+---
+
+## Yeni Oyun Talebi
+
+### Yol 1 — game_wishlist.md
+Dosyaya `- Oyun Adı | Sistem | Not` formatında yaz. Sonraki session'da Claude ekler.
+
+---
+
+## Yeni Emülatör Ekleme
+
+1. Supabase Dashboard'dan `emulators` tablosuna ekle
+2. `emulator_systems` tablosuna hangi sistemleri desteklediğini ekle:
+   ```sql
+   INSERT INTO emulator_systems (emulator_id, system_id)
+   SELECT e.id, s.id FROM emulators e, systems s
+   WHERE e.name = 'YeniEmülatör' AND s.name IN ('PS3', 'Vita');
+   ```
 
 ---
 

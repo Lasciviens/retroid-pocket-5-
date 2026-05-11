@@ -33,7 +33,6 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 
 - [ ] **Dashboard'a "ROM Durumu" kolonu ekle** — Her oyun için: `[ ] Bulunamadı`, `[~] Aranıyor`, `[✓] Hazır` gibi bir status.
-- [ ] **Co-op Dashboard'u co-op filter olarak ana Dashboard'a entegre et** — Şu an ayrı dosya, birleştirilebilir.
 - [ ] **Quick Start Guide** — RP5 geldiğinde eşiyle ilk akşam 3 saatlik oyun planı.
 - [ ] **Achievement / Missable Tips** — Her oyun için "şunu kaçırma" notu. Zelda, Pokemon, RPG'ler için kritik.
 

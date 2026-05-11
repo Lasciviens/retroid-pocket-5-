@@ -64,9 +64,7 @@ footer a{color:var(--accent);text-decoration:none}
   <div class="topbar-links">
     <a href="index.html">🏠 Hub</a>
     <a href="Retroid_Library_Dashboard.html">📚 Kutuphane</a>
-    <a href="Retroid_Database.html">🗄️ Database</a>
     <a href="Retroid_IGDB_Bridge.html">🛰️ IGDB</a>
-    <a href="admin.html">➕ Admin</a>
   </div>
 </div>
 
@@ -266,8 +264,6 @@ function render(){
         <div class="actions">
           <a href="Retroid_Library_Dashboard.html?search=${encodeURIComponent(game.title)}">Kutuphane</a>
           <a href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(game.id)}&title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}">IGDB</a>
-          <a href="Retroid_Database.html">DB</a>
-          <a href="Retroid_Cover_Test.html">Kapak</a>
         </div>
       </td>
     </tr>`;

@@ -18,13 +18,11 @@ Tüm markdown dokümantasyona hızlı erişim.
 - [docs/PRODUCT_IDEAS_FROM_REFERENCES.md](PRODUCT_IDEAS_FROM_REFERENCES.md) — Ürün fikirleri
 
 ## Güvenlik & Deployment
-- [docs/SECURITY_NEXT_STEPS.md](SECURITY_NEXT_STEPS.md) — RLS ve güvenlik planı
-- [docs/SUPABASE_RLS_APPLY.md](SUPABASE_RLS_APPLY.md) — RLS uygulama adımları
-- [docs/GITHUB_PAGES_MIGRATION.md](GITHUB_PAGES_MIGRATION.md) — Netlify → GitHub Pages geçişi
+- `supabase_rls_hardening.sql` — RLS hardening
+- `migrations/migration_v7.sql` — platform varyant standardi
 
 ## ROM & Klasör
 - [docs/ROM_Folder_Guide.md](ROM_Folder_Guide.md) — ROM klasör yapısı rehberi
 
 ## Migration Geçmişi
 Tüm SQL migration dosyaları: `migrations/` klasörü
-- migration_v3 → v7: DB schema evrim geçmişi

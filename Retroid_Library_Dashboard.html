@@ -214,7 +214,6 @@ footer a{color:var(--accent-2);text-decoration:none}
     <a href="Retroid_Series_Roadmap.html">🗺️ Seriler</a>
     <a href="Retroid_Emulator_Matrix.html">⚙️ Emülatörler</a>
     <a href="Retroid_IGDB_Bridge.html">🛰️ IGDB</a>
-    <a href="admin.html" data-auth-required-link>➕ Oyun Ekle</a>
   </div>
   <div data-auth-mount></div>
   <div class="helper-note">Misafir olarak kutuphaneyi gezebilirsin. Durum, not ve ROM degisiklikleri icin log in gerekir.</div>
@@ -367,7 +366,7 @@ function getDisplayRating(game){
 }
 
 function getLiveIgdbRating(game){
-  // DB'de kayitli IGDB puani (igdb_rating kolonu gerektirir — migration_v6.sql)
+  // DB'de kayitli IGDB puani (igdb_rating kolonu gerektirir)
   return game.igdbRating || null;
 }
 
