@@ -1,3 +1,41 @@
+# Team Handoff (Shared) — 2026-05-11
+
+Bu dosya artik **tum ajanlar icin ortak handoff** kaynagidir:
+- Claude
+- Codex App
+- Codex Web
+
+Ajan-ozel handoff dosyasi acilmaz. Tum ilerleme bu dosyada tutulur.
+
+## Calisma Protokolu (Ajan Cakismasi Onleme)
+
+1. `project_todo.md` tek backlog kaynagidir.
+2. Bu dosya (`TEAM_HANDOFF.md`) uygulama gunlugu + karar kaydi olarak kullanilir.
+3. IGDB write kontrati: `canonical_game + platform_variants` disina cikilmaz.
+4. Her ajan bir goreve baslamadan once bu dosyaya "In Progress" satiri ekler; bitince "Done" satirina tasir.
+5. Tamamlanan her iste ilgili dokumanlar ayni committe guncellenir (en az: `project_todo.md` + ilgili mimari not).
+
+## Aktif Uygulama Plani (Onayli 6 Madde)
+
+Sira ve bagimlilik:
+1. `v_games_full` standardizasyonu
+2. IGDB data-first kapanis
+3. Cleanup Workspace inline hizli aksiyonlar
+4. Co-op akisini ana Dashboard filtresinde birlestirme
+5. Artwork Manager
+6. Session Log / Progress layer
+
+### In Progress
+- [ ] Sprint 1 Hazirlik: `v_games_full` gecis plani + mevcut nested select envanteri
+- [ ] Sprint 1 Hazirlik: IGDB data-first davranis kontrol listesi
+- [ ] Sprint 1 Hazirlik: Cleanup inline aksiyon UX akisi
+
+### Done
+- [x] Ortak handoff yapisina gecildi (`TEAM_HANDOFF.md`)
+- [x] Ajan-cakisma onleme protokolu belirlendi
+
+---
+
 # Claude Handoff — 2026-05-10
 
 ## Proje Özeti
