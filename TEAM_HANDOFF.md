@@ -83,9 +83,9 @@ LIMIT 10;
 
 Dosya: `Retroid_Library_Dashboard.html`
 
-### 3. Co-op Dashboard'ı geliştir
-`multiplayer_info` array'i artık dolacak. Co-op filtresi daha akıllı hale gelebilir.
-Dosya: `Retroid_Coop_Dashboard.html`
+### 3. Library içinde co-op ve multiplayer sunumunu geliştir
+`multiplayer_info` array'i artık dolacak. Co-op filtresi ve modal sunumu daha akıllı hale gelebilir.
+Dosya: `Retroid_Library_Dashboard.html`
 
 ---
 
@@ -111,7 +111,7 @@ Dosya: `Retroid_Coop_Dashboard.html`
 ### Yüksek Öncelik
 - [ ] IGDB Full Sync sonuçlarını doğrula
 - [ ] Library Dashboard modal'ına yeni alanları göster
-- [ ] Co-op Dashboard'u multiplayer_info ile güşlendir
+- [ ] Library içinde multiplayer/co-op sunumunu güçlendir
 - [ ] Genres eksikliği — sync sonrası kontrol et, hâlâ boşsa manuel ekle
 
 ### Orta Öncelik

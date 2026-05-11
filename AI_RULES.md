@@ -55,7 +55,6 @@ TEAM_HANDOFF.md'de hangi ajanın ne yaptığı takip edilir.
 | Klasör/Dosya | Kural |
 |---|---|
 | `migrations/` | SADECE yeni dosya ekle, mevcut SQL'e dokunma |
-| `legacy_tools/` | DOKUNMA |
 | `TEAM_HANDOFF.md` | Her oturum sonunda güncelle |
 | `project_todo.md` | Tamamladığın görevi done'a taşı |
 | `rp5_auth.js` | Değiştirmeden önce kullanıcıya sor |
