@@ -1014,6 +1014,17 @@ function openModal(id){
   if(modalBox) modalBox.scrollTop=0;
   renderIgdbPanel(g);
   fetchIgdbForGame(g).then(()=>{renderIgdbPanel(g);render();}).catch(()=>renderIgdbPanel(g));
+  // Screenshots lazy load
+  const ssEl=document.getElementById('ss-'+g.id);
+  if(ssEl&&ssEl.children.length===0){
+    fetchModalScreenshots(g.id).then(({screenshots})=>{
+      if(screenshots&&screenshots.length){
+        ssEl.innerHTML='<h4>🖼️ Ekran Görüntüleri</h4><div class="screenshot-gallery">'+
+          screenshots.map(url=>'<img src="'+escapeHtml(url)+'" loading="lazy" onerror="this.style.display=\'none\'">').join('')+
+          '</div>';
+      }
+    });
+  }
 }
 
 function closeModal(){
