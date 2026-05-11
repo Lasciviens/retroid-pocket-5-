@@ -922,6 +922,13 @@ function openModal(id){
 
       ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p style="line-height:1.65;font-size:.88rem">${escapeHtml(g.desc)}</p></div>`:''}
 
+      \${g.screenshots&&g.screenshots.length?`<div class="modal-section">
+        <h4>🖼️ Ekran Görüntüleri</h4>
+        <div class="screenshot-gallery">
+          \${g.screenshots.map(url=>`<img src="\${escapeHtml(url)}" loading="lazy" onerror="this.style.display='none'" alt="screenshot">`).join('')}
+        </div>
+      </div>`:''}
+
       <div class="modal-section">
         <h4>ℹ️ Bilgiler</h4>
         <div class="info-grid">
