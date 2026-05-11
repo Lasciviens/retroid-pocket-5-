@@ -109,11 +109,18 @@ Dosya: `Retroid_Library_Dashboard.html`
 ## AÇIK KALAN GÖREVLER (project_todo.md'den)
 
 ### Yüksek Öncelik
+- [ ] Website performansini arttir: daha hizli veri okuma, daha hafif payload, daha agresif lazy-load
 - [ ] IGDB Full Sync sonuçlarını doğrula
 - [ ] Library Dashboard modal'ına yeni alanları göster
 - [ ] Library içinde multiplayer/co-op sunumunu güçlendir
 - [ ] Genres eksikliği — sync sonrası kontrol et, hâlâ boşsa manuel ekle
 - [ ] `scripts/igdb_enrich_missing.py` ile eksik canonical metadata için dry-run ve apply turu yap
+
+### Sonraki Sira
+1. `scripts/igdb_enrich_missing.py` ile **core** alanlari uygula
+2. sonra **extended** metadata turu
+3. sonra tum DB icin kontrollu enrich
+4. paralelde website okuma performansini iyilestir
 
 ### Orta Öncelik
 - [ ] Session Log — oyun başına ne zaman oynadım tablosu

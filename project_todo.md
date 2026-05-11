@@ -6,11 +6,15 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 ## 🔴 Öncelikli (High Priority)
 
+- [ ] **Performans / okuma hizi** — website icin daha hizli veri okuma akisi kur. `v_games_full` payload'ini hafiflet, lazy-load / parcali yukleme / gerekiyorsa ozet view dusun.
 - [ ] **IGDB data-first akisi** — Canli sort yerine DB'ye kaydedilmis IGDB metadata kullan. Karar kaydi: `IGDB_DATA_PLAN.md`
 - [ ] **Bridge uzerinden kontrollu eslestirme turu** — mevcut DB oyunlarini tek tek veya kucuk partilerle eslestir
 - [x] **migration_v6.sql uygulandi** — storyline, publisher, igdb_url, igdb_rating, igdb_synced_at canli DB'de mevcut
 - [ ] **Toplu IGDB audit araci** — eslesmeyen / dusuk skorlu / eksik metadata kayitlarini listele
 - [ ] **IGDB enrich pass** — `scripts/igdb_enrich_missing.py` ile dry-run -> hedefli apply -> tam apply akisini tamamla
+- [ ] **IGDB enrich pass -> core** — once `release_year / igdb_rating / igdb_url / description / storyline / developer / publisher / primary_cover_url`
+- [ ] **IGDB enrich pass -> extended** — sonra `keywords / screenshots / themes / age_rating / rating_count / multiplayer_info`
+- [ ] **IGDB enrich pass -> full DB** — kucuk testlerden sonra tum veritabaninda calistir
 - [ ] **Schema degerlendirmesi** — screenshots, videos, websites, publisher gibi alanlar icin yeni kolon veya iliski gerekirse planla
 - [x] **IGDB varyant modeli** — ayni isim/farkli platform oyunlari icin `migration_v7.sql` mantigina gecis
 - [x] **IGDB normalize write flow** — import oncesi `canonical_game + platform_variants` formatina oturt

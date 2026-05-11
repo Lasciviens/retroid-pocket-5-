@@ -146,7 +146,7 @@ def build_multiplayer_signals(modes):
     return merge_unique_strings([], signals, 12)
 
 
-def get_games(title=None, limit=None):
+def get_games(title=None, limit=None, offset=None):
     select = (
         "id,title,release_year,external_id,igdb_rating,igdb_url,description,storyline,publisher,developer,"
         "primary_cover_url,is_coop,coop_notes,keywords,screenshots,themes,age_rating,rating_count,multiplayer_info"
@@ -156,6 +156,8 @@ def get_games(title=None, limit=None):
         url += f"&title=eq.{urllib.parse.quote(title)}"
     if limit:
         url += f"&limit={int(limit)}"
+    if offset:
+        url += f"&offset={int(offset)}"
     headers = {"apikey": ANON_KEY, "Authorization": f"Bearer {ANON_KEY}"}
     return req_json(url, headers)
 
@@ -251,6 +253,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--title")
     parser.add_argument("--limit", type=int)
+    parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--fields", default="all", help="core | extended | all | comma list")
     parser.add_argument("--dry-run", action="store_true", help="Acikca dry-run belirtmek icin; varsayilan zaten dry-run")
     parser.add_argument("--apply", action="store_true")
@@ -263,7 +266,7 @@ def main():
     if args.apply and not args.service_key:
         raise SystemExit("--apply icin --service-key gerekli")
 
-    games = get_games(title=args.title, limit=args.limit)
+    games = get_games(title=args.title, limit=args.limit, offset=args.offset)
     print(f"{len(games)} oyun taranacak | fields={sorted(enabled_fields)} | mode={'APPLY' if args.apply else 'DRY-RUN'}")
 
     stats = Counter()
@@ -302,6 +305,8 @@ def main():
             patch_json(f"{SB}/rest/v1/games?id=eq.{game['id']}", patch, args.service_key)
 
         print(f"{'APPLY' if args.apply else 'PLAN '} [{index}/{len(games)}] {game['title']} -> {', '.join(sorted(k for k in patch if k != 'igdb_synced_at'))}")
+        if index % 25 == 0:
+            print(f"PROGRESS {index}/{len(games)} | changed={stats['changed_games']} no_change={stats['no_change']}")
         time.sleep(args.sleep)
 
     print("\n=== OZET ===")
