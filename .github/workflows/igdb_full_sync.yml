@@ -4,11 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       fields:
-        description: 'Sync edilecek alanlar (virgülle ayır): screenshots,keywords,genres,description,developer,publisher,storyline,rating,cover'
+        description: |
+          Sync edilecek alanlar (virgülle): 
+          screenshots, keywords, genres, storyline, developer, publisher,
+          multiplayer, franchises, themes, age_rating, rating_count
         required: false
-        default: 'screenshots,keywords,genres'
+        default: 'screenshots,keywords,genres,storyline,developer,publisher,multiplayer,franchises,themes,age_rating,rating_count'
       game_ids:
-        description: 'Spesifik oyun ID listesi (boşsa tümü) - UUID virgülle: id1,id2,id3'
+        description: 'Spesifik oyun UUID listesi (boşsa tümü): id1,id2,id3'
         required: false
         default: ''
       limit:
@@ -34,29 +37,30 @@ jobs:
           SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaXFteGJ0dmd3a2Fvc3d1Z2RzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Nzg1MTExNiwiZXhwIjoyMDkzNDI3MTE2fQ.j7fQEewwxb_IRicNOmYTwsEJONvHbrj3TvqGyNozVwM'
           P = SB + '/functions/v1/igdb-search'
 
-          FIELDS = [f.strip() for f in os.environ.get('FIELDS', 'screenshots,keywords,genres').split(',') if f.strip()]
+          FIELDS = [f.strip() for f in os.environ.get('FIELDS', '').split(',') if f.strip()]
           GAME_IDS = [g.strip() for g in os.environ.get('GAME_IDS', '').split(',') if g.strip()]
           LIMIT_STR = os.environ.get('LIMIT', '').strip()
           LIMIT = int(LIMIT_STR) if LIMIT_STR else None
+          print(f"Sync: {FIELDS} | limit={LIMIT} | oyunlar={GAME_IDS or 'tümü'}")
 
-          print(f"Sync alanları: {FIELDS}")
-          print(f"Spesifik oyunlar: {GAME_IDS or 'tümü'}")
-          print(f"Limit: {LIMIT or 'sınırsız'}")
-
-          # IGDB genre mapping
+          # IGDB genre ID -> bizim genre adı
           IGDB_GENRE_MAP = {
-            2: 'Platformer', 4: 'Fighting', 5: 'FPS', 7: 'Puzzle', 8: 'Racing',
-            9: 'RPG', 10: 'Strategy', 11: 'Sports', 12: 'RPG', 14: 'Sports',
-            15: 'Strategy', 16: 'Metroidvania', 24: 'Action', 25: 'Action',
-            26: 'Action', 31: 'Action-Adventure', 32: 'Action-Adventure',
-            33: 'Action-Adventure', 34: 'FPS', 35: 'FPS',
+            2:'Platformer',4:'Fighting',5:'FPS',7:'Puzzle',8:'Racing',
+            9:'RPG',10:'Strategy',11:'Sports',12:'RPG',14:'Sports',
+            15:'Strategy',16:'Metroidvania',24:'Action',25:'Action',
+            26:'Action',31:'Action-Adventure',32:'Action-Adventure',
+            33:'Action-Adventure',34:'FPS',35:'FPS',
           }
-
-          # Bizim genre adı -> id
           with urllib.request.urlopen(urllib.request.Request(
               SB+'/rest/v1/genres?select=id,name&limit=50',
               headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
               our_genres = {g['name']: g['id'] for g in json.load(x)}
+
+          # Bizim series adı -> id (franchise eşleştirme için)
+          with urllib.request.urlopen(urllib.request.Request(
+              SB+'/rest/v1/series?select=id,name&limit=100',
+              headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
+              our_series = {s['name'].lower(): s['id'] for s in json.load(x)}
 
           def nc(url):
               if not url: return ''
@@ -76,43 +80,63 @@ jobs:
                            'Content-Type':'application/json','Prefer':'return=minimal'})) as x:
                   return x.status
 
-          def get_existing_genres(game_id):
+          def get_existing_genres(gid):
               with urllib.request.urlopen(urllib.request.Request(
-                  SB+'/rest/v1/game_genres?select=genre_id&game_id=eq.'+game_id,
+                  SB+'/rest/v1/game_genres?select=genre_id&game_id=eq.'+gid,
                   headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
-                  return {row['genre_id'] for row in json.load(x)}
+                  return {r['genre_id'] for r in json.load(x)}
 
-          def insert_genre(game_id, genre_id):
-              with urllib.request.urlopen(urllib.request.Request(
-                  SB+'/rest/v1/game_genres',
-                  data=json.dumps({'game_id':game_id,'genre_id':genre_id}).encode(), method='POST',
-                  headers={'apikey':SK,'Authorization':'Bearer '+SK,
-                           'Content-Type':'application/json','Prefer':'return=minimal'})) as x:
-                  return x.status
+          def insert_genre(gid, genre_id):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(
+                      SB+'/rest/v1/game_genres',
+                      data=json.dumps({'game_id':gid,'genre_id':genre_id}).encode(), method='POST',
+                      headers={'apikey':SK,'Authorization':'Bearer '+SK,
+                               'Content-Type':'application/json','Prefer':'return=minimal'})) as x:
+                      return x.status
+              except: pass
+
+          def igdb_name_to_our_genre(ig):
+              our = IGDB_GENRE_MAP.get(ig.get('id'))
+              if our: return our
+              n = ig.get('name','').lower()
+              if 'hack' in n or 'beat' in n: return 'Action'
+              if 'rpg' in n or 'role' in n: return 'RPG'
+              if 'platform' in n: return 'Platformer'
+              if 'racing' in n: return 'Racing'
+              if 'strateg' in n or 'tactic' in n: return 'Strategy'
+              if 'puzzle' in n: return 'Puzzle'
+              if 'fight' in n: return 'Fighting'
+              if 'shoot' in n or 'fps' in n: return 'FPS'
+              if 'adventure' in n: return 'Action-Adventure'
+              if 'horror' in n or 'survival' in n: return 'Survival Horror'
+              if 'stealth' in n: return 'Stealth'
+              if 'sport' in n: return 'Sports'
+              if 'metroid' in n or 'vania' in n: return 'Metroidvania'
+              return None
 
           # Oyunları çek
           if GAME_IDS:
               games = []
               for gid in GAME_IDS:
                   with urllib.request.urlopen(urllib.request.Request(
-                      SB+'/rest/v1/games?select=id,title,external_id&id=eq.'+gid,
+                      SB+'/rest/v1/games?select=id,title,external_id,series_id&id=eq.'+gid,
                       headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
                       games.extend(json.load(x))
           else:
               games = []
               offset = 0
               while True:
-                  url = SB+'/rest/v1/games?select=id,title,external_id&external_id=not.is.null&order=title&limit=50&offset='+str(offset)
-                  with urllib.request.urlopen(urllib.request.Request(url, headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
+                  with urllib.request.urlopen(urllib.request.Request(
+                      SB+'/rest/v1/games?select=id,title,external_id,series_id&external_id=not.is.null&order=title&limit=50&offset='+str(offset),
+                      headers={'apikey':AK,'Authorization':'Bearer '+AK})) as x:
                       batch = json.load(x)
                   games.extend(batch)
                   if len(batch) < 50: break
                   offset += 50
-
-          if LIMIT:
-              games = games[:LIMIT]
-
+          if LIMIT: games = games[:LIMIT]
           print(f"{len(games)} oyun işlenecek")
+
           stats = {f: 0 for f in FIELDS}
           stats['errors'] = 0
 
@@ -120,76 +144,109 @@ jobs:
               try:
                   d = igdb_fetch(g['external_id'])
                   if not d:
-                      print(f"  [{i+1}] {g['title']}: IGDB sonuç yok")
                       continue
 
-                  game_patch = {}
+                  patch = {}
 
                   if 'screenshots' in FIELDS:
                       ss = [nc(s.get('url','')) for s in (d.get('screenshots') or []) if s.get('url')][:10]
-                      if ss: game_patch['screenshots'] = ss; stats['screenshots'] += 1
+                      if ss: patch['screenshots'] = ss; stats['screenshots'] += 1
 
                   if 'keywords' in FIELDS:
                       kw = [k.get('name','') for k in (d.get('keywords') or []) if k.get('name')][:20]
-                      if kw: game_patch['keywords'] = kw; stats['keywords'] += 1
+                      if kw: patch['keywords'] = kw; stats['keywords'] += 1
 
-                  if 'description' in FIELDS and not g.get('description'):
-                      desc = d.get('summary','')
-                      if desc: game_patch['description'] = desc; stats['description'] = stats.get('description',0)+1
-
-                  if 'developer' in FIELDS:
-                      devs = [r.get('company',{}).get('name','') for r in (d.get('involved_companies') or []) if r.get('developer')]
-                      if devs: game_patch['developer'] = devs[0]; stats['developer'] = stats.get('developer',0)+1
-
-                  if 'publisher' in FIELDS:
-                      pubs = [r.get('company',{}).get('name','') for r in (d.get('involved_companies') or []) if r.get('publisher')]
-                      if pubs: game_patch['publisher'] = pubs[0]; stats['publisher'] = stats.get('publisher',0)+1
+                  if 'themes' in FIELDS:
+                      th = [t.get('name','') for t in (d.get('themes') or []) if t.get('name')][:15]
+                      if th: patch['themes'] = th; stats['themes'] += 1
 
                   if 'storyline' in FIELDS:
                       sl = d.get('storyline','')
-                      if sl: game_patch['storyline'] = sl; stats['storyline'] = stats.get('storyline',0)+1
+                      if sl: patch['storyline'] = sl; stats['storyline'] += 1
 
-                  if 'rating' in FIELDS:
-                      rt = d.get('total_rating') or d.get('rating')
-                      if rt is not None: game_patch['igdb_rating'] = rt; stats['rating'] = stats.get('rating',0)+1
+                  if 'developer' in FIELDS:
+                      devs = [r.get('company',{}).get('name','') for r in (d.get('involved_companies') or []) if r.get('developer')]
+                      if devs: patch['developer'] = devs[0]; stats['developer'] += 1
 
-                  if 'cover' in FIELDS:
-                      cover = d.get('cover',{}).get('url','')
-                      if cover: game_patch['primary_cover_url'] = nc(cover); stats['cover'] = stats.get('cover',0)+1
+                  if 'publisher' in FIELDS:
+                      pubs = [r.get('company',{}).get('name','') for r in (d.get('involved_companies') or []) if r.get('publisher')]
+                      if pubs: patch['publisher'] = pubs[0]; stats['publisher'] += 1
 
-                  if game_patch:
-                      patch_game(g['id'], game_patch)
+                  if 'rating_count' in FIELDS:
+                      rc = d.get('total_rating_count') or d.get('rating_count')
+                      if rc: patch['rating_count'] = int(rc); stats['rating_count'] += 1
+
+                  if 'age_rating' in FIELDS:
+                      ratings = d.get('age_ratings') or []
+                      # PEGI (category=2) veya ESRB (category=1) al
+                      for ar in ratings:
+                          cat = ar.get('category')
+                          rat = ar.get('rating')
+                          if cat == 2:  # PEGI
+                              pegi_map = {1:'3',2:'7',3:'12',4:'16',5:'18'}
+                              pegi = pegi_map.get(rat)
+                              if pegi: patch['age_rating'] = f'PEGI {pegi}'; break
+                          elif cat == 1:  # ESRB
+                              esrb_map = {6:'E',7:'E10+',8:'T',9:'M',10:'AO'}
+                              esrb = esrb_map.get(rat)
+                              if esrb: patch['age_rating'] = f'ESRB {esrb}'
+                      if 'age_rating' in patch: stats['age_rating'] += 1
+
+                  if 'multiplayer' in FIELDS:
+                      modes = d.get('multiplayer_modes') or []
+                      mp_info = []
+                      is_coop = False
+                      for mode in modes:
+                          if mode.get('offlinecoop'): 
+                              mp_info.append(f'Offline co-op ({mode.get("offlinecoopmax","?")})')
+                              is_coop = True
+                          if mode.get('onlinecoop'): 
+                              mp_info.append(f'Online co-op ({mode.get("onlinecoopmax","?")})')
+                              is_coop = True
+                          if mode.get('offlinemax') and not mode.get('offlinecoop'): 
+                              mp_info.append(f'Offline max {mode.get("offlinemax")}')
+                          if mode.get('onlinemax') and not mode.get('onlinecoop'): 
+                              mp_info.append(f'Online max {mode.get("onlinemax")}')
+                      if mp_info: patch['multiplayer_info'] = mp_info[:5]; stats['multiplayer'] += 1
+                      if is_coop and not g.get('is_coop'):
+                          patch['is_coop'] = True
+                          patch['coop_notes'] = ' · '.join(mp_info[:3])
+
+                  if 'franchises' in FIELDS and not g.get('series_id'):
+                      frags = d.get('franchises') or []
+                      for fr in frags:
+                          fr_name = fr.get('name','').lower()
+                          # Bizim series tablosunda eşleşen var mı?
+                          sid = our_series.get(fr_name)
+                          if not sid:
+                              # Kısmi eşleştirme
+                              for our_name, our_id in our_series.items():
+                                  if fr_name in our_name or our_name in fr_name:
+                                      sid = our_id; break
+                          if sid:
+                              patch['series_id'] = sid
+                              stats['franchises'] = stats.get('franchises',0)+1
+                              break
+
+                  if patch:
+                      patch_game(g['id'], patch)
 
                   if 'genres' in FIELDS:
                       igdb_genres = d.get('genres') or []
                       existing = get_existing_genres(g['id'])
                       added = 0
                       for ig in igdb_genres:
-                          our_name = IGDB_GENRE_MAP.get(ig.get('id'))
-                          if not our_name:
-                              n = ig.get('name','').lower()
-                              if 'hack' in n or 'beat' in n or 'action' in n: our_name = 'Action'
-                              elif 'rpg' in n or 'role' in n: our_name = 'RPG'
-                              elif 'platform' in n: our_name = 'Platformer'
-                              elif 'racing' in n: our_name = 'Racing'
-                              elif 'strateg' in n or 'tactic' in n: our_name = 'Strategy'
-                              elif 'puzzle' in n: our_name = 'Puzzle'
-                              elif 'fight' in n: our_name = 'Fighting'
-                              elif 'shoot' in n or 'fps' in n: our_name = 'FPS'
-                              elif 'adventure' in n: our_name = 'Action-Adventure'
-                              elif 'horror' in n or 'survival' in n: our_name = 'Survival Horror'
-                              elif 'stealth' in n: our_name = 'Stealth'
-                              elif 'sport' in n: our_name = 'Sports'
-                          if our_name and our_name in our_genres:
-                              gid = our_genres[our_name]
+                          our = igdb_name_to_our_genre(ig)
+                          if our and our in our_genres:
+                              gid = our_genres[our]
                               if gid not in existing:
                                   insert_genre(g['id'], gid)
                                   existing.add(gid)
                                   added += 1
                       if added: stats['genres'] += 1
 
-                  if (i+1) % 20 == 0:
-                      print(f"  [{i+1}/{len(games)}] İşlendi — {stats}")
+                  if (i+1) % 25 == 0:
+                      print(f"  [{i+1}/{len(games)}] — {stats}")
                   time.sleep(0.15)
 
               except Exception as e:
