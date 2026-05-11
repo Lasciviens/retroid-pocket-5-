@@ -4,8 +4,8 @@
 
 Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok. Her HTML dosyası doğrudan Supabase REST API'sine bağlanır.
 
-**Canlı Site:** https://lasciviens.github.io/retroid-pocket-5-/  
-**GitHub:** https://github.com/Lasciviens/retroid-pocket-5-  
+**Canlı Site:** https://lasciviens.github.io/retroid-pocket-5-/
+**GitHub:** https://github.com/Lasciviens/retroid-pocket-5-
 **Supabase:** https://bniqmxbtvgwkaoswugds.supabase.co
 
 ## Erişim Modeli
@@ -13,11 +13,10 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 - Site login olmadan okunabilir.
 - Yazma yapan butonlar ve yönetim sayfaları Supabase Auth oturumu ister.
 - Oturum tarayıcıda saklanır; her ziyarette yeniden giriş gerekmez.
-- Gerçek server-side koruma için `supabase_rls_hardening.sql` dosyasındaki RLS adımları sıradaki güvenlik işidir.
 
 ---
 
-## Database Schema (v3 — Mayıs 2026)
+## Database Schema (v7 — Mayıs 2026)
 
 ### Lookup Tabloları
 | Tablo | Açıklama |
@@ -30,29 +29,36 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ### Junction Tabloları
 | Tablo | Açıklama |
 |-------|----------|
-| `emulator_systems` | Emülatör ↔ Sistem (many-to-many). PK: (emulator_id, system_id) |
-| `game_genres` | Oyun ↔ Tür (many-to-many). PK: (game_id, genre_id) |
-
-> **Not:** `emulators.supported_systems` (text[]) kolonu geriye dönük uyumluluk için tutuldu. Yeni sorgular `emulator_systems` junction tablosunu kullanır. İleride kaldırılabilir.
+| `emulator_systems` | Emülatör ↔ Sistem (many-to-many) |
+| `game_genres` | Oyun ↔ Tür (many-to-many) |
 
 ### Ana Tablolar
 | Tablo | Açıklama |
 |-------|----------|
-| `games` | Oyun kaydı. series_id FK, play_status, rating, is_coop, is_iconic, tier, play_order, canonical IGDB fallback alanlari |
-| `game_platforms` | Oyun ↔ Sistem ↔ Emülatör. cover_url, performance, rom_status, region, folder_path, platform-variant IGDB alanlari |
-| `notes` | Serbest notlar. category: 'tip' / 'request' / 'done'. Opsiyonel game_id FK |
+| `games` | Oyun kaydı + IGDB canonical alanları (igdb_rating, igdb_url, external_id) |
+| `game_platforms` | Oyun ↔ Sistem ↔ Emülatör + IGDB platform variant alanları |
+| `notes` | Tips / Request Tracker. category: tip/request/done. Opsiyonel game_id FK |
 | `glossary` | Teknik terimler sözlüğü |
+
+### game_platforms — Önemli Kolonlar
+| Kolon | Açıklama |
+|-------|----------|
+| `system_id` | FK → systems |
+| `emulator_id` | FK → emulators |
+| `performance` | good / warn / bad |
+| `cover_url` | Platform bazlı kapak (libretro/IGDB CDN) |
+| `rom_status` | missing / found / verified / installed / sd_card |
+| `rom_url` | ROM dosyasının yerel yolu veya URL'si |
+| `igdb_game_id` | IGDB platform variant ID |
+| `igdb_rating` | IGDB ham puan (0-100) |
+| `igdb_url` | IGDB oyun sayfası |
+| `is_primary_variant` | Hangi platform kaydı ana gösterimde kullanılacak |
 
 ### Views
 | View | Açıklama |
 |------|----------|
-| `games_full` | Eski view — geriye dönük uyumluluk için korundu |
-| `v_games_full` | Yeni tam JOIN view. games + series + genres + platforms (system/emulator) |
-
-### Kaldırılan Tablolar (v3)
-| Tablo | Sebep |
-|-------|-------|
-| `roms` | Boştu, `game_platforms.rom_status` aynı işi yapıyor |
+| `games_full` | Eski view — geriye dönük uyumluluk |
+| `v_games_full` | Yeni tam JOIN view — tüm sayfalar bunu kullanmaya geçecek |
 
 ---
 
@@ -60,86 +66,79 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 
 ```
 /
-├── index.html                      # Ana hub sayfası
-├── Retroid_Library_Dashboard.html  # Ana kütüphane — grid/list/table + IGDB filtreleri
-├── Retroid_Cleanup_Workspace.html  # Yogun cleanup ve metadata denetim yuzeyi
-├── Retroid_Coop_Dashboard.html     # Co-op oyun seçici
-├── Retroid_Series_Roadmap.html     # 10 serinin yol haritası
-├── Retroid_Emulator_Matrix.html    # Emülatör rehberi (emulator_systems kullanır)
-├── Retroid_Glossary.html           # Teknik terimler
-├── Retroid_Queue.html              # Oyun sırası
-├── Retroid_Tierlist.html           # Tier listesi
-├── Retroid_Tips.html               # İpuçları (notes tablosu, category=tip)
-├── Retroid_Request_Tracker.html    # İstekler (notes tablosu, category=request/done)
-├── Retroid_IGDB_Bridge.html        # IGDB arama, link import, aday ekleme ve eslestirme
-├── admin.html                      # Oyun ekle/düzenle/sil
-├── migration_v3.sql                # DB migration (Supabase SQL Editor'de çalıştırıldı)
-├── migration_v6.sql                # IGDB metadata genisletme paketi
-├── Retroid_Legacy_Tools.html       # Legacy araçlar için güvenli indeks sayfası
-├── legacy_tools/*.html.txt         # Çalıştırılmayan arsiv snapshot'ları
-├── Retroid_Cover_Test.html         # Yönetici aracı
-├── rp5_igdb.js                     # IGDB bridge helper
-├── IGDB_INTEGRATION.md             # IGDB proxy ve sync mimarisi
-├── IGDB_DATA_PLAN.md               # IGDB veri kapsami ve sonraki urun yolu
-├── IGDB_IMPORT_PLAYBOOK.md         # IGDB import standardi ve duplicate kurali
-├── IGDB_FIELD_MAP.md               # IGDB alan -> DB alan esleme tablosu
-├── IGDB_QUERY_PRESETS.md           # tekrar kullanilacak query setleri
-├── migration_v7.sql                # canliya uygulanmis platform varyant migration'i
-├── scripts/igdb_bulk_match.py      # canonical + platform_variants bulk eslestirme araci
-├── INTEGRATIONS_ROADMAP.md         # Yeni entegrasyonlar icin karar ve oncelik notu
-├── PRODUCT_IDEAS_FROM_REFERENCES.md # Tonkatsu Box ve benzeri urunlerden cikan fikirler
-├── DOCS_INDEX.md                   # Markdown notlari icin hizli indeks
-├── supabase/functions/igdb-search  # IGDB proxy scaffold
-├── supabase/functions/retroachievements-player  # RetroAchievements proxy scaffold
-├── supabase/functions/steamgriddb-art          # SteamGridDB proxy scaffold
-├── supabase/functions/rawg-discover            # RAWG proxy scaffold
-├── ROM_Folder_Guide.md             # ROM klasör yapısı rehberi
-├── game_wishlist.md                # Eklenecek oyunlar listesi
-├── project_todo.md                 # Geliştirme to-do listesi
-└── ARCHITECTURE.md                 # Bu dosya
+├── index.html                       # Ana hub sayfası
+├── Retroid_Library_Dashboard.html   # Ana kütüphane — grid/list/table görünüm
+├── Retroid_Database.html            # Tam DB UI — filtrele, düzenle, ROM URL ekle
+├── Retroid_IGDB_Bridge.html         # IGDB eşleştirme ve import
+├── Retroid_Cleanup_Workspace.html   # Metadata denetim yüzeyi
+├── Retroid_Coop_Dashboard.html      # Co-op oyun seçici
+├── Retroid_Series_Roadmap.html      # Seri yol haritası
+├── Retroid_Emulator_Matrix.html     # Emülatör rehberi
+├── Retroid_Cover_Test.html          # Cover URL test ve güncelleme
+├── Retroid_Queue.html               # Oyun sırası
+├── Retroid_Tierlist.html            # Tier listesi
+├── Retroid_Glossary.html            # Teknik terimler
+├── Retroid_Tips.html                # İpuçları (notes.category=tip)
+├── Retroid_Request_Tracker.html     # İstekler (notes.category=request)
+├── Retroid_Legacy_Tools.html        # Eski araçlara erişim sayfası
+├── admin.html                       # Oyun ekle/düzenle/sil
+├── rp5_auth.js                      # Supabase Auth helper
+├── rp5_igdb.js                      # IGDB Bridge helper
+│
+├── migrations/                      # Tüm SQL migration geçmişi
+│   ├── migration_v3.sql             # emulator_systems, roms DROP, v_games_full
+│   ├── migration_v4.sql             # primary_cover_url kolonu
+│   ├── migration_v5.sql             # rom_url kolonu
+│   ├── migration_v6.sql             # IGDB metadata alanları
+│   ├── migration_v7.sql             # Platform variant model
+│   └── cover_url_update.sql         # Cover URL güncelleme şablonu
+│
+├── scripts/                         # Python araçları
+│   ├── igdb_bulk_match.py           # Toplu IGDB eşleştirme
+│   ├── igdb_repair_missing.py       # Eksik IGDB data onarımı
+│   └── igdb_top_import.py           # Top oyun import
+│
+├── docs/                            # Tüm MD dokümantasyon
+│   ├── IGDB_INTEGRATION.md
+│   ├── IGDB_DATA_PLAN.md
+│   ├── IGDB_IMPORT_PLAYBOOK.md
+│   ├── IGDB_FIELD_MAP.md
+│   ├── IGDB_QUERY_PRESETS.md
+│   ├── INTEGRATIONS_ROADMAP.md
+│   ├── PRODUCT_IDEAS_FROM_REFERENCES.md
+│   ├── SECURITY_NEXT_STEPS.md
+│   ├── SUPABASE_RLS_APPLY.md
+│   ├── GITHUB_PAGES_MIGRATION.md
+│   ├── ROM_Folder_Guide.md
+│   └── TEAM_HANDOFF_ARCHIVE_2026-05-09.md
+│
+├── legacy_tools/                    # Arşiv (.txt olarak, çalıştırılmaz)
+├── supabase/functions/              # Edge function scaffold'ları
+├── .github/workflows/               # GitHub Actions (Pages deploy)
+│
+├── ARCHITECTURE.md                  # Bu dosya
+├── TEAM_HANDOFF.md                  # AI ajan koordinasyon protokolü ← OKUMAK ZORUNLU
+├── DOCS_INDEX.md                    # Dokümanlara hızlı index
+├── README.md                        # Proje tanıtımı
+├── project_todo.md                  # Görev backlog'u (tek kaynak)
+└── game_wishlist.md                 # Eklenecek oyun kuyruğu
 ```
-
----
-
-## Yeni Oyun Ekleme
-
-### Yol 1 — Admin Panel (Önerilen)
-`/admin.html` → "Yeni Oyun Ekle" sekmesi → Form doldur → Kaydet
-
-### Yol 2 — game_wishlist.md
-Dosyaya `- Oyun Adı | Sistem | Not` formatında yaz. Sonraki session'da Claude ekler.
-
----
-
-## Yeni Emülatör Ekleme
-
-1. `admin.html` veya Supabase Dashboard'dan `emulators` tablosuna ekle
-2. `emulator_systems` tablosuna hangi sistemleri desteklediğini ekle:
-   ```sql
-   INSERT INTO emulator_systems (emulator_id, system_id)
-   SELECT e.id, s.id FROM emulators e, systems s
-   WHERE e.name = 'YeniEmülatör' AND s.name IN ('PS3', 'Vita');
-   ```
 
 ---
 
 ## Deployment
 
-GitHub Pages yayını GitHub Actions üzerinden çalışır.
+GitHub Actions → GitHub Pages. Her push'ta otomatik deploy.
 
 ```bash
 git add .
-git commit -m "değişiklik açıklaması"
+git commit -m "ajan: claude — açıklama"
 git push origin main
 ```
-
-Migration log: `GITHUB_PAGES_MIGRATION.md`
 
 ---
 
 ## API Yapısı
-
-Supabase REST API kullanılır. Her sayfa doğrudan fetch() ile bağlanır.
 
 ```js
 const SB_URL = 'https://bniqmxbtvgwkaoswugds.supabase.co';
@@ -150,15 +149,10 @@ fetch(`${SB_URL}/rest/v1/games?select=*`, {
   headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
 });
 
-// v_games_full view (tam data, tek sorgu)
-fetch(`${SB_URL}/rest/v1/v_games_full?select=*`, {
-  headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
-});
-
 // Güncelleme
 fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
   method: 'PATCH',
-  headers: { apikey: SB_KEY, ..., 'Content-Type': 'application/json' },
+  headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
   body: JSON.stringify({ play_status: 'playing' })
 });
 ```
@@ -167,37 +161,16 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 
 ## Mimari Prensipleri
 
-- **Lookup tabloları** sadece isim/metadata tutar. Hiçbir zaman başka tablonun datasını kopyalamaz.
-- **Junction tabloları** (emulator_systems, game_genres) many-to-many ilişkileri temsil eder.
-- **Ana tablolar** (games, game_platforms) uygulama datasını tutar.
-- **Views** (v_games_full) JOIN'li okumayı kolaylaştırır, data tutmaz.
-- **notes tablosu** category kolonu ile farklı amaçlar için kullanılır (tip, request, done). game_id FK opsiyoneldir.
-- **Yeni bir sistem veya emülatör eklemek** sadece lookup ve junction tablolarına kayıt eklemek anlamına gelir — hiçbir kod değişmez.
+- **Lookup tabloları** sadece isim/metadata tutar.
+- **Junction tabloları** many-to-many ilişkileri temsil eder.
+- **Ana tablolar** uygulama datasını tutar.
+- **Views** JOIN'li okumayı kolaylaştırır, data tutmaz.
+- **primary_cover_url** games tablosunda — tüm sayfalarda bu kullanılır.
+- **is_primary_variant** game_platforms'da — hangi platform ana gösterimde çıkar.
+- **migrations/** klasörü dokunulmazdır — sadece yeni dosya eklenir.
 
 ---
 
-## İleride Yapılacaklar
+## AI Ajan Koordinasyonu
 
-- [ ] emulators.supported_systems kolonunu DROP et (junction tablosu dolduktan sonra)
-- [ ] Dashboard'a v_games_full geçişi (şu an nested select ile çalışıyor, her ikisi de doğru)
-- [ ] ROM durumu takibi UI (game_platforms.rom_status kolonu hazır)
-- [ ] migration_v6.sql ile IGDB metadata alanlarini ac
-- [ ] toplu IGDB <-> DB denetim / bulk esleme araci
-- [ ] Admin'e emülatör ekleme formu
-
-## Operasyon Notu
-
-- Normal kullanıcı akışı `index.html` üzerinden başlar.
-- Legacy migration araçları `legacy_tools/` altında düz metin olarak tutulur.
-- `Retroid_IGDB_Bridge.html` artik admin oturumu ile aday ekleme ve mevcut oyunu eslestirme akislarini da tasir.
-- `supabase/functions/igdb-search/index.ts` canlı proxy için hazır iskelet sağlar.
-- Yeni entegrasyonlar icin proxy iskeletleri `supabase/functions/` altinda acildi.
-- `Retroid_Library_Dashboard.html` modal icinde canli IGDB sonuclarini gosterir; liste/siralama ise DB'ye kaydedilen degerleri kullanir.
-- Kütüphane görünümü `grid / list / table` olarak değiştirilebilir; bu özellikle toplu IGDB cleanup sırasında hızlı tarama için eklendi.
-- Kütüphane filtresinde `IGDB eksik / kapak eksik / ozet eksik / yil eksik` hizli temizlik akislari bulunur.
-- IGDB kapsam kararlari `IGDB_DATA_PLAN.md` icinde tutulur.
-- IGDB import kurallari ve duplicate onleme kararlari `IGDB_IMPORT_PLAYBOOK.md` icinde tutulur.
-- Tekrar kullanilacak IGDB field / search kaliplari `IGDB_QUERY_PRESETS.md` icinde tutulur.
-- Diger entegrasyon karar ve fizibilite notlari `INTEGRATIONS_ROADMAP.md` icinde tutulur.
-- Dis referanslardan uretilen urun gelistirme fikirleri `PRODUCT_IDEAS_FROM_REFERENCES.md` icinde tutulur.
-- RLS uygulama adımı için `SUPABASE_RLS_APPLY.md` dosyasını kullan.
+Ortak çalışma protokolü için: **TEAM_HANDOFF.md** ← her oturumda önce bunu oku.
