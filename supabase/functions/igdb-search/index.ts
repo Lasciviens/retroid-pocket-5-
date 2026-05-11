@@ -70,6 +70,9 @@ function sharedFields() {
     'videos.video_id',
     'websites.url',
     'url',
+    'age_ratings.category',
+    'age_ratings.rating',
+    'genres.id',
   ].join(',')
 }
 
