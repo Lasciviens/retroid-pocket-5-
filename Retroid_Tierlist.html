@@ -111,7 +111,7 @@ async function api(ep,method='GET',body=null){
 }
 
 async function load(){
-  ALL=await api('games?select=id,title,tier,primary_cover_url&order=title');
+  ALL=await api('v_games_full?select=id,title,tier,primary_cover_url&order=title');
   dirty=false;
   updateStatus();
   render();
