@@ -113,8 +113,8 @@ async function load(){
   // Oynama sırası: play_order alanı dolu ve null olmayan oyunlar, sıralı
   // Sıra listesi için play_order > 0 olan oyunları çekiyoruz
   const [lib, queued]=await Promise.all([
-    api('games?select=id,title,play_status,play_order,primary_cover_url,game_platforms(systems(name))&order=title'),
-    api('games?select=id,title,play_status,play_order,primary_cover_url,game_platforms(systems(name))&play_order=not.is.null&order=play_order'),
+    api('v_games_full?select=id,title,play_status,play_order,primary_cover_url,platforms&order=title'),
+    api('v_games_full?select=id,title,play_status,play_order,primary_cover_url,platforms&play_order=not.is.null&order=play_order'),
   ]);
   LIBRARY=lib||[];
   QUEUE=(queued||[]).sort((a,b)=>(a.play_order||0)-(b.play_order||0));
@@ -136,7 +136,7 @@ function renderQueue(){
 
   el.innerHTML=QUEUE.map((g,i)=>{
     const cover=g.primary_cover_url||'';
-    const sys=g.game_platforms?.map(p=>p.systems?.name).filter(Boolean).join(', ')||'?';
+    const sys=g.platforms?.map(p=>p.system).filter(Boolean).join(', ')||'?';
     const statusColor=g.play_status==='playing'?'var(--warn)':g.play_status==='completed'?'var(--good)':'var(--muted)';
     const statusLabel=g.play_status==='playing'?'Oynuyor':g.play_status==='completed'?'Bitti':g.play_status==='backlog'?'Backlog':g.play_status||'';
     return`<div class="queue-item" draggable="true" data-id="${g.id}"
@@ -257,7 +257,7 @@ function searchGames(q){
     if(!results.length){sug.style.display='none';return;}
     sug.innerHTML=results.map(g=>{
       const cover=g.primary_cover_url||'';
-      const sys=g.game_platforms?.map(p=>p.systems?.name).filter(Boolean).join(', ')||'?';
+      const sys=g.platforms?.map(p=>p.system).filter(Boolean).join(', ')||'?';
       return`<div class="suggestion-item" onclick="addToQueue('${g.id}')">
         ${cover?`<img src="${cover}" onerror="this.style.display='none'">`:'<div style="width:32px;height:44px;background:var(--bg-1);border-radius:4px;display:flex;align-items:center;justify-content:center">🎮</div>'}
         <div class="suggestion-info"><div class="s-title">${g.title}</div><div class="s-meta">${sys}</div></div>
