@@ -49,6 +49,18 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 ---
 
+
+## 🤝 Multi-Agent Calisma Kurali (Claude + Codex App + Codex Web)
+
+- [x] Ortak handoff dosyasi: `TEAM_HANDOFF.md`
+- [ ] Sprint 1: `v_games_full` gecis planini cikart
+- [ ] Sprint 1: IGDB data-first kapanis kontrol listesini tamamla
+- [ ] Sprint 1: Cleanup Workspace inline hizli aksiyonlarini tanimla
+- [ ] Sprint 2: Co-op akisini ana Dashboard filtresinde birlestir
+- [ ] Sprint 3: Artwork Manager ve Session Log kapsam taslagi
+
+---
+
 ## ✅ Tamamlananlar
 
 - [x] Ana kütüphane Dashboard'u (95+ oyun, boxart, filtre, arama)

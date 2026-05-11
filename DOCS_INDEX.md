@@ -7,7 +7,7 @@ Bu dosya repo icindeki markdown notlarini hizli bulmak icin var.
 - `README.md` — genel proje tanimi
 - `ARCHITECTURE.md` — mimari ve dosya yapisi
 - `project_todo.md` — aktif yol haritasi
-- `CLAUDE_HANDOFF_2026-05-10.md` — son kapsamli handoff
+- `TEAM_HANDOFF.md` — tum ajanlar (Claude/Codex/Web) icin ortak handoff ve operasyon notlari
 
 ## IGDB
 
