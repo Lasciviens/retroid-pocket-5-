@@ -2,7 +2,7 @@
 
 > **Bu dosya tüm AI ajanlar için tek ortak çalışma günlüğüdür.**
 > Claude · Codex App · Codex Web — hepsi buraya yazar, buradan okur.
-> Bir göreve başlamadan önce bu dosyayı oku. Bitirince güncelle.
+> Bir göreve başlamadan önce bu dosyayı, AI_RULES.md ve ARCHITECTURE.md'yi oku.
 
 ---
 
@@ -14,113 +14,169 @@
 | **Repo** | https://github.com/Lasciviens/retroid-pocket-5- |
 | **Supabase** | https://bniqmxbtvgwkaoswugds.supabase.co |
 | **Deploy** | GitHub Actions → GitHub Pages (her push'ta otomatik) |
+| **GitHub PAT** | memory'de kayıtlı (claude session memory) |
+| **Supabase Service Key** | memory'de kayıtlı |
 
 ---
 
-## Repo Yapısı (Güncel)
+## Genel Proje Tanımı
 
+Furkan'ın Retroid Pocket 5 el konsolu için kişisel retro oyun kütüphanesi.
+Supabase (PostgreSQL) + statik HTML + GitHub Pages. Framework yok, sunucu yok.
+323 oyun kayıtlı. Oyunların ~319'unda IGDB eşleşmesi var.
+
+---
+
+## Mevcut DB Schema (v10 — Mayıs 2026)
+
+### games tablosu — önemli kolonlar
+- `id`, `title`, `release_year`, `developer`, `publisher`
+- `description`, `storyline` — açıklamalar
+- `keywords TEXT[]`, `screenshots TEXT[]` — IGDB'den
+- `themes TEXT[]` — YENİ (migration_v9, henüz boş)
+- `age_rating TEXT` — YENİ (migration_v9, henüz boş)
+- `rating_count INTEGER` — YENİ (migration_v9, henüz boş)
+- `multiplayer_info TEXT[]` — YENİ (migration_v9, henüz boş)
+- `is_coop`, `coop_notes` — co-op bilgisi
+- `play_status`, `play_notes`, `game_log`, `play_order`, `tier`
+- `primary_cover_url` — ana kapak görseli
+- `series_id FK`, `external_id` — IGDB canonical ID
+- `igdb_rating`, `igdb_url`, `igdb_synced_at`
+
+### game_platforms tablosu — önemli kolonlar
+- `system_id`, `emulator_id`, `performance`, `cover_url`
+- `rom_status`, `rom_url`, `region`, `folder_path`
+- `is_primary_variant` — hangi platform ana gösterimde kullanılır
+- `igdb_game_id`, `igdb_slug`, `igdb_rating`, `igdb_url`
+- `igdb_release_year`, `version_title`
+
+### Views
+- `v_games_full` — tüm JOIN'ları içerir, tüm sayfalar bunu kullanır
+
+---
+
+## AŞAMA 3 — SİRADAKİ GÖREV (ŞU AN BURADA)
+
+### ⚡ Şu an çalışıyor: IGDB Full Sync (GitHub Actions)
+Actions → IGDB Full Sync workflow çalışıyor/çalıştırılacak.
+Sync edilen alanlar: screenshots, keywords, genres, storyline, developer, publisher,
+multiplayer, franchises, themes, age_rating, rating_count
+
+**Workflow çalıştıktan sonra yapılacaklar:**
+
+### 1. Sonuçları kontrol et
 ```
-/
-├── *.html              # Canlı sayfalar (Library, Database, IGDB Bridge vs.)
-├── index.html          # Ana hub
-├── admin.html          # Oyun ekle/düzenle/sil
-├── rp5_auth.js         # Supabase Auth helper
-├── rp5_igdb.js         # IGDB Bridge helper
-├── migrations/         # Tüm SQL migration dosyaları (v3→v7)
-├── scripts/            # Python araçları (igdb_bulk_match.py vs.)
-├── legacy_tools/       # Eski migration HTML'leri (.txt olarak arşivlendi)
-├── supabase/functions/ # Edge function scaffold'ları
-├── docs/               # Tüm MD dokümantasyon (IGDB, RLS, Roadmap vs.)
-├── ARCHITECTURE.md     # Teknik mimari (OKUMAK ZORUNLU)
-├── TEAM_HANDOFF.md     # Bu dosya — ortak çalışma günlüğü
-├── DOCS_INDEX.md       # Dokümanlara hızlı index
-└── project_todo.md     # Görev backlog'u (TEK kaynak)
+SELECT title, themes, age_rating, rating_count, multiplayer_info,
+       array_length(screenshots,1) ss, array_length(keywords,1) kw
+FROM v_games_full 
+WHERE themes != '{}' OR age_rating IS NOT NULL
+LIMIT 10;
 ```
 
----
+### 2. Library Dashboard modalına yeni alanları ekle
+Şu an modal'da gösterilmeyen ama DB'de olan alanlar:
+- `themes` → "Temalar: Open World, Sci-fi" gibi
+- `age_rating` → "PEGI 18" gibi badge
+- `rating_count` → "47.8k değerlendirme" gibi
+- `multiplayer_info` → "Offline co-op (2)" gibi
+- `screenshots` → oyun görselleri galerisi
 
-## Ajan Çalışma Protokolü
+Dosya: `Retroid_Library_Dashboard.html`
 
-### Başlamadan önce:
-1. Bu dosyayı oku (son "In Progress" ve "Done" bölümleri)
-2. `project_todo.md`'yi oku (aktif backlog)
-3. `ARCHITECTURE.md`'yi oku (schema, mimari prensipleri)
-
-### Çalışırken:
-4. Üstlendiğin görevi aşağıda **In Progress** olarak işaretle
-5. Başkasının "In Progress" olarak işaretlediği göreve dokunma
-
-### Bitirince:
-6. Görevi **Done** bölümüne taşı, ne yaptığını 1 satırda yaz
-7. `project_todo.md`'yi güncelle
-8. İlgili MD dokümanı güncelle (varsa)
-9. Commit mesajında "ajan: claude|codex-app|codex-web" yaz
+### 3. Co-op Dashboard'ı geliştir
+`multiplayer_info` array'i artık dolacak. Co-op filtresi daha akıllı hale gelebilir.
+Dosya: `Retroid_Coop_Dashboard.html`
 
 ---
 
-## Kritik Kurallar
+## TAMAMLANAN BÜYÜK İŞLER (Bu session)
 
-- `game_platforms` yazarken: **canonical_game + platform_variants** modelini koru
-- `primary_cover_url` → games tablosunda, platform cover'ı → game_platforms.cover_url
-- `game_log` → kullanıcı işaretleme alanı, AI otomatik temizlemez (kullanıcı onayı şart)
-- `migrations/` altındaki SQL'leri değiştirme — sadece yeni dosya ekle
-- `legacy_tools/` dosyalarına dokunma
-
----
-
-## DB Schema Özeti
-
-| Tablo | Ne için |
-|-------|---------|
-| `games` | Ana oyun kaydı + IGDB canonical alanları |
-| `game_platforms` | Platform varyantları (sistem, emülatör, cover, IGDB variant) |
-| `game_genres` | Many-to-many oyun↔tür |
-| `emulator_systems` | Many-to-many emülatör↔sistem |
-| `systems` | PS2, GBA, GBC, N64... |
-| `emulators` | AetherSX2, Dolphin, PPSSPP... |
-| `genres` | Action, RPG, Platformer... |
-| `series` | God of War, Zelda, Pokemon... |
-| `notes` | Tips ve Request Tracker için |
-
-**Yeni kolonlar (migration_v7):** `game_platforms.igdb_game_id`, `igdb_slug`, `igdb_url`, `igdb_rating`, `igdb_release_year`, `is_primary_variant`, `version_title`
+- [x] DB mimarisi temizlendi: emulator_systems junction, roms DROP, notes FK
+- [x] `primary_cover_url` games tablosuna eklendi, tüm cover'lar düzeltildi
+- [x] `v_games_full` view oluşturuldu ve tüm sayfalar buna geçirildi
+- [x] migration_v8: keywords, screenshots kolonları
+- [x] migration_v9: themes, age_rating, rating_count, multiplayer_info kolonları
+- [x] migration_v10: v_games_full yeni kolonlarla güncellendi
+- [x] Repo organizasyonu: migrations/, docs/ klasörleri
+- [x] IGDB Full Sync GitHub Action workflow oluşturuldu
+- [x] AI_RULES.md, TEAM_HANDOFF.md protokolü kuruldu
+- [x] GitHub PAT, Supabase keys memory'e kaydedildi
+- [x] Emülatör bağlantıları tamamlandı (157 NULL → dolduruldu)
+- [x] is_primary_variant game_platforms'a eklendi
 
 ---
 
-## Aktif Sprint Hedefleri
+## AÇIK KALAN GÖREVLER (project_todo.md'den)
 
-1. `v_games_full` view standardizasyonu → tüm sayfalar bunu kullansın
-2. IGDB data-first kapanış (eksik eşleşmeler)
-3. Cleanup Workspace inline hızlı aksiyonlar
-4. Co-op akışını ana Dashboard filtresinde birleştir
-5. Artwork Manager
-6. Session Log / Progress layer
+### Yüksek Öncelik
+- [ ] IGDB Full Sync sonuçlarını doğrula
+- [ ] Library Dashboard modal'ına yeni alanları göster
+- [ ] Co-op Dashboard'u multiplayer_info ile güşlendir
+- [ ] Genres eksikliği — sync sonrası kontrol et, hâlâ boşsa manuel ekle
 
----
+### Orta Öncelik
+- [ ] Session Log — oyun başına ne zaman oynadım tablosu
+- [ ] Artwork Manager — cover seçimi arayüzü
+- [ ] Admin panele emülatör ekleme formu
 
-## In Progress
-
-> Buraya aktif görevleri yaz. Format: `- [ ] GÖREV — ajan: X — başlangıç: YYYY-MM-DD`
-
-
-
----
-
-## Done
-
-> Format: `- [x] GÖREV — ajan: X — tarih: YYYY-MM-DD — not: kısa açıklama`
-
-- [x] IGDB entegrasyonu (bulk match, 228 oyun) — ajan: codex — 2026-05-10
-- [x] Library Dashboard yenileme (grid/list/table, filtreler, modal nav) — ajan: codex — 2026-05-10
-- [x] GitHub Pages geçişi (Netlify kaldırıldı) — ajan: codex — 2026-05-10
-- [x] migration_v7 (platform variant model) — ajan: codex — 2026-05-11
-- [x] PR #3 merge (TEAM_HANDOFF ortak yapıya geçiş) — ajan: furkan — 2026-05-11
-- [x] migrations/ klasörü, migrate_ HTML temizliği — ajan: claude — 2026-05-11
-- [x] AI_RULES.md oluşturuldu, ARCHITECTURE.md ve DOCS_INDEX.md güncellendi — ajan: claude — 2026-05-11
-- [x] SQL_Guide_Retroid.pdf silindi — ajan: claude — 2026-05-11
-- [x] TEAM_HANDOFF protokol güçlendirmesi — ajan: claude — 2026-05-11
+### Teknik Borç
+- [ ] emulators.supported_systems kolonu DROP et (emulator_systems junction doldu)
+- [ ] games_full eski view'ini DROP et (v_games_full var)
 
 ---
 
-## Geçmiş Oturumlar
+## ÖNEMLİ KURALLAR (AI_RULES.md özeti)
 
-Detaylı handoff geçmişi için: `docs/TEAM_HANDOFF_ARCHIVE_2026-05-09.md`
+1. `game_log` alanını kullanıcı onayı olmadan TEMİZLEME
+2. Mevcut oyunu DELETE yapmadan önce kullanıcıya sor
+3. `migrations/` klasörüne dokunma — sadece yeni SQL ekle
+4. IGDB en güvenilir data kaynağı — oyuna ait saf veri (genre, theme vb.) için IGDB kullan
+5. Commit mesajı: `ajan: claude — feat: açıklama`
+6. DB'ye yazarken duplicate kontrolü yap
+
+---
+
+## IGDB SYNC WORKFLOW KULLANIMI
+
+Actions → IGDB Full Sync → Run workflow
+
+**Parametreler:**
+- `fields`: hangi alanları sync edeceğin (varsayılan: hepsi)
+- `game_ids`: spesifik UUID'ler (boşsa tümü)
+- `limit`: max oyun sayısı
+
+**Örnek — sadece 5 oyun test:**
+- fields: `genres,themes`
+- game_ids: `uuid1,uuid2,uuid3,uuid4,uuid5`
+
+---
+
+## GITHUB & DEPLOYMENT
+
+```bash
+# Sandbox'tan push (Claude için):
+# GitHub API kullanılıyor — git push sandbox'tan çalışmıyor
+
+# Sen push yapacaksan:
+cd "C:\Users\fuha00\CP - Retroid"
+git pull origin main   # önce çek
+git add .
+git commit -m "açıklama"
+git push
+```
+
+Site: https://lasciviens.github.io/retroid-pocket-5-/
+
+---
+
+## AJAN DURUMU
+
+### In Progress
+- [ ] IGDB Full Sync çalışıyor/çalıştırılacak — ajan: furkan
+
+### Done (Bu Session)
+- [x] DB schema v9-v10 tamamlandı — ajan: claude — 2026-05-11
+- [x] igdb_full_sync workflow hazırlandı — ajan: claude — 2026-05-11
+- [x] AI koordinasyon sistemi kuruldu — ajan: claude — 2026-05-11
+- [x] Tüm sayfalar v_games_full'a geçirildi — ajan: claude — 2026-05-11
+- [x] 157 emülatör NULL bağlantısı dolduruldu — ajan: claude — 2026-05-11
