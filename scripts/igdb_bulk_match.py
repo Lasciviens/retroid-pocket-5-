@@ -233,7 +233,7 @@ def build_multiplayer_signals(modes):
 
 def fetch_games_without_external_id(limit=None):
     select = (
-        "id,title,release_year,description,developer,publisher,storyline,igdb_rating,igdb_url,"
+        "id,title,release_year,description,publisher,storyline,igdb_rating,igdb_url,"
         "primary_cover_url,external_id,is_coop,coop_notes,themes,age_rating,rating_count,multiplayer_info,keywords,screenshots,"
         "game_genres(genres(name)),"
         "game_platforms(id,system_id,is_preferred,cover_url,systems(name),igdb_game_id)"
@@ -260,7 +260,6 @@ def normalize_payload(item, local_game):
             "title": item.get("name", ""),
             "summary": item.get("summary", ""),
             "storyline": item.get("storyline", ""),
-            "developer": item.get("developers", [""])[0] if item.get("developers") else "",
             "publisher": item.get("publishers", [""])[0] if item.get("publishers") else "",
             "franchise": item.get("franchises", [""])[0] if item.get("franchises") else "",
             "collection": item.get("collections", [""])[0] if item.get("collections") else "",
@@ -309,8 +308,6 @@ def build_canonical_patch(game, normalized, item):
         patch["external_id"] = str(primary["igdb_game_id"])
     if not game.get("description") and build_description(item):
         patch["description"] = build_description(item)
-    if not game.get("developer") and canonical.get("developer"):
-        patch["developer"] = canonical["developer"]
     if not game.get("publisher") and canonical.get("publisher"):
         patch["publisher"] = canonical["publisher"]
     if not game.get("storyline") and canonical.get("storyline"):

@@ -160,7 +160,7 @@ def sb_patch(path, data):
         return r.status
 
 def get_existing_games():
-    games = sb_get('games?select=id,title,external_id,series_id,developer,release_year&order=title')
+    games = sb_get('games?select=id,title,external_id,series_id,release_year&order=title')
     return {normalize(g['title']): g for g in games}
 
 def get_existing_platforms(game_id):
@@ -228,9 +228,6 @@ def main():
         cover     = normalize_cover((best.get('cover') or {}).get('url', ''))
         summary   = best.get('summary', '')
         genres    = [g.get('name', '') for g in (best.get('genres') or [])]
-        dev_list  = [c.get('company', {}).get('name', '') for c in (best.get('involved_companies') or []) if c.get('developer')]
-        developer = dev_list[0] if dev_list else None
-
         # DB'de var mı?
         norm_key = normalize(igdb_name)
         norm_our = normalize(title)
@@ -268,7 +265,6 @@ def main():
             new_game = {
                 'title':             igdb_name,
                 'release_year':      yr,
-                'developer':         developer,
                 'description':       summary,
                 'primary_cover_url': cover,
                 'external_id':       str(igdb_id),

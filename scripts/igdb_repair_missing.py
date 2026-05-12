@@ -56,16 +56,9 @@ def first_publisher(rows):
     return None
 
 
-def first_developer(rows):
-    for row in rows or []:
-        if row.get("developer") and row.get("company", {}).get("name"):
-            return row["company"]["name"]
-    return None
-
-
 def get_games(title=None):
     select = (
-        "id,title,release_year,external_id,igdb_rating,igdb_url,description,storyline,publisher,developer,"
+        "id,title,release_year,external_id,igdb_rating,igdb_url,description,storyline,publisher,"
         "primary_cover_url,game_platforms(id,system_id,is_preferred,cover_url,igdb_game_id,igdb_slug,igdb_url,igdb_rating,igdb_release_year,igdb_first_release_date,version_title,is_primary_variant,systems(name))"
     )
     url = f"{SB}/rest/v1/games?select={urllib.parse.quote(select)}&external_id=not.is.null&order=title"
@@ -146,10 +139,6 @@ def repair_game(game, igdb, service_key):
         publisher = first_publisher(igdb.get("involved_companies") or [])
         if publisher:
             canonical_patch["publisher"] = publisher
-    if not game.get("developer"):
-        developer = first_developer(igdb.get("involved_companies") or [])
-        if developer:
-            canonical_patch["developer"] = developer
     if not game.get("primary_cover_url") and primary.get("cover_url"):
         canonical_patch["primary_cover_url"] = primary["cover_url"]
 

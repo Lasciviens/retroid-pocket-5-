@@ -35,7 +35,6 @@ FIELD_GROUPS = {
         "igdb_url",
         "description",
         "storyline",
-        "developer",
         "publisher",
         "primary_cover_url",
     },
@@ -148,7 +147,7 @@ def build_multiplayer_signals(modes):
 
 def get_games(title=None, limit=None, offset=None):
     select = (
-        "id,title,release_year,external_id,igdb_rating,igdb_url,description,storyline,publisher,developer,"
+        "id,title,release_year,external_id,igdb_rating,igdb_url,description,storyline,publisher,"
         "primary_cover_url,is_coop,coop_notes,keywords,screenshots,themes,age_rating,rating_count,multiplayer_info"
     )
     url = f"{SB}/rest/v1/games?select={urllib.parse.quote(select)}&external_id=not.is.null&order=title"
@@ -178,7 +177,6 @@ def normalize_igdb(igdb):
         "igdb_url": igdb.get("url"),
         "description": build_description(igdb),
         "storyline": igdb.get("storyline") or None,
-        "developer": first_company(companies, "developer"),
         "publisher": first_company(companies, "publisher"),
         "primary_cover_url": normalize_cover((igdb.get("cover") or {}).get("url", "")) or None,
         "keywords": [k.get("name", "") for k in (igdb.get("keywords") or []) if k.get("name")][:20],
@@ -203,8 +201,6 @@ def build_patch(game, incoming, enabled_fields):
         patch["description"] = incoming["description"]
     if "storyline" in enabled_fields and not game.get("storyline") and incoming.get("storyline"):
         patch["storyline"] = incoming["storyline"]
-    if "developer" in enabled_fields and not game.get("developer") and incoming.get("developer"):
-        patch["developer"] = incoming["developer"]
     if "publisher" in enabled_fields and not game.get("publisher") and incoming.get("publisher"):
         patch["publisher"] = incoming["publisher"]
     if "primary_cover_url" in enabled_fields and not game.get("primary_cover_url") and incoming.get("primary_cover_url"):
