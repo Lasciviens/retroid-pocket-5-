@@ -43,4 +43,4 @@ Muhtemel secret'lar:
 Bkz:
 
 - `IGDB_IMPORT_PLAYBOOK.md`
-- `TEAM_HANDOFF.md`
+- `project_todo.md`

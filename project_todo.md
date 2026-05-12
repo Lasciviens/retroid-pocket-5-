@@ -7,7 +7,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 ## 🔴 Öncelikli (High Priority)
 
 - [ ] **Performans / okuma hizi** — website icin daha hizli veri okuma akisi kur. `v_games_full` payload'ini hafiflet, lazy-load / parcali yukleme / gerekiyorsa ozet view dusun.
-- [ ] **IGDB data-first akisi** — Canli sort yerine DB'ye kaydedilmis IGDB metadata kullan. Karar kaydi: `IGDB_DATA_PLAN.md`
+- [ ] **IGDB data-first akisi** — Canli sort yerine DB'ye kaydedilmis IGDB metadata kullan.
 - [ ] **Bridge uzerinden kontrollu eslestirme turu** — mevcut DB oyunlarini tek tek veya kucuk partilerle eslestir
 - [x] **migration_v6.sql uygulandi** — storyline, publisher, igdb_url, igdb_rating, igdb_synced_at canli DB'de mevcut
 - [ ] **Toplu IGDB audit araci** — eslesmeyen / dusuk skorlu / eksik metadata kayitlarini listele
@@ -56,7 +56,7 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 
 ## 🤝 Multi-Agent Calisma Kurali (Claude + Codex App + Codex Web)
 
-- [x] Ortak handoff dosyasi: `TEAM_HANDOFF.md`
+- [x] Ortak calisma kurallari `AI_RULES.md` ve `project_todo.md` uzerinden netlesti
 - [ ] Sprint 1: `v_games_full` gecis planini cikart
 - [ ] Sprint 1: IGDB data-first kapanis kontrol listesini tamamla
 - [ ] Sprint 1: Cleanup Workspace inline hizli aksiyonlarini tanimla
@@ -77,7 +77,6 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] Series Roadmap (10 seri, timeline)
 - [x] Emülatör Matrix (17 sistem, deep-dive notlar)
 - [x] Glossary (12 terim, yazılımcı mantığıyla)
-- [x] game_wishlist.md sistemi kuruldu
 - [x] ROM klasör yapısı rehberi oluşturuldu
 - [x] IGDB Bridge iskeleti kuruldu (proxy-ready arama yüzeyi + kutuphaneden kopru)
 - [x] Supabase Edge Function IGDB proxy scaffold eklendi
@@ -93,4 +92,4 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 ## 📝 Notlar
 
 - Dashboard'a her yeni özellik eklenirken tüm dosyalar çapraz-link kontrolü yapılmalı.
-- `game_wishlist.md` = yeni oyun eklemek için. Bu dosya = geliştirme fikirleri için.
+- Yeni oyun talepleri artik dogrudan `project_todo.md` veya ilgili issue notlarina yazilir.

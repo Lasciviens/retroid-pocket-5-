@@ -8,9 +8,9 @@
 ## 1. Başlamadan Önce Oku
 
 Her oturumda bu sırayla oku:
-1. `TEAM_HANDOFF.md` — ne yapılıyor, kim ne üstlendi
-2. `project_todo.md` — aktif backlog
-3. `ARCHITECTURE.md` — schema ve dosya yapısı
+1. `project_todo.md` — aktif backlog
+2. `ARCHITECTURE.md` — schema ve dosya yapısı
+3. `README.md` — canlı ürün ve giriş noktaları
 
 ---
 
@@ -46,7 +46,7 @@ ajan: codex-app — fix: kısa açıklama
 ajan: codex-web — docs: kısa açıklama
 ```
 
-TEAM_HANDOFF.md'de hangi ajanın ne yaptığı takip edilir.
+Görev durumu `project_todo.md` içinde takip edilir.
 
 ---
 
@@ -55,7 +55,6 @@ TEAM_HANDOFF.md'de hangi ajanın ne yaptığı takip edilir.
 | Klasör/Dosya | Kural |
 |---|---|
 | `migrations/` | SADECE yeni dosya ekle, mevcut SQL'e dokunma |
-| `TEAM_HANDOFF.md` | Her oturum sonunda güncelle |
 | `project_todo.md` | Tamamladığın görevi done'a taşı |
 | `rp5_auth.js` | Değiştirmeden önce kullanıcıya sor |
 | `rp5_igdb.js` | Değiştirmeden önce kullanıcıya sor |
@@ -78,7 +77,7 @@ TEAM_HANDOFF.md'de hangi ajanın ne yaptığı takip edilir.
 
 ## 6. HTML Değiştirme Kuralları
 
-- Mevcut çalışan bir özelliği kaldırmadan önce TEAM_HANDOFF'a yaz
+- Mevcut çalışan bir özelliği kaldırmadan önce `project_todo.md` notlarını kontrol et
 - `Retroid_Library_Dashboard.html` kritik dosya — büyük değişiklik öncesi kullanıcıya sor
 - `index.html`'e yeni sayfa eklerken mevcut kartları bozmadığından emin ol
 
@@ -86,8 +85,8 @@ TEAM_HANDOFF.md'de hangi ajanın ne yaptığı takip edilir.
 
 ## 7. Çakışma Önleme
 
-TEAM_HANDOFF.md → "In Progress" bölümüne bak.
-Başka bir ajan o görevi üstlendiyse dokunma — kullanıcıya sor.
+`project_todo.md` içindeki aktif maddelere bak.
+Başka bir ajan aynı alan üzerinde çalışıyorsa dokunma — kullanıcıya sor.
 
 Commit atmadan önce:
 ```bash

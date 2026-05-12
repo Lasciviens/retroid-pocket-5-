@@ -330,10 +330,9 @@ Temel fikir:
 Bundam sonra IGDB ile calisirken sira su olmali:
 
 1. `IGDB_IMPORT_PLAYBOOK.md` oku
-2. `IGDB_DATA_PLAN.md` oku
-3. canonical + platform_variants mantigina gore dusun
-4. once canonical game mi platform variant mi karar ver
-5. sonra write yap
+2. canonical + platform_variants mantigina gore dusun
+3. once canonical game mi platform variant mi karar ver
+4. sonra write yap
 
 ## Kaynaklar
 

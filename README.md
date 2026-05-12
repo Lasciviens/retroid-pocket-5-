@@ -31,7 +31,6 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 ## Access Model
 
 - Public visitors can browse the site without logging in.
-- Server-side RLS hardening is prepared in `supabase_rls_hardening.sql` and should be applied in Supabase next.
 - The main Library modal includes live IGDB summary and bridge controls, but sorting uses DB-stored values rather than live IGDB fetches.
 - The Library now supports grid, list, and table browsing modes plus metadata-gap filters for faster scanning during cleanup and matching sessions.
 - `Retroid_IGDB_Bridge.html` now supports IGDB page link import, admin-side candidate creation, and matching existing local games.
@@ -76,7 +75,6 @@ git commit -m "your change"
 git push origin main
 ```
 
-IGDB data plan: `IGDB_DATA_PLAN.md`
 IGDB import standard: `IGDB_IMPORT_PLAYBOOK.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
 Bulk IGDB matcher: `scripts/igdb_bulk_match.py`

@@ -85,19 +85,10 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── migrations/
 │   └── migration_v12.sql
 ├── supabase/functions/igdb-search  # IGDB proxy
-├── TEAM_HANDOFF.md                 # Ortak ajan protokolü
 ├── README.md
 ├── ARCHITECTURE.md
 ├── project_todo.md
-└── game_wishlist.md
 ```
-
----
-
-## Yeni Oyun Talebi
-
-### Yol 1 — game_wishlist.md
-Dosyaya `- Oyun Adı | Sistem | Not` formatında yaz. Sonraki session'da Claude ekler.
 
 ---
 
@@ -160,4 +151,4 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 
 ## AI Ajan Koordinasyonu
 
-Ortak çalışma protokolü için: **TEAM_HANDOFF.md** ← her oturumda önce bunu oku.
+Ortak çalışma için önce `AI_RULES.md`, sonra `project_todo.md`, sonra bu dosyayı oku.
