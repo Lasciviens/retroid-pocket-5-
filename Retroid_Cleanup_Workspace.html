@@ -155,13 +155,12 @@ function getGapInfo(game){
 }
 
 async function load(){
-  const response=await fetch(`${SB}/rest/v1/games?select=id,title,release_year,developer,play_status,primary_cover_url,external_id,igdb_rating,igdb_url,description,series(name),game_platforms(id,rom_status,rom_url,is_preferred,cover_url,systems(name),emulators(name))&order=title`,{headers:HEADERS});
+  const response=await fetch(`${SB}/rest/v1/games?select=id,title,release_year,play_status,primary_cover_url,external_id,igdb_rating,igdb_url,description,series(name),game_platforms(id,rom_status,rom_url,is_preferred,cover_url,systems(name),emulators(name))&order=title`,{headers:HEADERS});
   const games=await response.json();
   ALL=games.map(g=>({
     id:g.id,
     title:g.title,
     year:g.release_year||null,
-    developer:g.developer||'',
     status:g.play_status||'backlog',
     cover:g.primary_cover_url||'',
     externalId:g.external_id||null,
@@ -196,7 +195,7 @@ function renderStats(){
 function getFiltered(){
   let list=ALL.filter(game=>{
     const info=getGapInfo(game);
-    const haystack=[game.title,game.series,game.developer,game.platforms.map(p=>p.system).join(' ')].join(' ').toLowerCase();
+    const haystack=[game.title,game.series,game.platforms.map(p=>p.system).join(' ')].join(' ').toLowerCase();
     if(filters.search && !haystack.includes(filters.search.toLowerCase())) return false;
     if(filters.focus && info.score===0) return false;
     if(filters.unmatched && info.hasIgdb) return false;
@@ -243,7 +242,6 @@ function render(){
         <div class="sub">
           ${escapeHtml(game.series||'Seri yok')}
           ${game.year?` · ${game.year}`:' · Yil yok'}
-          ${game.developer?` · ${escapeHtml(game.developer)}`:''}
         </div>
       </td>
       <td>

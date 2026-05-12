@@ -327,6 +327,7 @@ async function patch(ep,body){
 let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,unmatchedIgdb:false,coverGap:false,summaryGap:false,yearGap:false,sort:'title',view:'grid'};
 const IGDB_CACHE=new Map();
 const IGDB_IN_FLIGHT=new Map();
+const DETAIL_IN_FLIGHT=new Map();
 let currentModalGameId=null;
 
 function escapeHtml(value){
@@ -371,20 +372,23 @@ function getLiveIgdbRating(game){
 }
 
 async function load(){
-  // screenshots/keywords modal açılınca lazy yüklenir
-  const games=await sb('v_games_full?select=id,title,release_year,developer,publisher,is_coop,coop_notes,play_status,rating,igdb_rating_canonical,igdb_url_canonical,is_iconic,description,play_notes,game_log,tier,primary_cover_url,series_id,external_id,series_name,genres,platforms,multiplayer_info,themes,age_rating,rating_count&order=title');
+  // Ana kutuphane icin hafif sorgu: agir text / modal alanlari ihtiyac halinde cekilir.
+  const games=await sb('v_games_full?select=id,title,release_year,is_coop,coop_notes,play_status,rating,igdb_rating_canonical,igdb_url_canonical,is_iconic,primary_cover_url,series_id,external_id,series_name,genres,platforms&order=title');
   ALL=games.map(g=>({
-    id:g.id,title:g.title,year:g.release_year,developer:g.developer||null,
+    id:g.id,title:g.title,year:g.release_year,
     coop:g.is_coop,coopNotes:g.coop_notes,
-    status:g.play_status||'backlog',rating:g.rating,igdbRating:g.igdb_rating_canonical||null,iconic:g.is_iconic,desc:g.description,
-    playNotes:g.play_notes||'',gameLog:g.game_log||'',tier:g.tier||'',externalId:g.external_id||null,igdbUrl:g.igdb_url_canonical||null,
+    status:g.play_status||'backlog',rating:g.rating,igdbRating:g.igdb_rating_canonical||null,iconic:g.is_iconic,desc:'',
+    playNotes:'',gameLog:'',tier:'',externalId:g.external_id||null,igdbUrl:g.igdb_url_canonical||null,
     cover:g.primary_cover_url||null,
     series:g.series_name||null,
     genres:Array.isArray(g.genres)?g.genres:[],
-    themes:Array.isArray(g.themes)?g.themes:[],
-    ageRating:g.age_rating||null,
-    ratingCount:g.rating_count||null,
-    multiplayerInfo:Array.isArray(g.multiplayer_info)?g.multiplayer_info:[],
+    themes:[],
+    ageRating:null,
+    ratingCount:null,
+    multiplayerInfo:[],
+    publisher:null,
+    storyline:'',
+    detailLoaded:false,
     platforms:(g.platforms||[]).map(p=>({id:p.id,system:p.system,emulator:p.emulator,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing',romUrl:p.rom_url||'',igdbRating:p.igdb_rating||null,igdbUrl:p.igdb_url||null,isPrimary:p.is_primary_variant||false,romUrl:p.rom_url||'',region:p.region||'',isPreferred:p.is_preferred||false,igdbGameId:p.igdb_game_id||null,igdbSlug:p.igdb_slug||'',igdbUrl:p.igdb_url||'',igdbRating:p.igdb_rating||null,igdbReleaseYear:p.igdb_release_year||null,igdbFirstReleaseDate:p.igdb_first_release_date||null,versionTitle:p.version_title||'',isPrimaryVariant:p.is_primary_variant||false}))
   }));
   const fSys=document.getElementById('f-system');
@@ -400,6 +404,38 @@ async function load(){
     document.getElementById('search').value=initialSearch;
   }
   render();
+}
+
+async function hydrateGameDetail(gameId){
+  const game=ALL.find(x=>x.id===gameId);
+  if(!game || game.detailLoaded) return game;
+  if(DETAIL_IN_FLIGHT.has(gameId)) return DETAIL_IN_FLIGHT.get(gameId);
+
+  const promise=(async()=>{
+    const rows=await sb(`v_games_full?select=id,description,storyline,publisher,play_notes,game_log,tier,multiplayer_info,themes,age_rating,rating_count,keywords,screenshots&id=eq.${gameId}`);
+    const row=rows?.[0];
+    if(row){
+      game.desc=row.description||'';
+      game.storyline=row.storyline||'';
+      game.publisher=row.publisher||null;
+      game.playNotes=row.play_notes||'';
+      game.gameLog=row.game_log||'';
+      game.tier=row.tier||'';
+      game.multiplayerInfo=Array.isArray(row.multiplayer_info)?row.multiplayer_info:[];
+      game.themes=Array.isArray(row.themes)?row.themes:[];
+      game.ageRating=row.age_rating||null;
+      game.ratingCount=row.rating_count||null;
+      game.detailLoaded=true;
+    }
+    DETAIL_IN_FLIGHT.delete(gameId);
+    return game;
+  })().catch(error=>{
+    DETAIL_IN_FLIGHT.delete(gameId);
+    throw error;
+  });
+
+  DETAIL_IN_FLIGHT.set(gameId,promise);
+  return promise;
 }
 
 function getFiltered(){
@@ -440,6 +476,22 @@ function getGameSystems(game){
   const primary=getPrimaryPlatform(game);
   const ordered=primary?[primary,...game.platforms.filter(p=>p!==primary)]:game.platforms;
   return ordered.map(p=>p.system).filter(Boolean);
+}
+
+function renderOverflowBadges(items, className, maxVisible=1){
+  const values=[...new Set((items || []).map(value=>String(value || '').trim()).filter(Boolean))];
+  const visible=values.slice(0,maxVisible);
+  const rest=values.length-visible.length;
+  return [
+    ...visible.map(value=>`<span class="badge ${className}">${escapeHtml(value)}</span>`),
+    ...(rest>0?[`<span class="badge badge-year">+${rest}</span>`]:[])
+  ].join('');
+}
+
+function getSystemSummary(game){
+  const systems=getGameSystems(game);
+  if(!systems.length) return 'Platform yok';
+  return systems.length===1 ? systems[0] : `${systems[0]} +${systems.length-1}`;
 }
 
 function getPerfLabel(value){
@@ -489,7 +541,7 @@ function renderStatusButtons(game){
 function renderGameGridCard(g){
   const cover=getGameCover(g);
   const systems=getGameSystems(g);
-  const sys=systems.join(', ');
+  const sys=getSystemSummary(g);
   const perf=getPrimaryPlatform(g)?.perf||'good';
   const perfLabel=getPerfLabel(perf);
   const isWish=g.status==='wishlist';
@@ -509,8 +561,8 @@ function renderGameGridCard(g){
     <div class="card-body">
       <div class="card-title">${g.title}</div>
       <div class="badges">
-        ${sys?`<span class="badge badge-sys">${sys}</span>`:''}
-        ${g.genres[0]?`<span class="badge badge-genre">${g.genres[0]}</span>`:''}
+        ${renderOverflowBadges(systems,'badge-sys',1)}
+        ${renderOverflowBadges(g.genres,'badge-genre',2)}
         ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
         ${g.series?`<span class="badge badge-series">${g.series}</span>`:''}
         ${g.igdbRating?`<span class="igdb-rating-card">IGDB ${(Number(g.igdbRating)/10).toFixed(1)}/10</span>`:''}
@@ -532,6 +584,7 @@ function renderGameListItem(g){
   const cover=getGameCover(g);
   const primary=getPrimaryPlatform(g);
   const systems=getGameSystems(g);
+  const systemSummary=getSystemSummary(g);
   const isWish=g.status==='wishlist';
   const igdbLabel=g.igdbRating?`IGDB ${(Number(g.igdbRating)/10).toFixed(1)}/10`:(g.externalId?'IGDB eslesti':'IGDB eksik');
   return `<article class="game-list-item${isWish?' wishlist-card':''}" onclick="openModal('${g.id}')">
@@ -542,7 +595,7 @@ function renderGameListItem(g){
       <div class="list-title-row">
         <div>
           <div class="list-title">${escapeHtml(g.title)}${g.iconic?' ★':''}</div>
-          <div class="list-sub">${systems.join(' · ') || 'Platform yok'}${g.year?` · ${g.year}`:''}${g.developer?` · ${escapeHtml(g.developer)}`:''}</div>
+          <div class="list-sub">${escapeHtml(systemSummary)}${systems.length>1?` · ${systems.join(', ')}`:''}${g.year?` · ${g.year}`:''}</div>
         </div>
         <div class="list-row">
           ${g.coop?'<span class="badge" style="background:rgba(46,204,113,.16);color:var(--good);border:1px solid rgba(46,204,113,.35)">Co-op</span>':''}
@@ -551,7 +604,7 @@ function renderGameListItem(g){
         </div>
       </div>
       <div class="list-row">
-        ${g.genres.slice(0,4).map(name=>`<span class="badge badge-genre">${escapeHtml(name)}</span>`).join('')}
+        ${renderOverflowBadges(g.genres,'badge-genre',3)}
       </div>
       ${g.desc?`<div class="list-summary">${escapeHtml(g.desc)}</div>`:''}
       ${renderStatusButtons(g)}
@@ -581,7 +634,7 @@ function renderGameTable(list){
       return `<tr onclick="openModal('${g.id}')" style="cursor:pointer">
         <td>${cover?`<img class="table-cover" src="${cover}" alt="${escapeHtml(g.title)}" loading="lazy">`:`<div class="table-cover-fallback">${escapeHtml((primary?.system||'?').slice(0,3))}</div>`}</td>
         <td><span class="table-title">${escapeHtml(g.title)}${g.iconic?' ★':''}</span><span class="table-sub">${getGameSystems(g).join(' · ') || 'Platform yok'}${g.year?` · ${g.year}`:''}</span></td>
-        <td>${escapeHtml(primary?.system || '—')}<span class="table-sub">${escapeHtml(primary?.emulator || 'Emulator yok')}</span></td>
+        <td>${escapeHtml(primary?.system || '—')}${g.platforms.length>1?` <span class="badge badge-year">+${g.platforms.length-1}</span>`:''}<span class="table-sub">${escapeHtml(primary?.emulator || 'Emulator yok')}</span></td>
         <td>${escapeHtml(g.status || 'backlog')}<span class="table-sub">${g.coop?'Co-op · ':''}${getPerfLabel(primary?.perf || 'good')}</span></td>
         <td>${g.igdbRating?`${(Number(g.igdbRating)/10).toFixed(1)}/10`:(g.externalId?'Eslesti':'Eksik')}<span class="table-sub">${g.series?escapeHtml(g.series):'Seri yok'}</span></td>
         <td>${escapeHtml(getRomSummary(g))}<span class="table-sub">${escapeHtml(primary?.region || 'Region yok')}</span></td>
@@ -937,20 +990,20 @@ function openModal(id){
         <h2>${escapeHtml(g.title)}${g.iconic?' ★':''}</h2>
         <div class="badges" style="margin-top:6px">
           ${g.year?`<span class="badge badge-year">${g.year}</span>`:''}
-          ${g.genres.slice(0,3).map(x=>`<span class="badge badge-genre">${escapeHtml(x)}</span>`).join('')}
+          ${g.genres.map(x=>`<span class="badge badge-genre">${escapeHtml(x)}</span>`).join('')}
           ${g.coop?'<span class="badge" style="background:rgba(46,204,113,.85);color:#fff">2P</span>':''}
           ${g.igdbRating?`<span class="badge" style="background:rgba(124,58,237,.2);color:#c4b5fd;border:1px solid rgba(124,58,237,.35)">IGDB ${(Number(g.igdbRating)/10).toFixed(1)}/10</span>`:g.externalId?'<span class="badge" style="background:rgba(124,58,237,.1);color:#c4b5fd;border:1px solid rgba(124,58,237,.25)">IGDB ✓</span>':''}
         </div>
         <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
-          ${g.developer?`<span style="color:rgba(255,255,255,.55);font-size:.76rem">🏢 ${escapeHtml(g.developer)}</span>`:''}
           ${preferred?`<span style="color:var(--gold);font-size:.76rem">▶ Tercih: ${escapeHtml(preferred.system||'?')}${preferred.emulator?' / '+escapeHtml(preferred.emulator):''}</span>`:''}
+          ${g.platforms.length>1?`<span style="color:rgba(255,255,255,.55);font-size:.76rem">🧩 ${g.platforms.length} platform varyanti</span>`:''}
           <span style="color:${statusColors[g.status]||'var(--muted)'};font-size:.75rem;font-weight:600">${statusLabels[g.status]||g.status}</span>
         </div>
       </div>
     </div>
     <div class="modal-body">
 
-      ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p style="line-height:1.65;font-size:.88rem">${escapeHtml(g.desc)}</p></div>`:''}
+      ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p style="line-height:1.65;font-size:.88rem">${escapeHtml(g.desc)}</p></div>`:(!g.detailLoaded?`<div class="modal-section"><h4>📖 Hakkında</h4><p style="line-height:1.65;font-size:.88rem;color:var(--muted)">Detaylar yukleniyor...</p></div>`:'')}
 
       <div id="media-${g.id}" class="modal-section"></div>
 
@@ -958,7 +1011,6 @@ function openModal(id){
         <h4>ℹ️ Bilgiler</h4>
         <div class="info-grid">
           ${g.year?`<div class="info-cell"><div class="lbl">Yıl</div><div class="val">${g.year}</div></div>`:''}
-          ${g.developer?`<div class="info-cell"><div class="lbl">Geliştirici</div><div class="val">${escapeHtml(g.developer)}</div></div>`:''}
           ${g.publisher?`<div class="info-cell"><div class="lbl">Publisher</div><div class="val">${escapeHtml(g.publisher)}</div></div>`:''}
           ${g.series?`<div class="info-cell"><div class="lbl">Seri</div><div class="val">${escapeHtml(g.series)}</div></div>`:''}
           ${g.genres.length?`<div class="info-cell"><div class="lbl">Tür</div><div class="val">${g.genres.map(escapeHtml).join(', ')}</div></div>`:''}
@@ -973,14 +1025,18 @@ function openModal(id){
 
       ${g.multiplayerInfo?.length?`<div class="modal-section"><h4>🎮 Multiplayer</h4><p>${g.multiplayerInfo.map(escapeHtml).join(' · ')}</p></div>`:''}
 
+      ${g.genres.length?`<div class="modal-section"><h4>🏷️ Tum Turler</h4><div class="badges" style="margin-top:8px">${g.genres.map(name=>`<span class="badge badge-genre">${escapeHtml(name)}</span>`).join('')}</div></div>`:''}
+
       <div class="modal-section">
         <h4>🖥️ Platformlar</h4>
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">${g.platforms.length} varyant · ${getGameSystems(g).join(' · ') || 'Platform yok'}</p>
         <div class="platform-list" id="platform-list-${g.id}">
           ${g.platforms.map(p=>`
             <div class="platform-row${p.isPreferred?' platform-preferred':''}" style="flex-direction:column;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)" id="prow-${p.id}">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
                 <div style="display:flex;align-items:center;gap:8px">
                   ${p.isPreferred?'<span class="pref-badge">★ TERCİH</span>':''}
+                  ${p.isPrimaryVariant?'<span class="pref-badge" style="color:var(--accent-2);border-color:rgba(0,212,255,.45);background:rgba(0,212,255,.12)">IGDB ANA</span>':''}
                   <span class="platform-sys">${escapeHtml(p.system||'?')}</span>
                   <span class="platform-emu">${escapeHtml(p.emulator||'—')}</span>
                   <span class="perf-badge ${p.perf||'good'}" style="position:static">${p.perf==='good'?'Smooth':p.perf==='warn'?'Tweak':'Sorunlu'}</span>
@@ -989,6 +1045,11 @@ function openModal(id){
                 ${!p.isPreferred?`<button onclick="setPreferredPlatform('${g.id}','${p.id}')" class="fbtn" style="font-size:.7rem;padding:3px 10px">Tercih Et</button>`:'<button onclick="setPreferredPlatform(\''+g.id+'\',\''+p.id+'\')" class="fbtn" style="font-size:.7rem;padding:3px 10px;opacity:.5">★ Seçildi</button>'}
               </div>
               ${p.perfNotes?`<div style="color:var(--muted);font-size:.75rem">${escapeHtml(p.perfNotes)}</div>`:''}
+              ${(p.versionTitle || p.igdbReleaseYear || p.igdbUrl)?`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:.72rem">
+                ${p.versionTitle?`<span>Versiyon: ${escapeHtml(p.versionTitle)}</span>`:''}
+                ${p.igdbReleaseYear?`<span>Yil: ${escapeHtml(p.igdbReleaseYear)}</span>`:''}
+                ${p.igdbUrl?`<a href="${escapeHtml(p.igdbUrl)}" target="_blank" style="color:var(--accent-2);text-decoration:none">IGDB varyanti</a>`:''}
+              </div>`:''}
               <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
                 <span style="font-size:.7rem;color:var(--muted)">ROM:</span>
                 ${['installed','sd_card','found','missing'].map(s=>`
@@ -1033,6 +1094,15 @@ function openModal(id){
   if(modalBox) modalBox.scrollTop=0;
   renderIgdbPanel(g);
   fetchIgdbForGame(g).then(()=>{renderIgdbPanel(g);render();}).catch(()=>renderIgdbPanel(g));
+  if(!g.detailLoaded){
+    hydrateGameDetail(g.id)
+      .then(updated=>{
+        if(currentModalGameId===updated.id){
+          openModal(updated.id);
+        }
+      })
+      .catch(()=>{});
+  }
   // Screenshots + keywords lazy load
   const mediaEl=document.getElementById('media-'+g.id);
   if(mediaEl&&mediaEl.children.length===0){

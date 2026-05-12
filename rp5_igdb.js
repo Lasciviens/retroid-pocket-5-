@@ -230,7 +230,6 @@
         normalized_title: normalizeText(item.name || ''),
         summary: item.summary || '',
         storyline: item.storyline || '',
-        developer: item.developers?.[0] || item.companies?.[0] || '',
         publisher: item.publishers?.[0] || '',
         franchise: item.franchises?.[0] || '',
         collection: item.collections?.[0] || '',

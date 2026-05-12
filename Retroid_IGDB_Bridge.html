@@ -250,13 +250,6 @@ function normalizeIgdbPayload(item, localGame=null){
   });
 }
 
-function extractDeveloper(item){
-  if(item.developers?.length) return item.developers[0];
-  if(item.publishers?.length) return item.publishers[0];
-  if(item.companies?.length) return item.companies[0];
-  return null;
-}
-
 function deriveCoop(item){
   const signals=item.multiplayerSignals || [];
   return {
@@ -272,7 +265,6 @@ function buildCanonicalPatch(item, normalized, current={}){
   const patch={};
 
   if(!current.release_year && primaryVariant.release_year) patch.release_year=primaryVariant.release_year;
-  if(!current.developer && canonical.developer) patch.developer=canonical.developer;
   if(!current.publisher && canonical.publisher) patch.publisher=canonical.publisher;
   if(!current.storyline && canonical.storyline) patch.storyline=canonical.storyline;
   if(!current.description && buildDbDescription(item)) patch.description=buildDbDescription(item);
@@ -431,7 +423,7 @@ async function createGameFromIgdb(item){
 
 async function updateGameFromIgdb(gameId, item){
   const normalized=normalizeIgdbPayload(item, selectedCandidate);
-  const currentList=await apiRequest(`games?select=id,title,release_year,developer,publisher,storyline,description,igdb_rating,igdb_url,primary_cover_url,is_coop,coop_notes,external_id,themes,age_rating,rating_count,multiplayer_info,keywords,screenshots&id=eq.${gameId}`);
+  const currentList=await apiRequest(`games?select=id,title,release_year,publisher,storyline,description,igdb_rating,igdb_url,primary_cover_url,is_coop,coop_notes,external_id,themes,age_rating,rating_count,multiplayer_info,keywords,screenshots&id=eq.${gameId}`);
   const current=currentList?.[0];
   if(!current) throw new Error('Yerel oyun bulunamadi');
   const seriesId=await ensureSeriesId(item.franchises?.[0] || item.collections?.[0] || '');
@@ -537,9 +529,8 @@ function renderResults(items,query,message){
         </div>
         ${(item.genres.length || selectedCandidate || incomingSystems.length)?`<div class="badge-row">${scoreBadge}${item.genres.slice(0,5).map(g=>`<span class="badge">${g}</span>`).join('')}${alternativeSystems.length?`<span class="badge match-strong">+ ${alternativeSystems.length} alternatif platform</span>`:''}</div>`:''}
         ${item.combinedSummary?`<div class="summary">${item.combinedSummary.slice(0,320)}${item.combinedSummary.length>320?'...':''}</div>`:''}
-        ${(item.developers?.length || item.publishers?.length || item.franchises?.length || item.collections?.length || item.multiplayerSignals?.length)?`
+        ${(item.publishers?.length || item.franchises?.length || item.collections?.length || item.multiplayerSignals?.length)?`
           <div class="meta">
-            ${item.developers?.length?`Developer: ${item.developers.join(', ')}<br>`:''}
             ${item.publishers?.length?`Publisher: ${item.publishers.join(', ')}<br>`:''}
             ${item.franchises?.length?`Franchise: ${item.franchises.join(', ')}<br>`:''}
             ${item.collections?.length?`Collection: ${item.collections.join(', ')}<br>`:''}
