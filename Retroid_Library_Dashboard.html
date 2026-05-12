@@ -325,8 +325,6 @@ async function patch(ep,body){
 }
 
 let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,unmatchedIgdb:false,coverGap:false,summaryGap:false,yearGap:false,sort:'title',view:'grid'};
-const IGDB_CACHE=new Map();
-const IGDB_IN_FLIGHT=new Map();
 const DETAIL_IN_FLIGHT=new Map();
 let currentModalGameId=null;
 
@@ -347,19 +345,6 @@ function igdbToLocalRating(value){
 function igdbToDbRating(value){
   if(value==null || Number.isNaN(Number(value))) return null;
   return Math.max(1, Math.min(10, Math.round(Number(value)/10)));
-}
-
-function getIgdbState(game){
-  return IGDB_CACHE.get(game.id) || null;
-}
-
-function getActiveIgdbResult(game){
-  const state=getIgdbState(game);
-  if(!state || !state.results?.length) return null;
-  if(game.externalId){
-    return state.results.find(item=>String(item.id)===String(game.externalId)) || state.results[0];
-  }
-  return state.results[0];
 }
 
 function getDisplayRating(game){
@@ -388,6 +373,8 @@ async function load(){
     multiplayerInfo:[],
     publisher:null,
     storyline:'',
+    keywords:[],
+    screenshots:[],
     detailLoaded:false,
     platforms:(g.platforms||[]).map(p=>({id:p.id,system:p.system,emulator:p.emulator,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing',romUrl:p.rom_url||'',igdbRating:p.igdb_rating||null,igdbUrl:p.igdb_url||null,isPrimary:p.is_primary_variant||false,romUrl:p.rom_url||'',region:p.region||'',isPreferred:p.is_preferred||false,igdbGameId:p.igdb_game_id||null,igdbSlug:p.igdb_slug||'',igdbUrl:p.igdb_url||'',igdbRating:p.igdb_rating||null,igdbReleaseYear:p.igdb_release_year||null,igdbFirstReleaseDate:p.igdb_first_release_date||null,versionTitle:p.version_title||'',isPrimaryVariant:p.is_primary_variant||false}))
   }));
@@ -423,6 +410,8 @@ async function hydrateGameDetail(gameId){
       game.tier=row.tier||'';
       game.multiplayerInfo=Array.isArray(row.multiplayer_info)?row.multiplayer_info:[];
       game.themes=Array.isArray(row.themes)?row.themes:[];
+      game.keywords=Array.isArray(row.keywords)?row.keywords:[];
+      game.screenshots=Array.isArray(row.screenshots)?row.screenshots:[];
       game.ageRating=row.age_rating||null;
       game.ratingCount=row.rating_count||null;
       game.detailLoaded=true;
@@ -727,109 +716,28 @@ async function setRomUrl(platformId,url){
   await patch(`game_platforms?id=eq.${platformId}`,{rom_url:url||null});
 }
 
-async function fetchIgdbForGame(game, queryOverride=''){
-  const query=(queryOverride || game.title || '').trim();
-  const cacheKey=`${game.id}:${query.toLowerCase()}`;
-  if(IGDB_CACHE.has(cacheKey)) return IGDB_CACHE.get(cacheKey);
-  if(IGDB_IN_FLIGHT.has(cacheKey)) return IGDB_IN_FLIGHT.get(cacheKey);
-
-  const promise=(async()=>{
-    const result=await window.rp5IgdbBridge.searchGames(query);
-    if(result.status==='ok'){
-      result.results=result.results
-        .map(item=>({
-          ...item,
-          matchScore: window.rp5IgdbBridge.scoreMatch(query,item,game.year || null)
-        }))
-        .sort((a,b)=>(b.matchScore||0)-(a.matchScore||0));
-    }
-    IGDB_CACHE.set(cacheKey,result);
-    IGDB_CACHE.set(game.id,{...result, query});
-    IGDB_IN_FLIGHT.delete(cacheKey);
-    return result;
-  })();
-
-  IGDB_IN_FLIGHT.set(cacheKey,promise);
-  return promise;
-}
-
 function renderIgdbPanel(game){
   const root=document.getElementById('igdb-panel');
   if(!root) return;
-  const state=getIgdbState(game);
-  const current=getActiveIgdbResult(game);
-  const liveRating=current?.rating ? igdbToLocalRating(current.rating) : null;
   const matched=!!game.externalId;
   const statusChips=matched
-    ? `<span class="igdb-chip good">● Eslesti</span><span class="igdb-chip accent">ID ${escapeHtml(game.externalId)}</span>${liveRating?`<span class="igdb-chip accent">${liveRating.toFixed(1)}/10</span>`:''}`
-    : `<span class="igdb-chip warn">● Eslesmedi</span>${liveRating?`<span class="igdb-chip accent">${liveRating.toFixed(1)}/10</span>`:''}`;
-
-  if(!state){
-    root.innerHTML=`<div class="igdb-panel"><div class="igdb-head"><div><h4>🛰️ IGDB</h4><div class="igdb-inline-note">Canli metadata yuklenmedi.</div></div><div class="igdb-status">${statusChips}</div></div></div>`;
-    return;
-  }
-
-  if(state.status!=='ok'){
-    root.innerHTML=`
-      <div class="igdb-panel">
-        <div class="igdb-head">
-          <div><h4>🛰️ IGDB</h4><div class="igdb-inline-note">Canli metadata su an gelmedi.</div></div>
-          <div class="igdb-status">${statusChips}</div>
-        </div>
-        <div class="igdb-search-row">
-          <input id="igdb-query" class="search-box" value="${escapeHtml(state.query || game.title)}" placeholder="IGDB icin yeniden ara...">
-          <button class="fbtn" onclick="searchModalIgdb('${game.id}')">Yeniden Ara</button>
-          <a class="fbtn" href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(game.id)}&title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}" target="_blank">Bridge Ac</a>
-        </div>
-      </div>`;
-    return;
-  }
+    ? `<span class="igdb-chip good">● Eslesti</span><span class="igdb-chip accent">ID ${escapeHtml(game.externalId)}</span>${game.igdbRating?`<span class="igdb-chip accent">${igdbToLocalRating(game.igdbRating).toFixed(1)}/10</span>`:''}`
+    : `<span class="igdb-chip warn">● Eslesmedi</span>`;
 
   root.innerHTML=`
     <div class="igdb-panel">
       <div class="igdb-head">
         <div>
           <h4>🛰️ IGDB</h4>
-          <div class="igdb-inline-note">Canli kaynak, ozet ve esleme akisi. Yonetici olarak secilen adayi kaydedebilirsin.</div>
+          <div class="igdb-inline-note">Kutuphane modali sadece veritabanina kaydedilmis IGDB verisini gosterir. Canli arama ve eslestirme icin kopruyu kullan.</div>
         </div>
         <div class="igdb-status">${statusChips}</div>
       </div>
-      <div class="igdb-search-row">
-        <input id="igdb-query" class="search-box" value="${escapeHtml(state.query || game.title)}" placeholder="IGDB icin yeniden ara...">
-        <button class="fbtn" onclick="searchModalIgdb('${game.id}')">Yeniden Ara</button>
+      <div class="igdb-result-actions" style="margin-top:12px">
         <a class="fbtn" href="Retroid_IGDB_Bridge.html?gameId=${encodeURIComponent(game.id)}&title=${encodeURIComponent(game.title)}${game.year?`&year=${encodeURIComponent(game.year)}`:''}" target="_blank">Bridge Ac</a>
-      </div>
-      <div class="igdb-result-list">
-        ${state.results.slice(0,4).map((item,index)=>`
-          <div class="igdb-result-card">
-            <div class="igdb-result-title">${escapeHtml(item.name)}</div>
-            <div class="igdb-result-meta">
-              ${item.releaseYear?`Yil: ${escapeHtml(item.releaseYear)} · `:''}
-              ${item.rating?`IGDB: ${Number(igdbToLocalRating(item.rating)).toFixed(1)}/10 · `:''}
-              Eslesme: ${escapeHtml(item.matchScore || 0)}/100
-              ${item.platforms?.length?`<br>Platformlar: ${escapeHtml(item.platforms.join(', '))}`:''}
-            </div>
-            ${item.summary?`<div class="igdb-result-summary">${escapeHtml(item.summary)}</div>`:''}
-            <div class="igdb-result-actions">
-              ${item.igdbUrl?`<a class="fbtn" href="${item.igdbUrl}" target="_blank">IGDB Sayfasi</a>`:''}
-              <button class="fbtn" onclick="saveIgdbMatch('${game.id}',${index})">${game.externalId && String(game.externalId)===String(item.id)?'Eslesme Kayitli':'Bu Eslesmeyi Kaydet'}</button>
-              <button class="fbtn" data-summary="${encodeURIComponent(item.summary || '')}" onclick="copyIgdbSummary(this.dataset.summary)">Summary Kopyala</button>
-            </div>
-          </div>
-        `).join('')}
+        ${game.igdbUrl?`<a class="fbtn" href="${escapeHtml(game.igdbUrl)}" target="_blank">IGDB Sayfasi</a>`:''}
       </div>
     </div>`;
-}
-
-async function searchModalIgdb(gameId){
-  const game=ALL.find(x=>x.id===gameId);
-  if(!game) return;
-  const query=document.getElementById('igdb-query')?.value?.trim() || game.title;
-  const root=document.getElementById('igdb-panel');
-  if(root) root.innerHTML='<div class="igdb-panel"><div class="igdb-inline-note">IGDB araniyor...</div></div>';
-  await fetchIgdbForGame(game, query);
-  renderIgdbPanel(game);
-  render();
 }
 
 async function saveIgdbMatch(gameId,index){
@@ -960,12 +868,6 @@ function navigateModal(direction){
   openModal(target.id);
 }
 
-async function fetchModalScreenshots(gameId){
-  try{
-    const data=await sb('v_games_full?select=id,screenshots,keywords&id=eq.'+gameId);
-    return data&&data[0]?{screenshots:data[0].screenshots||[],keywords:data[0].keywords||[]}:{screenshots:[],keywords:[]};
-  }catch(e){return{screenshots:[],keywords:[]};}
-}
 function openModal(id){
   const g=ALL.find(x=>x.id===id);
   if(!g)return;
@@ -1004,6 +906,7 @@ function openModal(id){
     <div class="modal-body">
 
       ${g.desc?`<div class="modal-section"><h4>📖 Hakkında</h4><p style="line-height:1.65;font-size:.88rem">${escapeHtml(g.desc)}</p></div>`:(!g.detailLoaded?`<div class="modal-section"><h4>📖 Hakkında</h4><p style="line-height:1.65;font-size:.88rem;color:var(--muted)">Detaylar yukleniyor...</p></div>`:'')}
+      ${g.storyline?`<div class="modal-section"><h4>🧭 Storyline</h4><p style="line-height:1.65;font-size:.88rem">${escapeHtml(g.storyline)}</p></div>`:''}
 
       <div id="media-${g.id}" class="modal-section"></div>
 
@@ -1014,7 +917,6 @@ function openModal(id){
           ${g.publisher?`<div class="info-cell"><div class="lbl">Publisher</div><div class="val">${escapeHtml(g.publisher)}</div></div>`:''}
           ${g.series?`<div class="info-cell"><div class="lbl">Seri</div><div class="val">${escapeHtml(g.series)}</div></div>`:''}
           ${g.genres.length?`<div class="info-cell"><div class="lbl">Tür</div><div class="val">${g.genres.map(escapeHtml).join(', ')}</div></div>`:''}
-          ${g.themes?.length?`<div class="info-cell"><div class="lbl">Temalar</div><div class="val">${g.themes.map(escapeHtml).join(', ')}</div></div>`:''}
           ${g.igdbRating?`<div class="info-cell"><div class="lbl">IGDB Puanı</div><div class="val" style="color:#c4b5fd">${(Number(g.igdbRating)/10).toFixed(1)}/10</div></div>`:''}
           ${g.ratingCount?`<div class="info-cell"><div class="lbl">Oy Sayısı</div><div class="val">${escapeHtml(g.ratingCount.toLocaleString('tr-TR'))}</div></div>`:''}
           ${g.ageRating?`<div class="info-cell"><div class="lbl">Yaş Sınırı</div><div class="val">${escapeHtml(g.ageRating)}</div></div>`:''}
@@ -1093,7 +995,6 @@ function openModal(id){
   const modalBox=document.querySelector('#modal > .modal');
   if(modalBox) modalBox.scrollTop=0;
   renderIgdbPanel(g);
-  fetchIgdbForGame(g).then(()=>{renderIgdbPanel(g);render();}).catch(()=>renderIgdbPanel(g));
   if(!g.detailLoaded){
     hydrateGameDetail(g.id)
       .then(updated=>{
@@ -1103,29 +1004,27 @@ function openModal(id){
       })
       .catch(()=>{});
   }
-  // Screenshots + keywords lazy load
+  // Screenshots + keywords DB'den hydrate edilen detayla gelir.
   const mediaEl=document.getElementById('media-'+g.id);
   if(mediaEl&&mediaEl.children.length===0){
-    fetchModalScreenshots(g.id).then(({screenshots,keywords})=>{
-      const blocks=[];
-      if(screenshots&&screenshots.length){
-        blocks.push(
-          '<div class="modal-section"><h4>🖼️ Ekran Görüntüleri</h4><div class="screenshot-gallery">'+
-          screenshots.map(url=>'<img src="'+escapeHtml(url)+'" loading="lazy" onerror="this.style.display=\'none\'">').join('')+
-          '</div></div>'
-        );
-      }
-      if(keywords&&keywords.length){
-        blocks.push(
-          '<div class="modal-section"><h4>🏷️ Keywords</h4><div class="badges" style="margin-top:8px">'+
-          keywords.map(word=>'<span class="badge badge-year">'+escapeHtml(word)+'</span>').join('')+
-          '</div></div>'
-        );
-      }
-      if(blocks.length){
-        mediaEl.innerHTML=blocks.join('');
-      }
-    });
+    const blocks=[];
+    if(g.screenshots?.length){
+      blocks.push(
+        '<div class="modal-section"><h4>🖼️ Ekran Görüntüleri</h4><div class="screenshot-gallery">'+
+        g.screenshots.map(url=>'<img src="'+escapeHtml(url)+'" loading="lazy" onerror="this.style.display=\'none\'">').join('')+
+        '</div></div>'
+      );
+    }
+    if(g.keywords?.length){
+      blocks.push(
+        '<div class="modal-section"><h4>🏷️ Keywords</h4><div class="badges" style="margin-top:8px">'+
+        g.keywords.map(word=>'<span class="badge badge-year">'+escapeHtml(word)+'</span>').join('')+
+        '</div></div>'
+      );
+    }
+    if(blocks.length){
+      mediaEl.innerHTML=blocks.join('');
+    }
   }
 }
 
