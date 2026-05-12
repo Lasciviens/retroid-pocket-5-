@@ -12,11 +12,11 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] **migration_v6.sql uygulandi** — storyline, publisher, igdb_url, igdb_rating, igdb_synced_at canli DB'de mevcut
 - [ ] **Toplu IGDB audit araci** — eslesmeyen / dusuk skorlu / eksik metadata kayitlarini listele
 - [ ] **IGDB enrich pass** — `scripts/igdb_enrich_missing.py` ile dry-run -> hedefli apply -> tam apply akisini tamamla
-- [ ] **IGDB enrich pass -> core** — once `release_year / igdb_rating / igdb_url / description / storyline / developer / publisher / primary_cover_url`
+- [ ] **IGDB enrich pass -> core** — once `release_year / igdb_rating / igdb_url / description / storyline / publisher / primary_cover_url`
 - [ ] **IGDB enrich pass -> extended** — sonra `keywords / screenshots / themes / age_rating / rating_count / multiplayer_info`
 - [ ] **IGDB enrich pass -> full DB** — kucuk testlerden sonra tum veritabaninda calistir
 - [ ] **Schema degerlendirmesi** — screenshots, videos, websites, publisher gibi alanlar icin yeni kolon veya iliski gerekirse planla
-- [x] **IGDB varyant modeli** — ayni isim/farkli platform oyunlari icin `migration_v7.sql` mantigina gecis
+- [x] **IGDB varyant modeli** — ayni isim/farkli platform oyunlari icin canonical + platform_variants modeline gecis
 - [x] **IGDB normalize write flow** — import oncesi `canonical_game + platform_variants` formatina oturt
 - [ ] **RetroAchievements entegrasyonu** — user progress / completion / game progress proxy + modal enrichment
 - [ ] **SteamGridDB entegrasyonu** — alternatif kapak / hero / logo onerileri
@@ -82,10 +82,10 @@ Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz
 - [x] IGDB Bridge iskeleti kuruldu (proxy-ready arama yüzeyi + kutuphaneden kopru)
 - [x] Supabase Edge Function IGDB proxy scaffold eklendi
 - [x] IGDB link import + aday ekleme + mevcut oyun eslestirme akisi kuruldu
-- [x] `migration_v7.sql` canli schema ile uzlastirildi ve uygulandi
+- [x] Canonical + platform_variants modeli canli schema ile uzlastirildi ve uygulandi
 - [x] Bridge ve bulk import canonical + platform_variants modeline gecirildi
 - [x] Yeni entegrasyonlar icin roadmap ve function scaffold'lari eklendi
-- [x] Dis referanslardan urun fikirleri derlendi (`PRODUCT_IDEAS_FROM_REFERENCES.md`)
+- [x] Dis referanslardan urun fikirleri derlendi
 - [x] IGDB import playbook ve field map hazirlandi
 
 ---

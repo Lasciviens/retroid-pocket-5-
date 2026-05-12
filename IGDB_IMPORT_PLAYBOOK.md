@@ -312,7 +312,7 @@ Oneri:
 
 ## Onerilen Migration v7
 
-Bu dosya ile birlikte `migration_v7.sql` standardi kullanilir.
+Bu dosya ile birlikte canonical + platform_variants standardi kullanilir.
 
 Temel fikir:
 
@@ -331,7 +331,7 @@ Bundam sonra IGDB ile calisirken sira su olmali:
 
 1. `IGDB_IMPORT_PLAYBOOK.md` oku
 2. `IGDB_DATA_PLAN.md` oku
-3. `migration_v7.sql` mantigina gore dusun
+3. canonical + platform_variants mantigina gore dusun
 4. once canonical game mi platform variant mi karar ver
 5. sonra write yap
 

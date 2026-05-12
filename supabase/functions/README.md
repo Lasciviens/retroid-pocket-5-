@@ -42,5 +42,5 @@ Muhtemel secret'lar:
 
 Bkz:
 
-- `IGDB_INTEGRATION.md`
-- `INTEGRATIONS_ROADMAP.md`
+- `IGDB_IMPORT_PLAYBOOK.md`
+- `TEAM_HANDOFF.md`

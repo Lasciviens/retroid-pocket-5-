@@ -16,7 +16,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 
 ---
 
-## Database Schema (v7 — Mayıs 2026)
+## Database Schema (Current)
 
 ### Lookup Tabloları
 | Tablo | Açıklama |
@@ -35,7 +35,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ### Ana Tablolar
 | Tablo | Açıklama |
 |-------|----------|
-| `games` | Oyun kaydı + IGDB canonical alanları (igdb_rating, igdb_url, external_id) |
+| `games` | Oyun kaydı + IGDB canonical alanları (igdb_rating, igdb_url, external_id, publisher, storyline) |
 | `game_platforms` | Oyun ↔ Sistem ↔ Emülatör + IGDB platform variant alanları |
 | `notes` | Tips / Request Tracker. category: tip/request/done. Opsiyonel game_id FK |
 | `glossary` | Teknik terimler sözlüğü |
@@ -57,8 +57,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ### Views
 | View | Açıklama |
 |------|----------|
-| `games_full` | Eski view — geriye dönük uyumluluk |
-| `v_games_full` | Yeni tam JOIN view — tüm sayfalar bunu kullanmaya geçecek |
+| `v_games_full` | Ana JOIN view — tüm sayfalar bunu kullanır |
 
 ---
 
@@ -83,13 +82,8 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 │   ├── igdb_bulk_match.py
 │   ├── igdb_repair_missing.py
 │   └── igdb_top_import.py
-├── migrations/                     # Kalan SQL dosyaları
-│   ├── migration_v7.sql
-│   ├── migration_v8.sql
-│   ├── migration_v9.sql
-│   ├── migration_v10.sql
-│   ├── migration_v11.sql
-│   └── cover_url_update.sql
+├── migrations/
+│   └── migration_v12.sql
 ├── supabase/functions/igdb-search  # IGDB proxy
 ├── TEAM_HANDOFF.md                 # Ortak ajan protokolü
 ├── README.md
@@ -160,7 +154,7 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - **Views** JOIN'li okumayı kolaylaştırır, data tutmaz.
 - **primary_cover_url** games tablosunda — tüm sayfalarda bu kullanılır.
 - **is_primary_variant** game_platforms'da — hangi platform ana gösterimde çıkar.
-- **migrations/** klasörü dokunulmazdır — sadece yeni dosya eklenir.
+- Eski migration geçmişi repodan temizlendi; sadece güncel referans migration tutulur.
 
 ---
 

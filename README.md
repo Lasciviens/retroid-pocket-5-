@@ -76,21 +76,12 @@ git commit -m "your change"
 git push origin main
 ```
 
-Migration notes: `GITHUB_PAGES_MIGRATION.md`
-Security follow-up: `SECURITY_NEXT_STEPS.md`
-RLS apply checklist: `SUPABASE_RLS_APPLY.md`
-IGDB bridge notes: `IGDB_INTEGRATION.md`
 IGDB data plan: `IGDB_DATA_PLAN.md`
 IGDB import standard: `IGDB_IMPORT_PLAYBOOK.md`
-IGDB field mapping: `IGDB_FIELD_MAP.md`
-IGDB query presets: `IGDB_QUERY_PRESETS.md`
-Integrations roadmap: `INTEGRATIONS_ROADMAP.md`
-Reference-driven product ideas: `PRODUCT_IDEAS_FROM_REFERENCES.md`
-Docs index: `DOCS_INDEX.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
 Bulk IGDB matcher: `scripts/igdb_bulk_match.py`
 IGDB repair pass: `scripts/igdb_repair_missing.py`
-Current schema reference: `migration_v7.sql`
+Current schema reference: `migrations/migration_v12.sql`
 
 ---
 

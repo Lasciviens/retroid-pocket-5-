@@ -27,16 +27,16 @@ Supabase (PostgreSQL) + statik HTML + GitHub Pages. Framework yok, sunucu yok.
 
 ---
 
-## Mevcut DB Schema (v10 — Mayıs 2026)
+## Mevcut DB Schema
 
 ### games tablosu — önemli kolonlar
-- `id`, `title`, `release_year`, `developer`, `publisher`
+- `id`, `title`, `release_year`, `publisher`
 - `description`, `storyline` — açıklamalar
 - `keywords TEXT[]`, `screenshots TEXT[]` — IGDB'den
-- `themes TEXT[]` — YENİ (migration_v9, henüz boş)
-- `age_rating TEXT` — YENİ (migration_v9, henüz boş)
-- `rating_count INTEGER` — YENİ (migration_v9, henüz boş)
-- `multiplayer_info TEXT[]` — YENİ (migration_v9, henüz boş)
+- `themes TEXT[]`
+- `age_rating TEXT`
+- `rating_count INTEGER`
+- `multiplayer_info TEXT[]`
 - `is_coop`, `coop_notes` — co-op bilgisi
 - `play_status`, `play_notes`, `game_log`, `play_order`, `tier`
 - `primary_cover_url` — ana kapak görseli
@@ -59,7 +59,7 @@ Supabase (PostgreSQL) + statik HTML + GitHub Pages. Framework yok, sunucu yok.
 
 ### ⚡ Şu an çalışıyor: IGDB Full Sync (GitHub Actions)
 Actions → IGDB Full Sync workflow çalışıyor/çalıştırılacak.
-Sync edilen alanlar: screenshots, keywords, genres, storyline, developer, publisher,
+Sync edilen alanlar: screenshots, keywords, genres, storyline, publisher,
 multiplayer, franchises, themes, age_rating, rating_count
 
 **Workflow çalıştıktan sonra yapılacaklar:**
@@ -94,9 +94,7 @@ Dosya: `Retroid_Library_Dashboard.html`
 - [x] DB mimarisi temizlendi: emulator_systems junction, roms DROP, notes FK
 - [x] `primary_cover_url` games tablosuna eklendi, tüm cover'lar düzeltildi
 - [x] `v_games_full` view oluşturuldu ve tüm sayfalar buna geçirildi
-- [x] migration_v8: keywords, screenshots kolonları
-- [x] migration_v9: themes, age_rating, rating_count, multiplayer_info kolonları
-- [x] migration_v10: v_games_full yeni kolonlarla güncellendi
+- [x] Eski migration geçmişi sadeleştirildi; güncel referans `migration_v12.sql`
 - [x] Repo organizasyonu: migrations/, docs/ klasörleri
 - [x] IGDB Full Sync GitHub Action workflow oluşturuldu
 - [x] AI_RULES.md, TEAM_HANDOFF.md protokolü kuruldu
@@ -129,7 +127,7 @@ Dosya: `Retroid_Library_Dashboard.html`
 
 ### Teknik Borç
 - [ ] emulators.supported_systems kolonu DROP et (emulator_systems junction doldu)
-- [ ] games_full eski view'ini DROP et (v_games_full var)
+- [x] games_full eski view'i drop edildi
 
 ---
 
