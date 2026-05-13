@@ -43,10 +43,18 @@ tbody tr:hover td{border-color:rgba(0,212,255,.35);background:rgba(28,34,56,.92)
 .badge.gap{color:var(--warn);border-color:rgba(243,156,18,.35)}
 .badge.igdb{color:#c4b5fd;border-color:rgba(124,58,237,.35)}
 .badge.ok{color:var(--good);border-color:rgba(46,204,113,.35)}
+.badge.p1{color:var(--bad);border-color:rgba(231,76,60,.38);background:rgba(231,76,60,.12)}
+.badge.p2{color:var(--warn);border-color:rgba(243,156,18,.38);background:rgba(243,156,18,.10)}
+.badge.p3{color:#9fb0d9;border-color:rgba(159,176,217,.30);background:rgba(159,176,217,.08)}
 .actions{display:flex;gap:6px;flex-wrap:wrap}
 .actions a{font-size:.74rem;text-decoration:none;color:var(--text);background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:6px 9px}
 .actions a:hover{border-color:var(--accent);color:var(--accent)}
 .empty{padding:60px 20px;text-align:center;color:var(--muted)}
+.severity-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.severity-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;font-size:.68rem;font-weight:800;border:1px solid var(--border);background:var(--bg-3);color:var(--muted)}
+.severity-pill.p1{color:var(--bad);border-color:rgba(231,76,60,.35)}
+.severity-pill.p2{color:var(--warn);border-color:rgba(243,156,18,.35)}
+.severity-pill.p3{color:#9fb0d9;border-color:rgba(159,176,217,.30)}
 footer{text-align:center;padding:18px;color:var(--muted);font-size:.78rem}
 footer a{color:var(--accent);text-decoration:none}
 @media(max-width:760px){
@@ -143,6 +151,27 @@ const ISSUE_LABELS={
   platform_no_performance:'Performans eksik',
   platform_missing_cover:'Platform kapagi eksik'
 };
+const ISSUE_SEVERITY={
+  no_external_id:'p1',
+  no_primary_variant:'p1',
+  multiple_primaries:'p1',
+  no_release_year:'p2',
+  no_publisher:'p2',
+  no_description:'p2',
+  no_igdb_rating:'p2',
+  never_synced:'p2',
+  base64_cover:'p2',
+  dup_title_suspect:'p2',
+  no_primary_cover:'p3',
+  no_storyline:'p3',
+  year_mismatch:'p3',
+  preferred_not_primary:'p3',
+  redundant_version_title:'p3',
+  platform_no_emulator:'p3',
+  platform_no_performance:'p3',
+  platform_missing_cover:'p3',
+  rom_path_missing:'p2'
+};
 
 function escapeHtml(value){
   return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -164,8 +193,13 @@ function getGapInfo(game){
   const hasYear=!!game.year;
   const hasIgdb=!!game.externalId;
   const romPathMissing=game.platforms.some(p=>['installed','sd_card','found'].includes(p.romStatus) && !String(p.romUrl||'').trim());
-  const issues=(game.issueTypes||[]).map(type=>ISSUE_LABELS[type]||type);
-  if(romPathMissing) issues.push('ROM yol eksik');
+  const issues=(game.issueTypes||[]).map(type=>({
+    key:type,
+    label:ISSUE_LABELS[type]||type,
+    severity:ISSUE_SEVERITY[type]||'p3'
+  }));
+  if(romPathMissing) issues.push({key:'rom_path_missing',label:'ROM yol eksik',severity:'p2'});
+  issues.sort((a,b)=>({p1:0,p2:1,p3:2}[a.severity]-{p1:0,p2:1,p3:2}[b.severity]||a.label.localeCompare(b.label)));
   const gapScore=(game.criticalIssues||0)*4 + (game.importantIssues||0)*2 + (game.infoIssues||0) + (romPathMissing?2:0);
   return {preferred,hasCover,hasSummary,hasYear,hasIgdb,romPathMissing,issues,gapScore,auditScore:game.auditScore||100};
 }
@@ -238,7 +272,7 @@ function getFiltered(){
     const info=getGapInfo(game);
     const haystack=[game.title,game.series,game.platforms.map(p=>p.system).join(' ')].join(' ').toLowerCase();
     if(filters.search && !haystack.includes(filters.search.toLowerCase())) return false;
-    if(filters.focus && info.score===0) return false;
+    if(filters.focus && info.gapScore===0) return false;
     if(filters.unmatched && info.hasIgdb) return false;
     if(filters.cover && info.hasCover) return false;
     if(filters.summary && info.hasSummary) return false;
@@ -284,10 +318,15 @@ function render(){
           ${escapeHtml(game.series||'Seri yok')}
           ${game.year?` · ${game.year}`:' · Yil yok'}
         </div>
+        <div class="severity-row">
+          ${game.criticalIssues?`<span class="severity-pill p1">P1 ${game.criticalIssues}</span>`:''}
+          ${game.importantIssues?`<span class="severity-pill p2">P2 ${game.importantIssues}</span>`:''}
+          ${game.infoIssues?`<span class="severity-pill p3">P3 ${game.infoIssues}</span>`:''}
+        </div>
       </td>
       <td>
         <div class="badge-row">
-          ${info.issues.length?info.issues.map(label=>`<span class="badge gap">${escapeHtml(label)}</span>`).join(''):'<span class="badge ok">Temiz</span>'}
+          ${info.issues.length?info.issues.map(issue=>`<span class="badge ${issue.severity}">${escapeHtml(issue.label)}</span>`).join(''):'<span class="badge ok">Temiz</span>'}
           ${info.hasIgdb?'<span class="badge igdb">IGDB eslesti</span>':''}
         </div>
       </td>

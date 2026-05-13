@@ -656,6 +656,23 @@ function renderGameTable(list){
   </tbody></table>`;
 }
 
+function renderChunkedItems(container,list,renderer,chunkSize=40){
+  container.innerHTML='';
+  let offset=0;
+  function renderChunk(){
+    const chunk=list.slice(offset,offset+chunkSize);
+    if(!chunk.length) return;
+    const frag=document.createDocumentFragment();
+    const tmp=document.createElement('div');
+    tmp.innerHTML=chunk.map(renderer).join('');
+    while(tmp.firstChild) frag.appendChild(tmp.firstChild);
+    container.appendChild(frag);
+    offset+=chunkSize;
+    if(offset<list.length) requestAnimationFrame(renderChunk);
+  }
+  renderChunk();
+}
+
 function render(){
   document.getElementById('s-total').textContent=ALL.length;
   document.getElementById('s-iconic').textContent=ALL.filter(g=>g.iconic).length;
@@ -674,29 +691,14 @@ function render(){
   grid.className=`game-grid view-${filters.view}`;
   if(!list.length){grid.innerHTML='<div class="empty">Filtreyle eşleşen oyun bulunamadı.</div>';return;}
   if(filters.view==='list'){
-    // Chunked render — 50'şer kart, tarayıcıyı dondurmaz
-  grid.innerHTML='';
-  const chunkSize=50;
-  let offset=0;
-  function renderChunk(){
-    const chunk=list.slice(offset,offset+chunkSize);
-    if(!chunk.length)return;
-    const frag=document.createDocumentFragment();
-    const tmp=document.createElement('div');
-    tmp.innerHTML=chunk.map(renderGameListItem).join('');
-    while(tmp.firstChild)frag.appendChild(tmp.firstChild);
-    grid.appendChild(frag);
-    offset+=chunkSize;
-    if(offset<list.length)requestAnimationFrame(renderChunk);
-  }
-  renderChunk();
+    renderChunkedItems(grid,list,renderGameListItem,50);
     return;
   }
   if(filters.view==='table'){
     grid.innerHTML=renderGameTable(list);
     return;
   }
-  grid.innerHTML=list.map(renderGameGridCard).join('');
+  renderChunkedItems(grid,list,renderGameGridCard,36);
 }
 
 async function setStatus(id,status){
