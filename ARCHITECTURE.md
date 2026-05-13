@@ -57,7 +57,11 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ### Views
 | View | Açıklama |
 |------|----------|
-| `v_games_full` | Ana JOIN view — tüm sayfalar bunu kullanır |
+| `v_games_summary` | Ana kütüphane liste/kart görünümü için hafif özet view |
+| `v_games_full` | Tek oyun detay modalı ve ağır metadata fetch için tam view |
+| `v_games_cleanup` | Cleanup Workspace için hızlı admin anomaly özeti |
+| `v_games_audit` | Audit score + issue_types ile yoğun kalite kontrol view |
+| `v_game_platform_audit` | Platform satırı bazında anomaly view |
 
 ---
 
@@ -80,10 +84,15 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── rp5_igdb.js                     # IGDB Bridge helper
 ├── scripts/                        # Python araçları
 │   ├── igdb_bulk_match.py
+│   ├── audit_report.py
 │   ├── igdb_repair_missing.py
 │   └── igdb_top_import.py
 ├── migrations/
-│   └── migration_v12.sql
+│   ├── migration_v12.sql
+│   ├── migration_v14.sql
+│   └── migration_v15.sql
+├── docs/
+│   └── audit_system.md
 ├── supabase/functions/igdb-search  # IGDB proxy
 ├── README.md
 ├── ARCHITECTURE.md

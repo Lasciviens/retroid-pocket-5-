@@ -358,10 +358,10 @@ function getLiveIgdbRating(game){
 
 async function load(){
   // Ana kutuphane icin hafif sorgu: agir text / modal alanlari ihtiyac halinde cekilir.
-  const games=await sb('v_games_full?select=id,title,release_year,is_coop,coop_notes,play_status,rating,igdb_rating_canonical,igdb_url_canonical,is_iconic,primary_cover_url,series_id,external_id,series_name,genres,platforms&order=title');
+  const games=await sb('v_games_summary?select=id,title,release_year,publisher,play_status,tier,rating,igdb_rating_canonical,is_coop,is_iconic,primary_cover_url,series_id,external_id,series_name,genres,platforms&order=title');
   ALL=games.map(g=>({
     id:g.id,title:g.title,year:g.release_year,
-    coop:g.is_coop,coopNotes:g.coop_notes,
+    coop:g.is_coop,coopNotes:'',
     status:g.play_status||'backlog',rating:g.rating,igdbRating:g.igdb_rating_canonical||null,iconic:g.is_iconic,desc:'',
     playNotes:'',gameLog:'',tier:'',externalId:g.external_id||null,igdbUrl:g.igdb_url_canonical||null,
     cover:g.primary_cover_url||null,
@@ -371,12 +371,12 @@ async function load(){
     ageRating:null,
     ratingCount:null,
     multiplayerInfo:[],
-    publisher:null,
+    publisher:g.publisher||null,
     storyline:'',
     keywords:[],
     screenshots:[],
     detailLoaded:false,
-    platforms:(g.platforms||[]).map(p=>({id:p.id,system:p.system,emulator:p.emulator,perf:p.performance,perfNotes:p.performance_notes,cover:p.cover_url,romStatus:p.rom_status||'missing',romUrl:p.rom_url||'',igdbRating:p.igdb_rating||null,igdbUrl:p.igdb_url||null,isPrimary:p.is_primary_variant||false,romUrl:p.rom_url||'',region:p.region||'',isPreferred:p.is_preferred||false,igdbGameId:p.igdb_game_id||null,igdbSlug:p.igdb_slug||'',igdbUrl:p.igdb_url||'',igdbRating:p.igdb_rating||null,igdbReleaseYear:p.igdb_release_year||null,igdbFirstReleaseDate:p.igdb_first_release_date||null,versionTitle:p.version_title||'',isPrimaryVariant:p.is_primary_variant||false}))
+    platforms:(g.platforms||[]).map(p=>({id:p.id,system:p.system,emulator:p.emulator,perf:p.performance,perfNotes:'',cover:'',romStatus:p.rom_status||'missing',romUrl:'',isPrimary:p.is_primary_variant||false,region:p.region||'',isPreferred:!!p.is_primary_variant,igdbGameId:null,igdbSlug:'',igdbUrl:'',igdbRating:null,igdbReleaseYear:null,igdbFirstReleaseDate:null,versionTitle:'',isPrimaryVariant:p.is_primary_variant||false}))
   }));
   const fSys=document.getElementById('f-system');
   const fGen=document.getElementById('f-genre');
@@ -399,21 +399,44 @@ async function hydrateGameDetail(gameId){
   if(DETAIL_IN_FLIGHT.has(gameId)) return DETAIL_IN_FLIGHT.get(gameId);
 
   const promise=(async()=>{
-    const rows=await sb(`v_games_full?select=id,description,storyline,publisher,play_notes,game_log,tier,multiplayer_info,themes,age_rating,rating_count,keywords,screenshots&id=eq.${gameId}`);
+    const rows=await sb(`v_games_full?select=id,description,storyline,publisher,play_notes,game_log,tier,multiplayer_info,themes,age_rating,rating_count,keywords,screenshots,coop_notes,igdb_url_canonical,platforms&id=eq.${gameId}`);
     const row=rows?.[0];
     if(row){
       game.desc=row.description||'';
       game.storyline=row.storyline||'';
       game.publisher=row.publisher||null;
+      game.coopNotes=row.coop_notes||'';
       game.playNotes=row.play_notes||'';
       game.gameLog=row.game_log||'';
       game.tier=row.tier||'';
+      game.igdbUrl=row.igdb_url_canonical||game.igdbUrl||null;
       game.multiplayerInfo=Array.isArray(row.multiplayer_info)?row.multiplayer_info:[];
       game.themes=Array.isArray(row.themes)?row.themes:[];
       game.keywords=Array.isArray(row.keywords)?row.keywords:[];
       game.screenshots=Array.isArray(row.screenshots)?row.screenshots:[];
       game.ageRating=row.age_rating||null;
       game.ratingCount=row.rating_count||null;
+      game.platforms=Array.isArray(row.platforms)?row.platforms.map(p=>({
+        id:p.id,
+        system:p.system,
+        emulator:p.emulator,
+        perf:p.performance,
+        perfNotes:p.performance_notes,
+        cover:p.cover_url,
+        romStatus:p.rom_status||'missing',
+        romUrl:p.rom_url||'',
+        isPrimary:p.is_primary_variant||false,
+        region:p.region||'',
+        isPreferred:!!p.is_preferred,
+        igdbGameId:p.igdb_game_id||null,
+        igdbSlug:p.igdb_slug||'',
+        igdbUrl:p.igdb_url||'',
+        igdbRating:p.igdb_rating||null,
+        igdbReleaseYear:p.igdb_release_year||null,
+        igdbFirstReleaseDate:p.igdb_first_release_date||null,
+        versionTitle:p.version_title||'',
+        isPrimaryVariant:p.is_primary_variant||false
+      })):[];
       game.detailLoaded=true;
     }
     DETAIL_IN_FLIGHT.delete(gameId);

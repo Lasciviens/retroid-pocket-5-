@@ -123,13 +123,33 @@ const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 const HEADERS={apikey:KEY,Authorization:`Bearer ${KEY}`};
 let ALL=[];
 let filters={search:'',focus:true,unmatched:false,cover:false,summary:false,year:false,rom:false,sort:'score-desc'};
+const ISSUE_LABELS={
+  no_external_id:'IGDB eksik',
+  no_primary_variant:'Primary yok',
+  multiple_primaries:'Coklu primary',
+  no_release_year:'Yil eksik',
+  no_publisher:'Publisher eksik',
+  no_description:'Ozet eksik',
+  no_igdb_rating:'IGDB puani eksik',
+  never_synced:'Sync edilmemis',
+  base64_cover:'Base64 kapak',
+  dup_title_suspect:'Duplicate suphe',
+  no_primary_cover:'Ana kapak eksik',
+  no_storyline:'Storyline eksik',
+  year_mismatch:'Yil uyusmazligi',
+  preferred_not_primary:'Tercih/primary uyusmaz',
+  redundant_version_title:'Gereksiz varyant basligi',
+  platform_no_emulator:'Emulator eksik',
+  platform_no_performance:'Performans eksik',
+  platform_missing_cover:'Platform kapagi eksik'
+};
 
 function escapeHtml(value){
   return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function getPreferred(game){
-  return game.platforms.find(p=>p.isPreferred) || game.platforms[0] || null;
+  return game.platforms.find(p=>p.isPreferred || p.isPrimaryVariant) || game.platforms[0] || null;
 }
 
 function getCover(game){
@@ -140,50 +160,71 @@ function getCover(game){
 function getGapInfo(game){
   const preferred=getPreferred(game);
   const hasCover=!!getCover(game);
-  const hasSummary=!!(game.desc && String(game.desc).trim());
+  const hasSummary=!game.missingDescription;
   const hasYear=!!game.year;
   const hasIgdb=!!game.externalId;
   const romPathMissing=game.platforms.some(p=>['installed','sd_card','found'].includes(p.romStatus) && !String(p.romUrl||'').trim());
-  const issues=[];
-  if(!hasIgdb) issues.push('IGDB eksik');
-  if(!hasCover) issues.push('Kapak eksik');
-  if(!hasSummary) issues.push('Ozet eksik');
-  if(!hasYear) issues.push('Yil eksik');
+  const issues=(game.issueTypes||[]).map(type=>ISSUE_LABELS[type]||type);
   if(romPathMissing) issues.push('ROM yol eksik');
-  const score=(hasIgdb?0:4)+(hasCover?0:2)+(hasSummary?0:2)+(hasYear?0:1)+(romPathMissing?2:0);
-  return {preferred,hasCover,hasSummary,hasYear,hasIgdb,romPathMissing,issues,score};
+  const gapScore=(game.criticalIssues||0)*4 + (game.importantIssues||0)*2 + (game.infoIssues||0) + (romPathMissing?2:0);
+  return {preferred,hasCover,hasSummary,hasYear,hasIgdb,romPathMissing,issues,gapScore,auditScore:game.auditScore||100};
 }
 
 async function load(){
-  const response=await fetch(`${SB}/rest/v1/games?select=id,title,release_year,play_status,primary_cover_url,external_id,igdb_rating,igdb_url,description,series(name),game_platforms(id,rom_status,rom_url,is_preferred,cover_url,systems(name),emulators(name))&order=title`,{headers:HEADERS});
-  const games=await response.json();
-  ALL=games.map(g=>({
-    id:g.id,
-    title:g.title,
-    year:g.release_year||null,
-    status:g.play_status||'backlog',
-    cover:g.primary_cover_url||'',
-    externalId:g.external_id||null,
-    igdbRating:g.igdb_rating||null,
-    igdbUrl:g.igdb_url||'',
-    desc:g.description||'',
-    series:g.series?.name||'',
-    platforms:(g.game_platforms||[]).map(p=>({
-      id:p.id,
-      system:p.systems?.name||'',
-      emulator:p.emulators?.name||'',
-      romStatus:p.rom_status||'missing',
-      romUrl:p.rom_url||'',
-      isPreferred:!!p.is_preferred,
-      cover:p.cover_url||''
-    }))
-  }));
+  const [summaryRes,auditRes,romRes]=await Promise.all([
+    fetch(`${SB}/rest/v1/v_games_summary?select=id,title,release_year,publisher,play_status,primary_cover_url,external_id,series_name,platforms&order=title`,{headers:HEADERS}),
+    fetch(`${SB}/rest/v1/v_games_audit?select=id,audit_score,critical_issues,important_issues,info_issues,issue_types,p2_no_description,p3_no_primary_cover,p1_no_primary_variant,p2_never_synced`,{headers:HEADERS}),
+    fetch(`${SB}/rest/v1/game_platforms?select=id,game_id,rom_status,rom_url,is_preferred,is_primary_variant`,{headers:HEADERS})
+  ]);
+  const [summaryGames,auditGames,romRows]=await Promise.all([summaryRes.json(),auditRes.json(),romRes.json()]);
+  const auditMap=new Map((auditGames||[]).map(row=>[row.id,row]));
+  const romMap=new Map();
+  (romRows||[]).forEach(row=>{
+    if(!romMap.has(row.game_id)) romMap.set(row.game_id,[]);
+    romMap.get(row.game_id).push(row);
+  });
+  ALL=(summaryGames||[]).map(g=>{
+    const audit=auditMap.get(g.id)||{};
+    const romPlatforms=romMap.get(g.id)||[];
+    const romById=new Map(romPlatforms.map(p=>[p.id,p]));
+    return {
+      id:g.id,
+      title:g.title,
+      year:g.release_year||null,
+      status:g.play_status||'backlog',
+      cover:g.primary_cover_url||'',
+      externalId:g.external_id||null,
+      series:g.series_name||'',
+      auditScore:audit.audit_score ?? 100,
+      criticalIssues:audit.critical_issues||0,
+      importantIssues:audit.important_issues||0,
+      infoIssues:audit.info_issues||0,
+      issueTypes:Array.isArray(audit.issue_types)?audit.issue_types:[],
+      missingDescription:!!audit.p2_no_description,
+      missingPrimaryCover:!!audit.p3_no_primary_cover,
+      noPrimaryVariant:!!audit.p1_no_primary_variant,
+      neverSynced:!!audit.p2_never_synced,
+      platforms:(g.platforms||[]).map(p=>{
+        const rom=romById.get(p.id)||{};
+        return {
+          id:p.id,
+          system:p.system||'',
+          emulator:p.emulator||'',
+          romStatus:rom.rom_status || p.rom_status || 'missing',
+          romUrl:rom.rom_url || '',
+          isPreferred:!!(rom.is_preferred ?? p.is_preferred),
+          isPrimaryVariant:!!(rom.is_primary_variant ?? p.is_primary_variant),
+          cover:''
+        };
+      })
+    };
+  });
   renderStats();
   render();
 }
 
 function renderStats(){
-  const focusList=ALL.filter(g=>getGapInfo(g).score>0);
+  const focusList=ALL.filter(g=>getGapInfo(g).gapScore>0);
   document.getElementById('s-total').textContent=ALL.length;
   document.getElementById('s-focus').textContent=focusList.length;
   document.getElementById('s-unmatched').textContent=ALL.filter(g=>!getGapInfo(g).hasIgdb).length;
@@ -211,7 +252,7 @@ function getFiltered(){
     if(filters.sort==='year-asc') return (a.year||9999)-(b.year||9999);
     if(filters.sort==='year-desc') return (b.year||0)-(a.year||0);
     if(filters.sort==='title') return a.title.localeCompare(b.title);
-    return bInfo.score-aInfo.score || a.title.localeCompare(b.title);
+    return bInfo.gapScore-aInfo.gapScore || aInfo.auditScore-bInfo.auditScore || a.title.localeCompare(b.title);
   });
   return list;
 }
@@ -234,9 +275,9 @@ function render(){
   tbody.innerHTML=list.map(game=>{
     const info=getGapInfo(game);
     const preferred=info.preferred;
-    const scoreTone=info.score>=6?'bad':info.score>=3?'warn':'good';
+    const scoreTone=info.gapScore>=6?'bad':info.gapScore>=3?'warn':'good';
     return `<tr>
-      <td><span class="score ${scoreTone}">${info.score}</span></td>
+      <td><span class="score ${scoreTone}">${info.gapScore}</span><div class="sub" style="margin-top:6px">Audit ${info.auditScore}</div></td>
       <td>
         <div class="title">${escapeHtml(game.title)}</div>
         <div class="sub">
