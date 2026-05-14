@@ -181,10 +181,14 @@ select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/
 .screenshot-gallery img:hover{transform:scale(1.04);border-color:var(--accent)}
 .lightbox-overlay{display:none;position:fixed;inset:0;background:rgba(4,6,12,.92);z-index:140;align-items:center;justify-content:center;padding:28px}
 .lightbox-overlay.active{display:flex}
-.lightbox-shell{position:relative;max-width:min(1200px,92vw);max-height:90vh;display:flex;flex-direction:column;gap:10px;align-items:center}
-.lightbox-close{position:absolute;top:-8px;right:-8px;width:36px;height:36px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.55);color:#fff;font-size:1.1rem;cursor:pointer}
-.lightbox-image{max-width:min(1200px,92vw);max-height:82vh;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);object-fit:contain;background:rgba(255,255,255,.02)}
+.lightbox-shell{position:relative;width:min(1480px,96vw);height:min(92vh,980px);display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center}
+.lightbox-close{position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.55);color:#fff;font-size:1.1rem;cursor:pointer;z-index:3}
+.lightbox-image{max-width:100%;max-height:calc(100% - 52px);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);object-fit:contain;background:rgba(255,255,255,.02)}
 .lightbox-caption{font-size:.8rem;color:var(--muted);text-align:center}
+.lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.5);color:#fff;font-size:1.45rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3}
+.lightbox-nav.prev{left:8px}
+.lightbox-nav.next{right:8px}
+.lightbox-nav:disabled{opacity:.28;cursor:default}
 .loading{text-align:center;padding:60px;color:var(--muted);font-size:1.1rem;grid-column:1/-1}
 .empty{text-align:center;padding:60px;color:var(--muted);grid-column:1/-1}
 footer{text-align:center;margin-top:36px;padding:16px;color:var(--muted);font-size:.8rem}
@@ -204,7 +208,18 @@ footer a{color:var(--accent-2);text-decoration:none}
   .results-table tbody td:first-child{border-top-left-radius:10px!important;border-top-right-radius:10px!important}
   .results-table tbody td:last-child{border-bottom-left-radius:10px!important;border-bottom-right-radius:10px!important}
 }
-@media(max-width:600px){.modal-hero-art{width:80px;height:110px;left:12px}.modal-hero-info{left:108px}.modal-hero-info h2{font-size:1.1rem}}
+@media(max-width:600px){
+  .modal-hero-art{width:80px;height:110px;left:12px}
+  .modal-hero-info{left:108px}
+  .modal-hero-info h2{font-size:1.1rem}
+  .lightbox-overlay{padding:10px}
+  .lightbox-shell{width:100%;height:100%;gap:10px}
+  .lightbox-nav{width:46px;height:46px;bottom:16px;top:auto;transform:none}
+  .lightbox-nav.prev{left:16px}
+  .lightbox-nav.next{right:16px}
+  .lightbox-close{top:10px;right:10px}
+  .lightbox-image{max-height:calc(100% - 90px)}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="rp5_auth.js"></script>
@@ -295,8 +310,10 @@ footer a{color:var(--accent-2);text-decoration:none}
 
 <div class="lightbox-overlay" id="lightbox" onclick="if(event.target===this)closeLightbox()">
   <div class="lightbox-shell">
+    <button class="lightbox-nav prev" id="lightbox-prev" onclick="navigateLightbox(-1)" aria-label="Onceki gorsel">‹</button>
     <button class="lightbox-close" onclick="closeLightbox()" aria-label="Gorseli kapat">×</button>
     <img class="lightbox-image" id="lightbox-image" alt="">
+    <button class="lightbox-nav next" id="lightbox-next" onclick="navigateLightbox(1)" aria-label="Sonraki gorsel">›</button>
     <div class="lightbox-caption" id="lightbox-caption"></div>
   </div>
 </div>
@@ -342,6 +359,8 @@ async function patch(ep,body){
 let ALL=[],filters={search:'',system:'',genre:'',series:'',status:'',coop:false,iconic:false,unmatchedIgdb:false,coverGap:false,summaryGap:false,yearGap:false,sort:'igdb-rating',view:'grid'};
 const DETAIL_IN_FLIGHT=new Map();
 let currentModalGameId=null;
+let LIGHTBOX_ITEMS=[];
+let LIGHTBOX_INDEX=0;
 
 function escapeHtml(value){
   return String(value||'')
@@ -361,17 +380,6 @@ function igdbToDbRating(value){
   if(value==null || Number.isNaN(Number(value))) return null;
   return Math.max(1, Math.min(10, Math.round(Number(value)/10)));
 }
-
-const SEARCH_ALIAS_MAP={
-  gta:['grand theft auto'],
-  gt:['gran turismo'],
-  mgs:['metal gear solid'],
-  gow:['god of war'],
-  ff:['final fantasy'],
-  dq:['dragon quest'],
-  re:['resident evil'],
-  smt:['shin megami tensei']
-};
 
 function normalizeSearchText(value){
   return String(value||'')
@@ -407,10 +415,8 @@ function buildSearchCorpus(game){
 function matchesSearch(game,rawQuery){
   const query=normalizeSearchText(rawQuery);
   if(!query) return true;
-  const aliases=SEARCH_ALIAS_MAP[query] || [];
-  const needles=[query,...aliases.map(normalizeSearchText)].filter(Boolean);
   const corpus=buildSearchCorpus(game);
-  return needles.some(needle=>corpus.some(entry=>entry.includes(needle)));
+  return corpus.some(entry=>entry.includes(query));
 }
 
 function getDisplayRating(game){
@@ -739,15 +745,68 @@ function renderChunkedItems(container,list,renderer,chunkSize=40){
   renderChunk();
 }
 
-function openLightbox(url,caption=''){
-  if(!url) return;
+function getLightboxItemsForCurrentGame(){
+  const game=ALL.find(x=>x.id===currentModalGameId);
+  if(!game) return [];
+  const heroCover=getGameCover(game);
+  const items=[];
+  if(heroCover) items.push({url:heroCover,caption:`${game.title} cover`});
+  (game.screenshots||[]).forEach((url,idx)=>{
+    if(url) items.push({url,caption:`${game.title} screenshot ${idx+1}`});
+  });
+  return items;
+}
+
+function syncLightbox(){
   const overlay=document.getElementById('lightbox');
   const image=document.getElementById('lightbox-image');
   const text=document.getElementById('lightbox-caption');
-  image.src=url;
-  image.alt=caption||'Retroid gorsel';
-  text.textContent=caption||'';
+  const prevBtn=document.getElementById('lightbox-prev');
+  const nextBtn=document.getElementById('lightbox-next');
+  const item=LIGHTBOX_ITEMS[LIGHTBOX_INDEX];
+  if(!item){
+    closeLightbox();
+    return;
+  }
+  image.src=item.url;
+  image.alt=item.caption||'Retroid gorsel';
+  text.textContent=item.caption||'';
+  const many=LIGHTBOX_ITEMS.length>1;
+  prevBtn.style.display=many?'flex':'none';
+  nextBtn.style.display=many?'flex':'none';
+  prevBtn.disabled=LIGHTBOX_INDEX<=0;
+  nextBtn.disabled=LIGHTBOX_INDEX>=LIGHTBOX_ITEMS.length-1;
   overlay.classList.add('active');
+}
+
+function openLightboxByIndex(index){
+  LIGHTBOX_ITEMS=getLightboxItemsForCurrentGame();
+  if(!LIGHTBOX_ITEMS.length) return;
+  LIGHTBOX_INDEX=Math.max(0,Math.min(index,LIGHTBOX_ITEMS.length-1));
+  syncLightbox();
+}
+
+function navigateLightbox(direction){
+  if(!LIGHTBOX_ITEMS.length) return;
+  const next=LIGHTBOX_INDEX+direction;
+  if(next<0 || next>=LIGHTBOX_ITEMS.length) return;
+  LIGHTBOX_INDEX=next;
+  syncLightbox();
+}
+
+function openLightbox(url,caption=''){
+  const items=getLightboxItemsForCurrentGame();
+  const matchIndex=items.findIndex(item=>item.url===url);
+  if(items.length && matchIndex>=0){
+    LIGHTBOX_ITEMS=items;
+    LIGHTBOX_INDEX=matchIndex;
+    syncLightbox();
+    return;
+  }
+  if(!url) return;
+  LIGHTBOX_ITEMS=[{url,caption}];
+  LIGHTBOX_INDEX=0;
+  syncLightbox();
 }
 
 function closeLightbox(){
@@ -755,6 +814,8 @@ function closeLightbox(){
   const image=document.getElementById('lightbox-image');
   overlay.classList.remove('active');
   image.removeAttribute('src');
+  LIGHTBOX_ITEMS=[];
+  LIGHTBOX_INDEX=0;
 }
 
 function render(){
@@ -1220,7 +1281,11 @@ document.addEventListener('click',e=>{
 document.addEventListener('keydown',e=>{
   const modalOpen=document.getElementById('modal').classList.contains('active');
   const lightboxOpen=document.getElementById('lightbox').classList.contains('active');
-  if(lightboxOpen && e.key==='Escape'){ closeLightbox(); return; }
+  if(lightboxOpen){
+    if(e.key==='Escape'){ closeLightbox(); return; }
+    if(e.key==='ArrowLeft'){ e.preventDefault(); navigateLightbox(-1); return; }
+    if(e.key==='ArrowRight'){ e.preventDefault(); navigateLightbox(1); return; }
+  }
   if(!modalOpen) return;
   if(e.key==='Escape'){ closeModal(); return; }
   const tag=(document.activeElement?.tagName || '').toLowerCase();
