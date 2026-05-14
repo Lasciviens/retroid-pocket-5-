@@ -133,7 +133,7 @@ select.fbtn{appearance:none;padding-right:28px;background-image:url("data:image/
 .modal{background:var(--bg-2);border:1px solid var(--border);border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
 .modal-hero{position:relative;height:220px;overflow:hidden;background:var(--bg-3)}
 .modal-hero-bg{width:100%;height:100%;object-fit:cover;filter:blur(20px) brightness(.35)}
-.modal-hero-art{position:absolute;top:50%;left:24px;transform:translateY(-50%);width:110px;height:150px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.6);object-fit:cover}
+.modal-hero-art{position:absolute;top:50%;left:24px;transform:translateY(-50%);width:110px;height:150px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.6);object-fit:cover;z-index:2}
 .modal-hero-art.clickable,.screenshot-gallery img.clickable{cursor:zoom-in}
 .modal-hero-info{position:absolute;left:156px;top:50%;transform:translateY(-50%);color:#fff}
 .modal-hero-info h2{font-size:1.4rem;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.8)}
@@ -945,7 +945,7 @@ function openModal(id){
   document.getElementById('modal-nav-next').style.display=hasNext?'flex':'none';
   document.getElementById('modal-content').innerHTML=`
     <div class="modal-hero">
-      ${heroCover?`<img class="modal-hero-bg" src="${escapeHtml(heroCover)}" onerror="this.style.display='none'"><img class="modal-hero-art clickable" src="${escapeHtml(heroCover)}" onclick="openLightbox(this.src, decodeURIComponent('${encodeURIComponent(g.title+' cover')}'))" onerror="this.style.opacity='.2'">`:``}
+      ${heroCover?`<img class="modal-hero-bg" src="${escapeHtml(heroCover)}" onerror="this.style.display='none'"><img class="modal-hero-art clickable" src="${escapeHtml(heroCover)}" data-lightbox-url="${escapeHtml(heroCover)}" data-lightbox-caption="${escapeHtml(g.title)} cover" onerror="this.style.opacity='.2'">`:``}
       <div class="modal-hero-info" style="${!heroCover?'left:24px':''}">
         <h2>${escapeHtml(g.title)}${g.iconic?' ★':''}</h2>
         <div class="badges" style="margin-top:6px">
@@ -1069,7 +1069,7 @@ function openModal(id){
     if(g.screenshots?.length){
       blocks.push(
         '<div class="modal-section"><h4>🖼️ Ekran Görüntüleri</h4><div class="screenshot-gallery">'+
-        g.screenshots.map((url,idx)=>'<img class="clickable" src="'+escapeHtml(url)+'" loading="lazy" onclick="openLightbox(this.src, decodeURIComponent(\''+encodeURIComponent(`${g.title} screenshot ${idx+1}`)+'\'))" onerror="this.style.display=\'none\'">').join('')+
+        g.screenshots.map((url,idx)=>'<img class="clickable" src="'+escapeHtml(url)+'" data-lightbox-url="'+escapeHtml(url)+'" data-lightbox-caption="'+escapeHtml(`${g.title} screenshot ${idx+1}`)+'" loading="lazy" onerror="this.style.display=\'none\'">').join('')+
         '</div></div>'
       );
     }
@@ -1159,8 +1159,17 @@ document.getElementById('f-reset').addEventListener('click',()=>{
   render();
 });
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.addEventListener('click',e=>{
+  const trigger=e.target.closest('[data-lightbox-url]');
+  if(!trigger) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openLightbox(trigger.getAttribute('data-lightbox-url'), trigger.getAttribute('data-lightbox-caption') || '');
+});
 document.addEventListener('keydown',e=>{
   const modalOpen=document.getElementById('modal').classList.contains('active');
+  const lightboxOpen=document.getElementById('lightbox').classList.contains('active');
+  if(lightboxOpen && e.key==='Escape'){ closeLightbox(); return; }
   if(!modalOpen) return;
   if(e.key==='Escape'){ closeModal(); return; }
   const tag=(document.activeElement?.tagName || '').toLowerCase();
