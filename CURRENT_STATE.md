@@ -3,7 +3,7 @@
 > **Her session başında ilk okunan dosya bu.**
 > Bir şey yapmadan önce burayı oku. Bir şey yaptıktan sonra burayı güncelle.
 >
-> Son güncelleme: 2026-05-14 · claude
+> Son güncelleme: 2026-05-14 · claude + codex (session kapanışı)
 
 ---
 
@@ -51,13 +51,13 @@
 | Modal detay endpoint | `v_games_full?id=eq.{id}` ✓ |
 | Cleanup Workspace | `v_games_audit` ✓ — rp5_igdb.js:209-210 |
 | IGDB Bridge | `v_games_summary` + `v_games_audit` ✓ |
-| Varsayılan sıralama | IGDB rating — açık görev |
-| Lightbox / zoom | Eklendi — commit 061b6c8 |
+| Varsayılan sıralama | IGDB rating ✓ — commit 061b6c8 |
+| Lightbox / zoom | Cover + screenshot zoom ✓ — commit d19509d |
+| Lightbox galeri gezinmesi | Sağ/sol buton + klavye ✓ — commit 1a0ec5a |
 
 ### UI Açık Sorunlar
 
-- Default sort = IGDB rating (Library açılışında) — project_todo'da var
-- Modal screenshot zoom + kapak zoom
+- Library araması hâlâ DB-backed değil; hardcoded alias geri alındı, doğru çözüm Claude tarafında search/view stratejisi
 - Cleanup Workspace inline quick aksiyonlar
 
 ---
@@ -69,6 +69,13 @@
 - migration_v15: `v_games_audit` (18 kural, audit_score) + `v_game_platform_audit`
 - `scripts/audit_report.py` + `scripts/audit_autofix.py` + `docs/audit_system.md`
 - Repo koordinasyon sistemi: `CURRENT_STATE.md` + `AI_RULES.md` güncelleme + `project_todo.md` sadeleştirme
+- commit `27a84d1`: koordinasyon OS + `audit_autofix.py` GitHub'a alındı
+
+**2026-05-14 — codex:**
+- commit `061b6c8`: default sort = IGDB rating + modal lightbox ilk sürüm
+- commit `d19509d`: modal cover/screenshot zoom güvenilir hale getirildi
+- commit `1a0ec5a`: lightbox galeri büyütüldü, sağ/sol gezinme eklendi, mobil/desktop davranışı iyileştirildi
+- Library search için yanlış hardcoded alias geçici çözümü geri alındı; arama artık yine yalnız mevcut DB summary alanlarına dayanıyor
 
 ---
 
@@ -83,6 +90,10 @@
 | FIFA 07 + PES 2013 duplicate merge | ✅ BITTI | migration_v13 |
 | Metal Gear Solid GBC yanlış external_id | ✅ BITTI | migration_v13 |
 | Modal lazy-load (DB-first, live IGDB ikincil) | ✅ BITTI | Codex — commit 16e134e |
+| Varsayılan sıralama = IGDB rating | ✅ BITTI | Codex — commit 061b6c8 |
+| Modal cover + screenshot zoom | ✅ BITTI | Codex — commit d19509d |
+| Modal galeri sağ/sol gezinme | ✅ BITTI | Codex — commit 1a0ec5a |
+| Koordinasyon OS (CURRENT_STATE + AI_RULES protokolü) | ✅ BITTI | Claude — commit 27a84d1 |
 
 ---
 
@@ -92,7 +103,7 @@
 |-------|---------|---------|
 | Kullanıcı | base64_cover kararı: temizle mi Storage'a taşı mı | Yüksek |
 | Kullanıcı | `audit_autofix.py` için service-key sağla | Orta |
-| Codex | Varsayılan sıralama = IGDB rating (Library açılışı) | Yüksek |
-| Codex | Modal screenshot + kapak zoom | Orta |
+| Claude | Library aramasını DB-backed hale getir: `v_games_summary` için search_text / acronym / alias stratejisi, hardcode yok | Yüksek |
+| Codex | Cleanup Workspace inline quick aksiyonlarını tasarla/uygula | Orta |
 | Claude | `audit_autofix.py --apply` (service-key gelince) | Orta |
 | Claude | IGDB enrich — `never_synced` 37 oyun için stamp | Düşük |
