@@ -362,6 +362,57 @@ function igdbToDbRating(value){
   return Math.max(1, Math.min(10, Math.round(Number(value)/10)));
 }
 
+const SEARCH_ALIAS_MAP={
+  gta:['grand theft auto'],
+  gt:['gran turismo'],
+  mgs:['metal gear solid'],
+  gow:['god of war'],
+  ff:['final fantasy'],
+  dq:['dragon quest'],
+  re:['resident evil'],
+  smt:['shin megami tensei']
+};
+
+function normalizeSearchText(value){
+  return String(value||'')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,' ')
+    .trim();
+}
+
+function getAcronym(value){
+  const words=normalizeSearchText(value).split(' ').filter(Boolean);
+  return words.map(word=>word[0]).join('');
+}
+
+function buildSearchCorpus(game){
+  const title=game.title||'';
+  const series=game.series||'';
+  const genres=(game.genres||[]).join(' ');
+  const systems=getGameSystems(game).join(' ');
+  const titleAcronym=getAcronym(title);
+  const seriesAcronym=getAcronym(series);
+  return [
+    normalizeSearchText(title),
+    normalizeSearchText(series),
+    normalizeSearchText(genres),
+    normalizeSearchText(systems),
+    titleAcronym,
+    seriesAcronym
+  ].filter(Boolean);
+}
+
+function matchesSearch(game,rawQuery){
+  const query=normalizeSearchText(rawQuery);
+  if(!query) return true;
+  const aliases=SEARCH_ALIAS_MAP[query] || [];
+  const needles=[query,...aliases.map(normalizeSearchText)].filter(Boolean);
+  const corpus=buildSearchCorpus(game);
+  return needles.some(needle=>corpus.some(entry=>entry.includes(needle)));
+}
+
 function getDisplayRating(game){
   return game.igdbRating ? Number(game.igdbRating) : 0;
 }
@@ -467,7 +518,7 @@ async function hydrateGameDetail(gameId){
 
 function getFiltered(){
   let list=ALL.filter(g=>{
-    if(filters.search){const q=filters.search.toLowerCase();if(!(g.title+(g.series||'')+g.genres.join(' ')).toLowerCase().includes(q))return false;}
+    if(filters.search && !matchesSearch(g,filters.search)) return false;
     if(filters.system&&!g.platforms.some(p=>p.system===filters.system))return false;
     if(filters.genre&&!g.genres.includes(filters.genre))return false;
     if(filters.series&&g.series!==filters.series)return false;
