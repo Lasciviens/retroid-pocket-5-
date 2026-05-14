@@ -1,98 +1,45 @@
-# 🗺️ Retroid Pocket 5 — Proje To-Do Listesi
+# Retroid — Aktif Backlog
 
-Her session başında bu dosyayı okuyorum. Yeni görev eklemek için buraya yaz.
-
----
-
-## 🔴 Öncelikli (High Priority)
-
-- [x] **Performans / okuma hizi** — `v_games_summary` ve modal lazy-load akisi kuruldu; sonraki adim canli tuning ve render optimizasyonu.
-- [ ] **Default sorting = IGDB puani** — Library ilk acilista varsayilan siralama `IGDB rating` olsun.
-- [ ] **Modal image zoom** — Modalda screenshot'a tiklayinca buyuyen goruntu acilsin.
-- [ ] **Cover image zoom** — Modalda kapaga tiklayinca buyuyen goruntu acilsin.
-- [ ] **IGDB data-first akisi** — Canli sort yerine DB'ye kaydedilmis IGDB metadata kullan.
-- [ ] **Bridge uzerinden kontrollu eslestirme turu** — mevcut DB oyunlarini tek tek veya kucuk partilerle eslestir
-- [x] **migration_v6.sql uygulandi** — storyline, publisher, igdb_url, igdb_rating, igdb_synced_at canli DB'de mevcut
-- [x] **Toplu IGDB audit araci** — `v_games_audit`, `v_game_platform_audit` ve `scripts/audit_report.py` hazir
-- [ ] **IGDB enrich pass** — `scripts/igdb_enrich_missing.py` ile dry-run -> hedefli apply -> tam apply akisini tamamla
-- [ ] **IGDB enrich pass -> core** — once `release_year / igdb_rating / igdb_url / description / storyline / publisher / primary_cover_url`
-- [ ] **IGDB enrich pass -> extended** — sonra `keywords / screenshots / themes / age_rating / rating_count / multiplayer_info`
-- [ ] **IGDB enrich pass -> full DB** — kucuk testlerden sonra tum veritabaninda calistir
-- [ ] **Schema degerlendirmesi** — screenshots, videos, websites, publisher gibi alanlar icin yeni kolon veya iliski gerekirse planla
-- [x] **IGDB varyant modeli** — ayni isim/farkli platform oyunlari icin canonical + platform_variants modeline gecis
-- [x] **IGDB normalize write flow** — import oncesi `canonical_game + platform_variants` formatina oturt
-- [ ] **RetroAchievements entegrasyonu** — user progress / completion / game progress proxy + modal enrichment
-- [ ] **SteamGridDB entegrasyonu** — alternatif kapak / hero / logo onerileri
-- [ ] **RAWG discovery entegrasyonu** — benzer oyunlar / dis linkler / discovery katmani
-- [ ] **Cleanup Workspace** — admin icin yogun metadata denetim gorunumu (ilk ekran tamam, sonraki adim inline hizli aksiyonlar)
-- [ ] **Artwork Manager** — IGDB / libretro / SteamGridDB kaynaklari arasinda kapak secimi
-- [ ] **Discovery Shelf** — kutuphaneden secilmis akilli oneriler
-
-
-
-- [ ] **Library bulk cleanup görünümü** — özellikle eşleşmemiş / metadata eksiği olan oyunlar için daha yoğun admin görünümü (ilk faz: grid/list/table + gap filtreleri tamam)
-- [ ] **ROM klasör yapısını hazırla** — `ROM_Folder_Guide.md` dosyası oluşturuldu (bkz. aşağı). Dashboard'da her oyunun hangi klasöre gideceği görünmeli.
+> Tamamlananlar bu dosyada tutulmaz — git log'da.
+> Session başında: önce `CURRENT_STATE.md`, sonra burası.
 
 ---
 
-## 🟡 Orta Öncelik
+## Yüksek Öncelik
 
-- [ ] **Session Log** — Oyun başına "ne zaman oynadım, kaç saat" günlüğü. Yeni tablo: `session_logs(game_id, date, duration_minutes, note)`.
-
-
-- [ ] **Dashboard'a "ROM Durumu" kolonu ekle** — Her oyun için: `[ ] Bulunamadı`, `[~] Aranıyor`, `[✓] Hazır` gibi bir status.
-- [ ] **Quick Start Guide** — RP5 geldiğinde eşiyle ilk akşam 3 saatlik oyun planı.
-- [ ] **Achievement / Missable Tips** — Her oyun için "şunu kaçırma" notu. Zelda, Pokemon, RPG'ler için kritik.
-
----
-
-## 🟢 İleride / Nice to Have
-
-- [ ] **Top 10 "ölmeden önce oyna" listesi** — Furkan'ın kütüphanesinden seçilmiş elit 10.
-- [ ] **Donanım kıyaslama tablosu** — RP5 vs Switch vs Steam Deck vs Odin 2.
-- [ ] **Shader / CRT filter rehberi** — Glossary'e eklenecek terimler: Shader, CRT, Scanline.
-- [ ] **Glossary genişletme** — Sıradaki terimler: PGXP, HLE/LLE, Frame Pacing, Vsync, Texture Pack, Netplay, Vulkan, Adreno GPU, Snapdragon 865.
-- [ ] **Series Roadmap'e "oynadım" takibi ekle** — Şu an sadece liste, interaktif olmayabilir.
+- [ ] **Varsayılan sıralama = IGDB rating** — Library ilk açılışında
+- [ ] **Modal image zoom** — screenshot'a tıklayınca büyütme
+- [ ] **Cover image zoom** — kapağa tıklayınca büyütme
+- [ ] **base64_cover kararı** — 60 platform satırında base64 JPEG var; temizle mi Storage'a taşı mı? (kullanıcı kararı)
+- [ ] **audit_autofix apply** — service-key gelince `scripts/audit_autofix.py --apply` çalıştır (37 never_synced stamp)
+- [ ] **Platformsuz 14 oyun** — game_platforms kaydı eklenmeli (Sonic Riders, Fable Anniversary vb.)
 
 ---
 
+## Orta Öncelik
 
-## 🤝 Multi-Agent Calisma Kurali (Claude + Codex App + Codex Web)
-
-- [x] Ortak calisma kurallari `AI_RULES.md` ve `project_todo.md` uzerinden netlesti
-- [x] Sprint 1: `v_games_full` gecis planini cikart
-- [ ] Sprint 1: IGDB data-first kapanis kontrol listesini tamamla
-- [ ] Sprint 1: Cleanup Workspace inline hizli aksiyonlarini tanimla
-- [ ] Sprint 2: Co-op akisini ana Dashboard filtresinde birlestir
-- [ ] Sprint 3: Artwork Manager ve Session Log kapsam taslagi
-
----
-
-## ✅ Tamamlananlar
-
-- [x] Ana kütüphane Dashboard'u (95+ oyun, boxart, filtre, arama)
-- [x] Dashboard'a release year eklendi
-- [x] Dashboard'a sorting eklendi (A-Z, yıl, rating, IGDB rating)
-- [x] Kütüphane için grid / liste / tablo görünümü eklendi
-- [x] Kütüphaneye metadata gap filtreleri eklendi (IGDB / kapak / ozet / yil eksik)
-- [x] Cleanup Workspace sayfasi eklendi
-- [x] Co-op Dashboard (19 oyun, rastgele öneri)
-- [x] Series Roadmap (10 seri, timeline)
-- [x] Emülatör Matrix (17 sistem, deep-dive notlar)
-- [x] Glossary (12 terim, yazılımcı mantığıyla)
-- [x] ROM klasör yapısı rehberi oluşturuldu
-- [x] IGDB Bridge iskeleti kuruldu (proxy-ready arama yüzeyi + kutuphaneden kopru)
-- [x] Supabase Edge Function IGDB proxy scaffold eklendi
-- [x] IGDB link import + aday ekleme + mevcut oyun eslestirme akisi kuruldu
-- [x] Canonical + platform_variants modeli canli schema ile uzlastirildi ve uygulandi
-- [x] Bridge ve bulk import canonical + platform_variants modeline gecirildi
-- [x] Yeni entegrasyonlar icin roadmap ve function scaffold'lari eklendi
-- [x] Dis referanslardan urun fikirleri derlendi
-- [x] IGDB import playbook ve field map hazirlandi
+- [ ] **Cleanup Workspace inline aksiyonlar** — hızlı edit / enrich butonu (faz 2)
+- [ ] **Bridge üzerinden kontrollü eşleştirme** — mevcut oyunları IGDB ile küçük partiler halinde eşleştir
+- [ ] **IGDB enrich extended pass** — keywords / screenshots / themes / age_rating / rating_count / multiplayer_info
+- [ ] **Session Log** — `session_logs(game_id, date, duration_minutes, note)` yeni tablo
+- [ ] **RetroAchievements entegrasyonu** — user progress proxy + modal enrichment
+- [ ] **SteamGridDB entegrasyonu** — alternatif kapak önerileri
+- [ ] **Artwork Manager** — IGDB / libretro / SteamGridDB arasında kapak seçimi
 
 ---
 
-## 📝 Notlar
+## Düşük Öncelik / İleride
 
-- Dashboard'a her yeni özellik eklenirken tüm dosyalar çapraz-link kontrolü yapılmalı.
-- Yeni oyun talepleri artik dogrudan `project_todo.md` veya ilgili issue notlarina yazilir.
+- [ ] **Discovery Shelf** — akıllı oyun önerileri
+- [ ] **RAWG discovery** — benzer oyunlar / dış linkler (API erişimi bekliyor)
+- [ ] **Quick Start Guide** — RP5 gelince ilk akşam 3 saatlik plan
+- [ ] **Achievement / Missable Tips** — "şunu kaçırma" notları
+- [ ] **Donanım kıyaslama** — RP5 vs Switch vs Steam Deck
+- [ ] **Glossary genişletme** — PGXP, HLE/LLE, Frame Pacing, Vulkan, Netplay
+
+---
+
+## Sprint Aktif
+
+- [ ] IGDB data-first kapanış kontrol listesini tamamla
+- [ ] Cleanup Workspace inline quick aksiyon kapsamını tanımla

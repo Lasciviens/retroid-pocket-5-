@@ -1,5 +1,8 @@
 # Retroid Pocket 5 — Proje Mimarisi
 
+> **Anlık proje durumu için:** [`CURRENT_STATE.md`](CURRENT_STATE.md)  
+> Bu dosya statik mimari referanstır — değişmez gerçekler burada, anlık durum CURRENT_STATE'de.
+
 ## Genel Yapı
 
 Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok. Her HTML dosyası doğrudan Supabase REST API'sine bağlanır.
@@ -160,4 +163,4 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 
 ## AI Ajan Koordinasyonu
 
-Ortak çalışma için önce `AI_RULES.md`, sonra `project_todo.md`, sonra bu dosyayı oku.
+Okuma sırası: `CURRENT_STATE.md` → `AI_RULES.md` → `project_todo.md` → bu dosya.

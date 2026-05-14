@@ -31,7 +31,6 @@ IGDB'den veri alirken nihai hedef formatimiz su olacak:
     "normalized_title": "xxx",
     "summary": "...",
     "storyline": "...",
-    "developer": "Studio",
     "publisher": "Publisher",
     "franchise": "Series",
     "collection": "Collection",
@@ -189,7 +188,6 @@ Bunlari oyunun ana kartinda saklamak mantikli:
 - `title`
 - `summary`
 - `storyline`
-- `developer`
 - `publisher`
 - `franchise / collection`
 - `genres`
@@ -310,20 +308,12 @@ Oneri:
 - `games` seviyesindeki alanlari **canonical / default** olarak koru
 - platform bazli IGDB kimligini `game_platforms` seviyesine indir
 
-## Onerilen Migration v7
+## Mevcut Schema Durumu
 
-Bu dosya ile birlikte canonical + platform_variants standardi kullanilir.
-
-Temel fikir:
-
-- `game_platforms.igdb_game_id`
-- `game_platforms.igdb_slug`
-- `game_platforms.igdb_url`
-- `game_platforms.igdb_rating`
-- `game_platforms.igdb_release_year`
-- `game_platforms.igdb_first_release_date`
-- `game_platforms.version_title`
-- `game_platforms.is_primary_variant`
+Canonical + platform_variants modeli migration_v12+ ile canlıda.
+`game_platforms` kolonları: `igdb_game_id`, `igdb_slug`, `igdb_url`, `igdb_rating`,
+`igdb_release_year`, `igdb_first_release_date`, `version_title`, `is_primary_variant`
+→ Bunların tümü aktif. Detay için `ARCHITECTURE.md` bak.
 
 ## Calisma Rutini
 

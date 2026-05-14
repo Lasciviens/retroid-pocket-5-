@@ -1,96 +1,126 @@
 # AI Ajan Çalışma Kuralları
 
-> Bu dosya okunmadan hiçbir yazma işlemi yapılmaz.
-> Claude · Codex App · Codex Web için bağlayıcı kurallar.
+> Claude · Codex App · Codex Web için bağlayıcı protokol.
+> Bu dosya okunmadan yazma işlemi yapılmaz.
 
 ---
 
-## 1. Başlamadan Önce Oku
+## Oturum Protokolü
 
-Her oturumda bu sırayla oku:
-1. `project_todo.md` — aktif backlog
-2. `ARCHITECTURE.md` — schema ve dosya yapısı
-3. `README.md` — canlı ürün ve giriş noktaları
+### Başlarken — 3 Zorunlu Adım (sırayla)
+
+```
+1. git log --oneline -5          → son 5 commit'e bak, neler değişmiş
+2. cat CURRENT_STATE.md          → DB + UI anlık durumu, açık görevler, bitti listesi
+3. cat project_todo.md           → aktif backlog
+```
+
+**Sonra ve ancak sonra** ilgili dosyaya geç.
+
+### Biterken — 3 Zorunlu Adım
+
+```
+1. CURRENT_STATE.md güncelle     → ne değişti, hangi açık sorunlar çözüldü/eklendi
+2. project_todo.md güncelle      → tamamlanan görevi kaldır, yeni görev ekle
+3. Commit at                     → ajan: claude — veya ajan: codex — prefix ile
+```
+
+### Diğer Ajana Brief Yapmadan Önce
+
+```
+1. CURRENT_STATE.md'deki "Bir Daha Analiz Etme" listesine bak
+2. "UI Katmanı" veya "DB Katmanı" bölümünde ✓ işareti var mı kontrol et
+3. Zaten yapılmışsa brief gönderme — sadece ihtiyaç duyduğun şeyi söyle
+```
+
+> Bugün yaşanan sorun: Claude `v_games_summary` geçişini Codex'ten istedi.
+> Codex bunu commit 84c632b'de çoktan yapmıştı.
+> CURRENT_STATE.md olsaydı bu 3 saniyede görülürdü.
 
 ---
 
-## 2. DB Yazma Kuralları (EN KRİTİK)
+## Sahiplik
 
-### YAPMA:
+| Alan | Sahip | Dosyalar |
+|------|-------|----------|
+| DB · migration · script · audit | **Claude** | `migrations/` `scripts/` `docs/` `supabase/` |
+| HTML · UX · site davranışı | **Codex** | `*.html` `rp5_*.js` |
+| Ortak | **İkisi** | `CURRENT_STATE.md` `project_todo.md` `AI_RULES.md` |
+
+**Çakışma riski olan dosyalar:** `rp5_igdb.js`, `ARCHITECTURE.md`
+→ Birinin dokunmadan önce diğerinin CURRENT_STATE'ini kontrol etmesi yeterli.
+
+---
+
+## DB Yazma Kuralları
+
+### YAPMA
 - `game_log` alanını kullanıcı onayı olmadan temizleme
-- `rating` kolonunu yazma (kullanıcı kendi puanı için ayrılmış, şu an NULL)
-- Mevcut oyunu DELETE yapma — önce kullanıcıya sor
-- `migrations/` klasöründeki SQL'leri değiştirme
+- `rating` kolonunu yazma (kullanıcıya ayrılmış)
+- Oyun DELETE yapma — kullanıcıya sor
+- Mevcut migration SQL'ini değiştirme
 
-### YAP:
-- Yeni oyun eklerken `game_log = 'PNG eklenecek'` yaz (kapak yoksa)
-- `primary_cover_url` → games tablosuna yaz
-- `cover_url` → game_platforms tablosuna yaz (platform bazlı)
-- `is_primary_variant = true` → önerilen platformu işaretle
+### YAP
+- Yeni migration için `migrations/migration_vN.sql` dosyası ekle (N = bir sonraki)
+- `primary_cover_url` → games tablosuna
+- `cover_url` → game_platforms tablosuna (platform bazlı)
+- `is_primary_variant = true` → her oyunda en fazla bir platform
 
-### Duplicate önleme:
-Oyun eklemeden önce kontrol et:
-```python
-# Supabase REST
+### Duplicate önleme
+```
 GET /rest/v1/games?title=ilike.*OYUN_ADI*&select=id,title
 ```
-Benzer isim varsa kullanıcıya sor, otomatik ekleme.
+Benzer isim varsa kullanıcıya sor.
 
 ---
 
-## 3. Commit Mesajı Formatı
+## Commit Formatı
 
 ```
 ajan: claude — feat: kısa açıklama
-ajan: codex-app — fix: kısa açıklama
-ajan: codex-web — docs: kısa açıklama
+ajan: codex — fix: kısa açıklama
 ```
 
-Görev durumu `project_todo.md` içinde takip edilir.
-
 ---
 
-## 4. Dosya Dokunulmazlık Kuralları
+## Dosya Dokunulmazlık
 
-| Klasör/Dosya | Kural |
-|---|---|
-| `migrations/` | SADECE yeni dosya ekle, mevcut SQL'e dokunma |
-| `project_todo.md` | Tamamladığın görevi done'a taşı |
+| Dosya / Klasör | Kural |
+|----------------|-------|
+| `migrations/` | Sadece yeni dosya ekle, mevcut SQL'e dokunma |
 | `rp5_auth.js` | Değiştirmeden önce kullanıcıya sor |
-| `rp5_igdb.js` | Değiştirmeden önce kullanıcıya sor |
+| `rp5_igdb.js` | Değiştirmeden önce koordine et |
+| `Retroid_Library_Dashboard.html` | Büyük değişiklik öncesi kullanıcıya sor |
 
 ---
 
-## 5. IGDB Yazma Kontratı
+## IGDB Yazma Kontratı
 
-`game_platforms` tablosuna IGDB verisi yazarken canonical model:
+`game_platforms` yazarken:
 - `igdb_game_id` → IGDB platform release ID
-- `igdb_rating` → ham 0-100 değer (bölme/yuvarlama yapma, olduğu gibi yaz)
-- `igdb_url` → tam IGDB URL
-- `is_primary_variant` → sadece bir platform true olabilir
+- `igdb_rating` → ham 0-100 değer (bölme/yuvarlama yapma)
+- `igdb_url` → tam URL
+- `is_primary_variant` → oyun başına tek true
 
-`games` tablosunda:
+`games` yazarken:
 - `external_id` → IGDB canonical game ID
-- `igdb_rating`, `igdb_url` → canonical fallback (platform eşleşmesi yoksa)
+- `igdb_rating`, `igdb_url` → canonical fallback
+- Mevcut değeri EZME — sadece NULL alanları doldur
 
 ---
 
-## 6. HTML Değiştirme Kuralları
+## Push Öncesi Kontrol
 
-- Mevcut çalışan bir özelliği kaldırmadan önce `project_todo.md` notlarını kontrol et
-- `Retroid_Library_Dashboard.html` kritik dosya — büyük değişiklik öncesi kullanıcıya sor
-- `index.html`'e yeni sayfa eklerken mevcut kartları bozmadığından emin ol
-
----
-
-## 7. Çakışma Önleme
-
-`project_todo.md` içindeki aktif maddelere bak.
-Başka bir ajan aynı alan üzerinde çalışıyorsa dokunma — kullanıcıya sor.
-
-Commit atmadan önce:
 ```bash
 git fetch origin
-git log origin/main -3 --oneline  # Son 3 commiti gör
+git log origin/main -3 --oneline   # başkası commit attı mı?
 ```
-Başkası commit attıysa önce pull/rebase yap.
+
+Attıysa önce pull/rebase yap.
+
+---
+
+## Çakışma Önleme
+
+`CURRENT_STATE.md`'deki "Sahiplik" tablosuna bak.
+Başka ajan aynı dosyada aktif çalışıyorsa — dur, kullanıcıya sor.
