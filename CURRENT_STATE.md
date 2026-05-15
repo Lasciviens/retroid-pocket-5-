@@ -3,7 +3,7 @@
 > **Her session başında ilk okunan dosya bu.**
 > Bir şey yapmadan önce burayı oku. Bir şey yaptıktan sonra burayı güncelle.
 >
-> Son güncelleme: 2026-05-14 · claude + codex (session kapanışı)
+> Son güncelleme: 2026-05-15 · chatgpt (Pages redeploy tetiklendi)
 
 ---
 
@@ -54,15 +54,22 @@
 | Varsayılan sıralama | IGDB rating ✓ — commit 061b6c8 |
 | Lightbox / zoom | Cover + screenshot zoom ✓ — commit d19509d |
 | Lightbox galeri gezinmesi | Sağ/sol buton + klavye ✓ — commit 1a0ec5a |
+| GitHub Pages | Repo public'e döndü; redeploy commit'i tetiklendi |
 
 ### UI Açık Sorunlar
 
 - Library araması hâlâ DB-backed değil; hardcoded alias geri alındı, doğru çözüm Claude tarafında search/view stratejisi
 - Cleanup Workspace inline quick aksiyonlar
+- RAWG Faz 1: secret set + function deploy/test + Library modal canlı discovery paneli
 
 ---
 
 ## Son Session
+
+**2026-05-15 — chatgpt:**
+- RAWG API key alındı; key repo dosyalarına yazılmadı, secret olarak set edilmesi gerekiyor
+- `project_todo.md`: RAWG Faz 1 yüksek önceliğe alındı
+- Repo private/public geçişinden sonra GitHub Pages redeploy tetiklemek için bu commit atıldı
 
 **2026-05-14 — claude:**
 - migration_v14: `v_games_summary` (payload −51%, 3.8× hızlı) + `v_games_cleanup`
@@ -101,6 +108,8 @@
 
 | Sahip | Aksiyon | Öncelik |
 |-------|---------|---------|
+| Kullanıcı | RAWG key'i Supabase secret olarak set et: `RAWG_API_KEY` | Yüksek |
+| Claude/Codex | `rawg-discover` deploy/test + Library modal RAWG Discovery paneli | Yüksek |
 | Kullanıcı | base64_cover kararı: temizle mi Storage'a taşı mı | Yüksek |
 | Kullanıcı | `audit_autofix.py` için service-key sağla | Orta |
 | Claude | Library aramasını DB-backed hale getir: `v_games_summary` için search_text / acronym / alias stratejisi, hardcode yok | Yüksek |
