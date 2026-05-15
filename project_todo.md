@@ -7,6 +7,7 @@
 
 ## Yüksek Öncelik
 
+- [ ] **RAWG entegrasyonu — Faz 1** — RAWG API key alındı; key GitHub'a yazılmayacak. `RAWG_API_KEY` Supabase secret olarak set edilecek, `rawg-discover` deploy/test edilecek, Library modalına canlı RAWG Discovery paneli eklenecek.
 - [ ] **DB-backed Library search** — `v_games_summary` için search_text / acronym / alias stratejisi. Hardcode yok, UI hack yok.
 - [ ] **base64_cover kararı** — 60 platform satırında base64 JPEG var; temizle mi Storage'a taşı mı? (kullanıcı kararı)
 - [ ] **audit_autofix apply** — service-key gelince `scripts/audit_autofix.py --apply` çalıştır (37 never_synced stamp)
@@ -28,8 +29,7 @@
 
 ## Düşük Öncelik / İleride
 
-- [ ] **Discovery Shelf** — akıllı oyun önerileri
-- [ ] **RAWG discovery** — benzer oyunlar / dış linkler (API erişimi bekliyor)
+- [ ] **Discovery Shelf** — akıllı oyun önerileri (RAWG Faz 1 sonrası genişletilecek)
 - [ ] **Quick Start Guide** — RP5 gelince ilk akşam 3 saatlik plan
 - [ ] **Achievement / Missable Tips** — "şunu kaçırma" notları
 - [ ] **Donanım kıyaslama** — RP5 vs Switch vs Steam Deck
@@ -39,5 +39,6 @@
 
 ## Sprint Aktif
 
+- [ ] RAWG Faz 1: secret set → function deploy/test → Library modal canlı discovery paneli
 - [ ] IGDB data-first kapanış kontrol listesini tamamla
 - [ ] Cleanup Workspace inline quick aksiyon kapsamını tanımla
