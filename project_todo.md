@@ -1,44 +1,44 @@
 # Retroid — Aktif Backlog
 
 > Tamamlananlar bu dosyada tutulmaz — git log'da.
-> Session başında: önce `CURRENT_STATE.md`, sonra burası.
+> Session başında: önce CURRENT_STATE.md, sonra burası.
 
 ---
 
-## Yüksek Öncelik
+## Phase 1 — Zemin (Şimdi)
 
-- [ ] **RAWG entegrasyonu — Faz 1** — RAWG API key alındı; key GitHub'a yazılmayacak. `RAWG_API_KEY` Supabase secret olarak set edilecek, `rawg-discover` deploy/test edilecek, Library modalına canlı RAWG Discovery paneli eklenecek.
-- [ ] **DB-backed Library search** — `v_games_summary` için search_text / acronym / alias stratejisi. Hardcode yok, UI hack yok.
-- [ ] **base64_cover kararı** — 60 platform satırında base64 JPEG var; temizle mi Storage'a taşı mı? (kullanıcı kararı)
-- [ ] **audit_autofix apply** — service-key gelince `scripts/audit_autofix.py --apply` çalıştır (37 never_synced stamp)
-- [ ] **Platformsuz 14 oyun** — game_platforms kaydı eklenmeli (Sonic Riders, Fable Anniversary vb.)
+- [ ] **migration_v16** — SS + RA kolonlarını ekle (Claude)
+- [ ] **View güncelleme** — v_games_summary + v_games_full yeni kolonları expose etsin (Claude)
+- [ ] **Video player placeholder** — Modal'a ss_video_norm_url için player ekle (Codex)
+- [ ] **Wheel art desteği** — Grid kartında logo overlay (Codex)
+- [ ] **Duplicate/platform görünüm** — Show All modu + game_id+platform_id modal kimliği (Codex)
+- [ ] **base64 cover kararı** — Temizle mi Storage'a taşı mı? (Kullanıcı kararı)
 
----
+## Phase 2 — SS Entegrasyonu
 
-## Orta Öncelik
+- [ ] **ss-enricher Edge Function** — isim araması → ss_id → tam veri → DB yaz (Claude)
+- [ ] **321 oyun batch enrich** — SS'den tüm metadata + medya (Claude)
+- [ ] **Storage kopyalama** — box-2D + wheel-hd → Supabase Storage (Claude)
+- [ ] **Series eşleştirme** — SS familles → series tablosu (Claude)
 
-- [ ] **Cleanup Workspace inline aksiyonlar** — hızlı edit / enrich butonu (faz 2)
-- [ ] **Bridge üzerinden kontrollü eşleştirme** — mevcut oyunları IGDB ile küçük partiler halinde eşleştir
-- [ ] **IGDB enrich extended pass** — keywords / screenshots / themes / age_rating / rating_count / multiplayer_info
-- [ ] **Session Log** — `session_logs(game_id, date, duration_minutes, note)` yeni tablo
-- [ ] **RetroAchievements entegrasyonu** — user progress proxy + modal enrichment
-- [ ] **SteamGridDB entegrasyonu** — alternatif kapak önerileri
-- [ ] **Artwork Manager** — IGDB / libretro / SteamGridDB arasında kapak seçimi
+## Phase 3 — RA Entegrasyonu
 
----
+- [ ] **RA game ID eşleştirme** — completion API + SS ra_supported flag (Claude)
+- [ ] **ra-sync Edge Function** — haftalık progress sync (Claude)
+- [ ] **Achievement paneli** — Modal'a RA progress bar (Codex)
 
-## Düşük Öncelik / İleride
+## Phase 4 — IGDB Kaldırma
 
-- [ ] **Discovery Shelf** — akıllı oyun önerileri (RAWG Faz 1 sonrası genişletilecek)
-- [ ] **Quick Start Guide** — RP5 gelince ilk akşam 3 saatlik plan
-- [ ] **Achievement / Missable Tips** — "şunu kaçırma" notları
-- [ ] **Donanım kıyaslama** — RP5 vs Switch vs Steam Deck
-- [ ] **Glossary genişletme** — PGXP, HLE/LLE, Frame Pacing, Vulkan, Netplay
+- [ ] **Verify** — Tüm oyunlarda SS verisi tam mı? (Claude)
+- [ ] **migration_v17** — IGDB kolonlarını drop et (Claude)
+- [ ] **igdb-search decommission** — Function + secrets kaldır (Claude)
 
----
+## Phase 5 — Polish
 
-## Sprint Aktif
+- [ ] **Achievement Tracker sayfası** — Retroid_Achievements.html (Codex)
+- [ ] **RAWG discovery** — rawg-discover deploy/test (opsiyonel)
 
-- [ ] RAWG Faz 1: secret set → function deploy/test → Library modal canlı discovery paneli
-- [ ] IGDB data-first kapanış kontrol listesini tamamla
-- [ ] Cleanup Workspace inline quick aksiyon kapsamını tanımla
+## Kararlar Bekliyor
+
+- [ ] **base64 cover** — 60 platform satırı — temizle / Storage / bırak
+- [ ] **Linear API key** — Revoke et, yenisini Supabase secret'a ekle (LINEAR_API_KEY)
