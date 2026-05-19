@@ -1,7 +1,7 @@
 # Current State — Tek Yetkili Kaynak
 
 > Her session başında ilk okunan dosya bu.
-> Son güncelleme: 2026-05-19 · claude
+> Son güncelleme: 2026-05-19 · codex
 
 ---
 
@@ -49,7 +49,7 @@
 |-------------|-------|-----|
 | ScreenScraper | ✅ Hazır | devid alındı, isim araması test edildi ve çalışıyor |
 | RetroAchievements | ✅ Deploy edildi | retroachievements-player function aktif |
-| IGDB | ⚠️ Kaldırılacak | SS tam çalışınca kalkacak |
+| IGDB | ⚠️ Legacy fallback | SS tam çalışınca kademeli kalkacak; şimdilik kırmadan korunacak |
 | RAWG | ⏸ Beklemede | rawg-discover var ama deploy edilmedi |
 | Linear | ✅ Aktif | Proje yönetim aracı, MCP üzerinden bağlı |
 
@@ -80,9 +80,13 @@
 **Çekilecek medya tipleri:** box-2D (us bölgesi), wheel-hd, ss (screenshot), video-normalized, fanart
 
 **Medya URL güvenlik notu:** SS medya URL'lerinde devpassword görünüyor.
-Storage'a kopyalanacak: box-2D, wheel-hd. URL saklanacak: video-normalized, ss, fanart.
+Public view veya HTML'e credential içeren SS URL'i çıkmayacak. Storage'a kopyalanacak: box-2D, wheel-hd. Screenshot/video/fanart için ya Storage kopyası ya da auth/proxy gerekir; public-safe URL yoksa UI placeholder gösterecek.
 
 **Test sonucu:** God of War II (PS2) — exact match, rating 90/100, tüm medya geldi ✅
+
+**Plan dokümanları:**
+- `SCREENSCRAPER_MIGRATION_PLAN.md` — SS'e geçiş ve IGDB'den kademeli çıkış planı
+- `CLAUDE_SUPABASE_SS_PROMPT.md` — Claude'a verilecek migration/function prompt'u
 
 ---
 
@@ -120,6 +124,7 @@ Storage'a kopyalanacak: box-2D, wheel-hd. URL saklanacak: video-normalized, ss, 
 | Claude | ss-enricher Edge Function yaz | Yüksek |
 | Codex | Modal'a video player + wheel art ekle | Orta |
 | Codex | Library duplicate/platform görünüm mantığı | Orta |
+| Codex | IGDB etiketlerini metadata-provider nötr hale getir | Orta |
 | Kullanıcı | base64_cover kararı: temizle mi Storage'a taşı mı | Yüksek |
 | Kullanıcı | Linear API key'ini revoke et, yenisini Supabase secret'a ekle | Yüksek |
 
@@ -136,3 +141,4 @@ Storage'a kopyalanacak: box-2D, wheel-hd. URL saklanacak: video-normalized, ss, 
 | Koordinasyon OS kurulumu | commit 27a84d1 |
 | SS API test + devid | 2026-05-19 |
 | RA function deploy | 2026-05-19 |
+| SS migration hazırlık planı | `SCREENSCRAPER_MIGRATION_PLAN.md` |

@@ -11,6 +11,8 @@ A fully dynamic web app to manage, track, and explore a curated retro game colle
 
 **Built with:** Vanilla HTML/CSS/JS + Supabase (PostgreSQL) + GitHub Pages
 
+**Metadata direction:** ScreenScraper is the target provider for retro metadata and media. IGDB remains as a temporary fallback during migration.
+
 No frameworks. No build step. Every page talks directly to the Supabase REST API.
 
 ---
@@ -24,7 +26,7 @@ No frameworks. No build step. Every page talks directly to the Supabase REST API
 | 🗺️ **Series Roadmap** | Chronological game list per series — where to start each franchise |
 | 🎮 **Play Queue** | Drag-and-drop play order, synced across devices |
 | ♡ **Wishlist** | Track games to add, emulator requests, features — with priority levels |
-| 🛰️ **IGDB Bridge** | IGDB arama, link import, aday ekleme, ve mevcut oyun eslestirme yuzeyi |
+| 🛰️ **IGDB Bridge** | IGDB arama, link import, aday ekleme, ve mevcut oyun eslestirme yuzeyi. ScreenScraper geçişinde legacy/fallback olacak |
 | ⚙️ **Emulator Matrix** | Which emulator for which system, pulled from DB |
 | 📖 **Glossary** | Technical terms (ROM, BIOS, JIT...) explained for developers |
 
@@ -76,6 +78,8 @@ git push origin main
 ```
 
 IGDB import standard: `IGDB_IMPORT_PLAYBOOK.md`
+ScreenScraper migration: `SCREENSCRAPER_MIGRATION_PLAN.md`
+Claude Supabase prompt: `CLAUDE_SUPABASE_SS_PROMPT.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
 Bulk IGDB matcher: `scripts/igdb_bulk_match.py`
 IGDB repair pass: `scripts/igdb_repair_missing.py`
@@ -91,6 +95,6 @@ PS1 · PS2 · PSP · GBA · DS · 3DS · N64 · GameCube · Wii · SNES · NES �
 
 ## Notes
 
-- Cover art sourced from [libretro-thumbnails](https://github.com/libretro-thumbnails)
+- Cover art historically came from libretro/IGDB flows; ScreenScraper media is being added through Supabase Storage so secrets never live in frontend code.
 - ROM files are **not** included or linked
 - Personal project — not affiliated with Retroid or Anbernic

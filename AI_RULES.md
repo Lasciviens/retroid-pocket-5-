@@ -50,6 +50,16 @@
 **Çakışma riski olan dosyalar:** `rp5_igdb.js`, `ARCHITECTURE.md`
 → Birinin dokunmadan önce diğerinin CURRENT_STATE'ini kontrol etmesi yeterli.
 
+## Metadata Provider Geçiş Kuralı
+
+ScreenScraper hedef provider'dır; IGDB geçiş süresince fallback/legacy olarak kalır.
+
+- Yeni metadata kararlarında önce `SCREENSCRAPER_MIGRATION_PLAN.md` oku.
+- Supabase migration/function işi için `CLAUDE_SUPABASE_SS_PROMPT.md` kullan.
+- IGDB kolonlarını SS coverage doğrulanmadan drop etme.
+- ScreenScraper source/media URL'leri credential içerebilir; public HTML/JS/view alanlarına raw SS URL koyma.
+- Frontend doğrudan ScreenScraper API çağırmaz; sadece Supabase view, Storage veya auth/proxy URL okur.
+
 ---
 
 ## DB Yazma Kuralları

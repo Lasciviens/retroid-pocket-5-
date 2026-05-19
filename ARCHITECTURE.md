@@ -38,8 +38,8 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ### Ana Tablolar
 | Tablo | Açıklama |
 |-------|----------|
-| `games` | Oyun kaydı + IGDB canonical alanları (igdb_rating, igdb_url, external_id, publisher, storyline) |
-| `game_platforms` | Oyun ↔ Sistem ↔ Emülatör + IGDB platform variant alanları |
+| `games` | Oyun kaydı + geçiş dönemi metadata alanları. IGDB canonical alanları mevcut; ScreenScraper canonical alanları migration_v16 ile eklenecek |
+| `game_platforms` | Oyun ↔ Sistem ↔ Emülatör + platform variant metadata. IGDB variant alanları mevcut; SS ROM/RA alanları migration_v16 ile eklenecek |
 | `notes` | Tips / Request Tracker. category: tip/request/done. Opsiyonel game_id FK |
 | `glossary` | Teknik terimler sözlüğü |
 
@@ -66,6 +66,19 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 | `v_games_audit` | Audit score + issue_types ile yoğun kalite kontrol view |
 | `v_game_platform_audit` | Platform satırı bazında anomaly view |
 
+### Metadata Provider Geçişi
+
+ScreenScraper hedef provider'dır. IGDB alanları kademeli geçişte fallback olarak korunur.
+
+Plan:
+
+1. `migration_v16` SS kolonlarını ve provider-neutral view alanlarını ekler.
+2. UI önce provider-neutral alanları okur: `metadata_provider`, `metadata_rating`, `display_cover_url`.
+3. SS coverage doğrulanınca IGDB bridge/workflow legacy yapılır.
+4. IGDB kolonları ancak sonraki migration'da, backup ve coverage kontrolünden sonra kaldırılır.
+
+Güvenlik kuralı: ScreenScraper source/media URL'leri credential içerebilir. Public view'lar sadece Supabase Storage veya proxy-safe URL döndürmelidir; raw SS JSON public client'a expose edilmez.
+
 ---
 
 ## Dosya Yapısı
@@ -75,7 +88,7 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── index.html                      # Ana hub sayfası
 ├── Retroid_Library_Dashboard.html  # Ana kütüphane — grid/list/table görünüm
 ├── Retroid_Cleanup_Workspace.html  # Metadata denetim yüzeyi
-├── Retroid_IGDB_Bridge.html        # IGDB eşleştirme ve import
+├── Retroid_IGDB_Bridge.html        # IGDB eşleştirme ve import (SS geçişinde legacy/fallback)
 ├── Retroid_Series_Roadmap.html     # Seri yol haritası
 ├── Retroid_Emulator_Matrix.html    # Emülatör rehberi
 ├── Retroid_Queue.html              # Oyun sırası
@@ -97,6 +110,8 @@ Static HTML siteleri + Supabase (PostgreSQL) backend. Sunucu yok, framework yok.
 ├── docs/
 │   └── audit_system.md
 ├── supabase/functions/igdb-search  # IGDB proxy
+├── SCREENSCRAPER_MIGRATION_PLAN.md # SS geçiş planı
+├── CLAUDE_SUPABASE_SS_PROMPT.md    # Claude Supabase görev prompt'u
 ├── README.md
 ├── ARCHITECTURE.md
 ├── project_todo.md
@@ -155,8 +170,9 @@ fetch(`${SB_URL}/rest/v1/games?id=eq.${id}`, {
 - **Junction tabloları** many-to-many ilişkileri temsil eder.
 - **Ana tablolar** uygulama datasını tutar.
 - **Views** JOIN'li okumayı kolaylaştırır, data tutmaz.
-- **primary_cover_url** games tablosunda — tüm sayfalarda bu kullanılır.
+- **primary_cover_url** games tablosunda — geçişte fallback olarak kalır; SS sonrası view `display_cover_url` üretir.
 - **is_primary_variant** game_platforms'da — hangi platform ana gösterimde çıkar.
+- **metadata_provider** view seviyesinde provider seçimini soyutlar: screenscraper / igdb / manual.
 - Eski migration geçmişi repodan temizlendi; sadece güncel referans migration tutulur.
 
 ---

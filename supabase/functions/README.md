@@ -8,6 +8,7 @@ Bu klasor browser'a secret koymadan dis servislerle konusmak icin server-side pr
 - `retroachievements-player/`
 - `steamgriddb-art/`
 - `rawg-discover/`
+- `ss-enricher/` hedefleniyor; SS metadata + media Storage kopyalama için `SCREENSCRAPER_MIGRATION_PLAN.md` bak.
 
 ## Secret Listesi
 
@@ -26,6 +27,9 @@ Muhtemel secret'lar:
 - `MOBYGAMES_API_KEY`
 - `SCREENSCRAPER_USER`
 - `SCREENSCRAPER_PASSWORD`
+- `SS_DEVID`
+- `SS_DEVPASSWORD`
+- `SS_DEBUGPASSWORD`
 
 ## Hedef
 
@@ -35,12 +39,13 @@ Muhtemel secret'lar:
 
 ## Oncelik Sirasi
 
-1. IGDB
+1. ScreenScraper
 2. RetroAchievements
-3. SteamGridDB
-4. RAWG
+3. IGDB legacy fallback
+4. SteamGridDB / RAWG opsiyonel
 
 Bkz:
 
 - `IGDB_IMPORT_PLAYBOOK.md`
+- `SCREENSCRAPER_MIGRATION_PLAN.md`
 - `project_todo.md`
