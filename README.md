@@ -80,6 +80,7 @@ git push origin main
 IGDB import standard: `IGDB_IMPORT_PLAYBOOK.md`
 ScreenScraper migration: `SCREENSCRAPER_MIGRATION_PLAN.md`
 Claude Supabase prompt: `CLAUDE_SUPABASE_SS_PROMPT.md`
+ScreenScraper web UI plan: `SCREENSCRAPER_WEB_UI_PLAN.md`
 Supabase proxy scaffold: `supabase/functions/igdb-search/index.ts`
 Bulk IGDB matcher: `scripts/igdb_bulk_match.py`
 IGDB repair pass: `scripts/igdb_repair_missing.py`

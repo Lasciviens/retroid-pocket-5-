@@ -87,6 +87,7 @@ Public view veya HTML'e credential içeren SS URL'i çıkmayacak. Storage'a kopy
 **Plan dokümanları:**
 - `SCREENSCRAPER_MIGRATION_PLAN.md` — SS'e geçiş ve IGDB'den kademeli çıkış planı
 - `CLAUDE_SUPABASE_SS_PROMPT.md` — Claude'a verilecek migration/function prompt'u
+- `SCREENSCRAPER_WEB_UI_PLAN.md` — Codex web/UI uygulama planı
 
 ---
 
@@ -125,6 +126,7 @@ Public view veya HTML'e credential içeren SS URL'i çıkmayacak. Storage'a kopy
 | Codex | Modal'a video player + wheel art ekle | Orta |
 | Codex | Library duplicate/platform görünüm mantığı | Orta |
 | Codex | IGDB etiketlerini metadata-provider nötr hale getir | Orta |
+| Codex | `SCREENSCRAPER_WEB_UI_PLAN.md` sırasına göre web fazını uygula | Orta |
 | Kullanıcı | base64_cover kararı: temizle mi Storage'a taşı mı | Yüksek |
 | Kullanıcı | Linear API key'ini revoke et, yenisini Supabase secret'a ekle | Yüksek |
 
@@ -142,3 +144,4 @@ Public view veya HTML'e credential içeren SS URL'i çıkmayacak. Storage'a kopy
 | SS API test + devid | 2026-05-19 |
 | RA function deploy | 2026-05-19 |
 | SS migration hazırlık planı | `SCREENSCRAPER_MIGRATION_PLAN.md` |
+| SS web UI planı | `SCREENSCRAPER_WEB_UI_PLAN.md` |

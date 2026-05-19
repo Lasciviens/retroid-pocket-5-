@@ -15,6 +15,7 @@
 - [ ] **Wheel art desteği** — Grid kartında logo overlay (Codex)
 - [ ] **Duplicate/platform görünüm** — Show All modu + game_id+platform_id modal kimliği (Codex)
 - [ ] **Metadata provider UI** — IGDB etiketlerini SS/IGDB/manual provider mantığına çevir (Codex)
+- [ ] **Web UI uygulama planı** — `SCREENSCRAPER_WEB_UI_PLAN.md` sırasıyla Library/Cleanup/secondary pages hazırlığı (Codex)
 - [ ] **base64 cover kararı** — Temizle mi Storage'a taşı mı? (Kullanıcı kararı)
 
 ## Phase 2 — SS Entegrasyonu
@@ -54,3 +55,4 @@
 
 - `SCREENSCRAPER_MIGRATION_PLAN.md` — ana geçiş planı
 - `CLAUDE_SUPABASE_SS_PROMPT.md` — Claude'a verilecek Supabase prompt'u
+- `SCREENSCRAPER_WEB_UI_PLAN.md` — Codex web/UI uygulama planı

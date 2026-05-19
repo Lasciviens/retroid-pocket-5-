@@ -112,6 +112,7 @@ Güvenlik kuralı: ScreenScraper source/media URL'leri credential içerebilir. P
 ├── supabase/functions/igdb-search  # IGDB proxy
 ├── SCREENSCRAPER_MIGRATION_PLAN.md # SS geçiş planı
 ├── CLAUDE_SUPABASE_SS_PROMPT.md    # Claude Supabase görev prompt'u
+├── SCREENSCRAPER_WEB_UI_PLAN.md    # Codex web/UI görev planı
 ├── README.md
 ├── ARCHITECTURE.md
 ├── project_todo.md
