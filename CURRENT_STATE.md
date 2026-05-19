@@ -1,9 +1,7 @@
 # Current State — Tek Yetkili Kaynak
 
-> **Her session başında ilk okunan dosya bu.**
-> Bir şey yapmadan önce burayı oku. Bir şey yaptıktan sonra burayı güncelle.
->
-> Son güncelleme: 2026-05-15 · chatgpt (Pages redeploy tetiklendi)
+> Her session başında ilk okunan dosya bu.
+> Son güncelleme: 2026-05-19 · claude
 
 ---
 
@@ -11,11 +9,9 @@
 
 | Alan | Sahip | Dosyalar |
 |------|-------|----------|
-| DB · migration · script · data audit | **Claude** | `migrations/` `scripts/` `docs/` `supabase/` |
-| HTML · UX · site davranışı · canlı doğrulama | **Codex** | `*.html` `rp5_*.js` |
+| DB · migration · script · data | **Claude** | `migrations/` `scripts/` `docs/` `supabase/` |
+| HTML · UX · site davranışı | **Codex** | `*.html` `rp5_*.js` |
 | Paylaşımlı | **İkisi** | `CURRENT_STATE.md` `project_todo.md` `AI_RULES.md` |
-
-**Çakışma riski:** `rp5_igdb.js`, `ARCHITECTURE.md` — dokunmadan önce koordine et.
 
 ---
 
@@ -24,22 +20,69 @@
 | Öğe | Durum |
 |-----|-------|
 | Aktif şema | migration_v15 (son) |
-| Canlı view'lar | `v_games_summary` · `v_games_full` · `v_games_cleanup` · `v_games_audit` · `v_game_platform_audit` |
 | Oyun sayısı | 321 |
 | Ortalama audit skoru | 95.2 / 100 |
-| `developer` kolonu | KALDIRILDI (migration_v12) — geri getirme |
-| Primary variant kapsamı | %100 (platform kaydı olan oyunlarda) |
-| Auto-fix pipeline | `scripts/audit_autofix.py` hazır — apply için service-key gerekli |
+| Primary variant kapsamı | %100 |
 
-### DB Açık Sorunlar
+### Aktif View'lar
+| View | Kullanım |
+|------|---------|
+| `v_games_summary` | Library grid/list — hafif, hızlı |
+| `v_games_full` | Modal detay — tam veri |
+| `v_games_cleanup` | Admin anomaly özeti |
+| `v_games_audit` | 18 kural, 0-100 audit score |
+| `v_game_platform_audit` | Platform bazlı audit |
 
-| Sorun | Sayı | Durum |
-|-------|------|-------|
-| base64 cover_url (platform satırı) | 60 | Kullanıcı kararı bekliyor: temizle vs Storage'a taşı |
-| `no_primary_variant` (platformsuz oyun) | 14 | Manuel — önce game_platforms ekle |
-| `no_external_id` (IGDB eşleşmesi yok) | 5 | `igdb_bulk_match.py` ile bulunabilir |
-| `no_storyline` | 159 | IGDB'de gerçekten yok — otomatik çözülmez |
-| `never_synced` | 37 | `audit_autofix.py --apply` ile stamp basılabilir |
+### Açık DB Sorunlar
+| Sorun | Sayı |
+|-------|------|
+| base64 cover_url | 60 platform satırı — kullanıcı kararı bekliyor |
+| no_primary_variant | 14 oyun |
+| no_external_id | 5 oyun |
+| never_synced | 37 oyun |
+
+---
+
+## Entegrasyon Durumları
+
+| Entegrasyon | Durum | Not |
+|-------------|-------|-----|
+| ScreenScraper | ✅ Hazır | devid alındı, isim araması test edildi ve çalışıyor |
+| RetroAchievements | ✅ Deploy edildi | retroachievements-player function aktif |
+| IGDB | ⚠️ Kaldırılacak | SS tam çalışınca kalkacak |
+| RAWG | ⏸ Beklemede | rawg-discover var ama deploy edilmedi |
+| Linear | ✅ Aktif | Proje yönetim aracı, MCP üzerinden bağlı |
+
+---
+
+## ScreenScraper — Teknik Detaylar
+
+**Yöntem:** isim + SS sistem ID → `jeuRecherche` → ss_id → `jeuInfos` → tam veri
+
+**SS Sistem ID Mapping:**
+| DB system_id | Platform | SS system_id |
+|---|---|---|
+| 1 | PS1 | 57 |
+| 2 | PS2 | 58 |
+| 3 | PSP | 61 |
+| 4 | GBA | 24 |
+| 5 | DS | 78 |
+| 6 | 3DS | 17 |
+| 7 | N64 | 14 |
+| 8 | GameCube | 13 |
+| 9 | Wii | 16 |
+| 10 | SNES | 4 |
+| 11 | NES | 3 |
+| 12 | Genesis | 1 |
+| 13 | Dreamcast | 23 |
+| 16 | GBC | 29 |
+
+**Çekilecek medya tipleri:** box-2D (us bölgesi), wheel-hd, ss (screenshot), video-normalized, fanart
+
+**Medya URL güvenlik notu:** SS medya URL'lerinde devpassword görünüyor.
+Storage'a kopyalanacak: box-2D, wheel-hd. URL saklanacak: video-normalized, ss, fanart.
+
+**Test sonucu:** God of War II (PS2) — exact match, rating 90/100, tüm medya geldi ✅
 
 ---
 
@@ -47,60 +90,24 @@
 
 | Öğe | Durum |
 |-----|-------|
-| Library liste endpoint | `v_games_summary` ✓ — commit 84c632b |
-| Modal detay endpoint | `v_games_full?id=eq.{id}` ✓ |
-| Cleanup Workspace | `v_games_audit` ✓ — rp5_igdb.js:209-210 |
-| IGDB Bridge | `v_games_summary` + `v_games_audit` ✓ |
-| Varsayılan sıralama | IGDB rating ✓ — commit 061b6c8 |
-| Lightbox / zoom | Cover + screenshot zoom ✓ — commit d19509d |
-| Lightbox galeri gezinmesi | Sağ/sol buton + klavye ✓ — commit 1a0ec5a |
-| GitHub Pages | Repo public'e döndü; redeploy commit'i tetiklendi |
-
-### UI Açık Sorunlar
-
-- Library araması hâlâ DB-backed değil; hardcoded alias geri alındı, doğru çözüm Claude tarafında search/view stratejisi
-- Cleanup Workspace inline quick aksiyonlar
-- RAWG Faz 1: secret set + function deploy/test + Library modal canlı discovery paneli
+| Library endpoint | `v_games_summary` ✓ |
+| Modal endpoint | `v_games_full` ✓ |
+| Varsayılan sıralama | IGDB rating ✓ |
+| Lightbox / zoom | Cover + screenshot ✓ |
+| Video player | Henüz yok — Phase 1 |
+| Wheel art desteği | Henüz yok — Phase 1 |
+| Duplicate/platform görünüm | Henüz yok — Phase 1 |
 
 ---
 
-## Son Session
+## Son Session — 2026-05-19 — claude
 
-**2026-05-15 — chatgpt:**
-- RAWG API key alındı; key repo dosyalarına yazılmadı, secret olarak set edilmesi gerekiyor
-- `project_todo.md`: RAWG Faz 1 yüksek önceliğe alındı
-- Repo private/public geçişinden sonra GitHub Pages redeploy tetiklemek için bu commit atıldı
-
-**2026-05-14 — claude:**
-- migration_v14: `v_games_summary` (payload −51%, 3.8× hızlı) + `v_games_cleanup`
-- migration_v15: `v_games_audit` (18 kural, audit_score) + `v_game_platform_audit`
-- `scripts/audit_report.py` + `scripts/audit_autofix.py` + `docs/audit_system.md`
-- Repo koordinasyon sistemi: `CURRENT_STATE.md` + `AI_RULES.md` güncelleme + `project_todo.md` sadeleştirme
-- commit `27a84d1`: koordinasyon OS + `audit_autofix.py` GitHub'a alındı
-
-**2026-05-14 — codex:**
-- commit `061b6c8`: default sort = IGDB rating + modal lightbox ilk sürüm
-- commit `d19509d`: modal cover/screenshot zoom güvenilir hale getirildi
-- commit `1a0ec5a`: lightbox galeri büyütüldü, sağ/sol gezinme eklendi, mobil/desktop davranışı iyileştirildi
-- Library search için yanlış hardcoded alias geçici çözümü geri alındı; arama artık yine yalnız mevcut DB summary alanlarına dayanıyor
-
----
-
-## Bir Daha Analiz Etme — Bunlar Bitti
-
-| Konu | Durum | Referans |
-|------|-------|----------|
-| `developer` kolonu kaldırma | ✅ BITTI | migration_v12 + tüm scriptler |
-| Library `v_games_summary` geçişi | ✅ BITTI | Codex — commit 84c632b |
-| `v_games_audit` Cleanup'a entegrasyon | ✅ BITTI | Codex — rp5_igdb.js:209 |
-| Primary variant kapsamı | ✅ BITTI | migration_v13 |
-| FIFA 07 + PES 2013 duplicate merge | ✅ BITTI | migration_v13 |
-| Metal Gear Solid GBC yanlış external_id | ✅ BITTI | migration_v13 |
-| Modal lazy-load (DB-first, live IGDB ikincil) | ✅ BITTI | Codex — commit 16e134e |
-| Varsayılan sıralama = IGDB rating | ✅ BITTI | Codex — commit 061b6c8 |
-| Modal cover + screenshot zoom | ✅ BITTI | Codex — commit d19509d |
-| Modal galeri sağ/sol gezinme | ✅ BITTI | Codex — commit 1a0ec5a |
-| Koordinasyon OS (CURRENT_STATE + AI_RULES protokolü) | ✅ BITTI | Claude — commit 27a84d1 |
+- ScreenScraper devid alındı, Supabase secret'a eklendi
+- SS API test edildi: isim araması çalışıyor (God of War II exact match)
+- retroachievements-player Edge Function deploy edildi ve test edildi
+- Linear workspace kuruldu: 21 issue, 14 label, 1 proje
+- ss-test Edge Function deploy edildi (geçici test aracı)
+- Sistem analizi PDF + Excel hazırlandı
 
 ---
 
@@ -108,11 +115,24 @@
 
 | Sahip | Aksiyon | Öncelik |
 |-------|---------|---------|
-| Kullanıcı | RAWG key'i Supabase secret olarak set et: `RAWG_API_KEY` | Yüksek |
-| Claude/Codex | `rawg-discover` deploy/test + Library modal RAWG Discovery paneli | Yüksek |
+| Claude | migration_v16 yaz ve deploy et | Yüksek |
+| Claude | v_games_summary + v_games_full view'larını güncelle | Yüksek |
+| Claude | ss-enricher Edge Function yaz | Yüksek |
+| Codex | Modal'a video player + wheel art ekle | Orta |
+| Codex | Library duplicate/platform görünüm mantığı | Orta |
 | Kullanıcı | base64_cover kararı: temizle mi Storage'a taşı mı | Yüksek |
-| Kullanıcı | `audit_autofix.py` için service-key sağla | Orta |
-| Claude | Library aramasını DB-backed hale getir: `v_games_summary` için search_text / acronym / alias stratejisi, hardcode yok | Yüksek |
-| Codex | Cleanup Workspace inline quick aksiyonlarını tasarla/uygula | Orta |
-| Claude | `audit_autofix.py --apply` (service-key gelince) | Orta |
-| Claude | IGDB enrich — `never_synced` 37 oyun için stamp | Düşük |
+| Kullanıcı | Linear API key'ini revoke et, yenisini Supabase secret'a ekle | Yüksek |
+
+---
+
+## Bir Daha Analiz Etme — Bunlar Bitti
+
+| Konu | Referans |
+|------|----------|
+| developer kolonu kaldırma | migration_v12 |
+| Library v_games_summary geçişi | commit 84c632b |
+| Primary variant kapsamı | migration_v13 |
+| Modal lightbox + galeri gezinme | commit 1a0ec5a |
+| Koordinasyon OS kurulumu | commit 27a84d1 |
+| SS API test + devid | 2026-05-19 |
+| RA function deploy | 2026-05-19 |
