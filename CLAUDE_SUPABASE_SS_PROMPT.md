@@ -84,58 +84,72 @@ Use IDs only if they match live DB. Verify before update. If live IDs differ, up
 
 Add:
 
-- `ss_game_id bigint`
 - `ss_title text`
-- `ss_description text`
-- `ss_rating numeric`
 - `ss_players text`
-- `ss_box_url text`
-- `ss_wheel_url text`
 - `ss_video_url text`
 - `ss_screenshot_url text`
 - `ss_fanart_url text`
 - `ss_raw_json jsonb`
 - `ss_media_json jsonb`
+- `ss_synced_at timestamptz`
+
+Add reasonable checks:
+
+- Public-safe URL checks are optional, but raw ScreenScraper URLs must not be exposed through views.
+
+Do not change `games.rating`.
+Do not add `games.ss_description`; if `games.description` is null, SS synopsis may fill it. Otherwise keep synopsis in `ss_raw_json`.
+
+### `game_platforms`
+
+Add:
+
+- `ss_game_id bigint`
+- `ss_title text`
+- `ss_rating numeric`
+- `developer text`
+- `ss_rom_id bigint`
+- `ss_box_url text`
+- `ss_wheel_url text`
+- `ss_release_date date`
+- `ss_rom_regions text[] default '{}'::text[]`
+- `ss_rom_languages text[] default '{}'::text[]`
+- `ss_variant_flags jsonb`
+- `ss_rom_json jsonb`
 - `ss_match_method text`
 - `ss_match_confidence integer`
 - `ss_needs_review boolean default false`
-- `ss_synced_at timestamptz`
+- `ra_supported boolean default false`
+- `ra_last_checked_at timestamptz`
 
 Add reasonable checks:
 
 - `ss_rating` between 0 and 100 if not null.
 - `ss_match_confidence` between 0 and 100 if not null.
 
-Do not change `games.rating`.
-
-### `game_platforms`
-
-Add:
-
-- `developer text`
-- `ss_rom_id bigint`
-- `ss_release_date date`
-- `ss_rom_regions text[] default '{}'::text[]`
-- `ss_rom_languages text[] default '{}'::text[]`
-- `ss_variant_flags jsonb`
-- `ss_rom_json jsonb`
-- `ra_supported boolean default false`
-- `ra_last_checked_at timestamptz`
+Authoritative ScreenScraper identity is platform-level. Do not use `games.ss_game_id` as the source of truth.
 
 ### Indexes
 
 Add indexes where useful:
 
-- `games(ss_game_id)`
 - `games(ss_synced_at)`
-- `games(ss_needs_review)`
+- `game_platforms(ss_game_id)`
 - `game_platforms(ss_rom_id)`
+- `game_platforms(ss_needs_review)`
 - `game_platforms(ra_supported)`
 - `systems(ss_system_id)`
 
 ## Work Package 2 — Update Views
 
 Update `v_games_summary` and `v_games_full`.
+
+The frontend currently calls both views separately:
+
+- `v_games_summary` for the initial Library load.
+- `v_games_full` for modal hydration by `game_id`.
+
+Keep them separate even if their current definitions overlap. `v_games_summary` should stay light and grid-safe; `v_games_full` can expose detail-safe modal fields.
 
 Requirements:
 
@@ -146,19 +160,24 @@ Requirements:
   - `metadata_synced_at`
   - `metadata_match_confidence`
   - `display_cover_url`
+  - `primary_ss_game_id`
+  - `ra_supported`
 - `metadata_provider` should be:
-  - `screenscraper` if `ss_game_id is not null`
+  - `screenscraper` if any selected/primary platform has `ss_game_id is not null`
   - `igdb` if no SS match but `external_id is not null`
   - `manual` otherwise
-- `metadata_rating` should prefer `ss_rating`, then `igdb_rating`, then null.
-- `display_cover_url` should prefer safe `ss_box_url`, then `primary_cover_url`, then existing platform cover.
-- Include `ss_wheel_url`, `ss_video_url`, `ss_screenshot_url`, `ss_fanart_url` if they are public-safe columns.
-- Include `platforms[].developer`, `platforms[].ra_supported`, `platforms[].ss_release_date`.
+- `metadata_rating` should prefer selected/primary platform `ss_rating`, then `igdb_rating`, then null.
+- `display_cover_url` should prefer safe selected/primary platform `ss_box_url`, then `primary_cover_url`, then existing platform cover.
+- Include selected/primary platform `ss_wheel_url` as a top-level summary field for grid cards.
+- Include `ss_video_url`, `ss_screenshot_url`, `ss_fanart_url` only if they are public-safe columns.
+- Include `platforms[].ss_game_id`, `platforms[].ss_rating`, `platforms[].ss_box_url`, `platforms[].ss_wheel_url`, `platforms[].developer`, `platforms[].ra_supported`, `platforms[].ss_release_date`.
+- Add `ra_supported` as a top-level aggregate on `v_games_summary`, preferably `BOOL_OR(game_platforms.ra_supported)`.
+- Do not add physical `games.ra_supported` unless you decide the aggregate needs indexing later. Current library scale is small enough for the view field, and it avoids denormalization drift.
 - Do not expose raw JSON fields in public views.
 
 Update audit views:
 
-- Do not mark a game as missing metadata if it has `ss_game_id`.
+- Do not mark a game as missing metadata if any platform has `ss_game_id`.
 - Prefer provider-neutral issue names where possible.
 - Keep old IGDB labels if needed for compatibility, but add SS-aware alternatives.
 
@@ -193,10 +212,26 @@ Function behavior:
 5. Fetch full `jeuInfos` by `gameid`.
 6. Parse into DB payload.
 7. Copy `box-2D` and `wheel-hd` to Supabase Storage.
-8. Save only public-safe Storage URLs into `games.ss_box_url` and `games.ss_wheel_url`.
+8. Save only public-safe Storage URLs into `game_platforms.ss_box_url` and `game_platforms.ss_wheel_url`.
 9. Store raw response in `ss_raw_json`.
 10. Store selected/private media source data in `ss_media_json`.
-11. Set `ss_needs_review` for low confidence.
+11. Set `game_platforms.ss_needs_review` for low confidence.
+
+Storage path should include platform ID:
+
+```txt
+games/{game_id}/platforms/{platform_id}/ss/box-2d.png
+games/{game_id}/platforms/{platform_id}/ss/wheel.png
+```
+
+Use a configurable confidence threshold, default `80`.
+
+Quota behavior:
+
+- Read quota/server fields from every ScreenScraper response when present.
+- Track request count, media-copy count, review-required count, and failure count per batch.
+- Stop before daily quota exhaustion; use at least a 10% safety margin.
+- Return a resume cursor/summary from batch mode.
 
 Recommended confidence:
 
@@ -226,6 +261,7 @@ Verify:
 - Raw SS JSON is not exposed in public views.
 - No credential-bearing ScreenScraper URL appears in `v_games_summary` or `v_games_full`.
 - `ra_supported` can be read per platform.
+- top-level `v_games_summary.ra_supported` can be filtered by the Library.
 
 ## Deliverables
 

@@ -57,16 +57,16 @@ Decision:
 
 ### Where should SS rating live?
 
-`games.ss_rating` as normalized 0-100. Do not overwrite `games.rating`, because that is the user's personal/library rating.
+Authoritative `ss_rating` should live on `game_platforms`, because ScreenScraper matches are platform/system specific. `v_games_summary.metadata_rating` should derive from the selected primary/preferred platform's `ss_rating`, then fall back to `games.igdb_rating`. Do not overwrite `games.rating`, because that is the user's personal/library rating.
 
 ### What should the UI read first?
 
 The UI should prefer SS fields when present:
 
-1. `ss_box_url` over `primary_cover_url`.
-2. `ss_wheel_url` for card/detail logo art.
-3. `ss_rating` over `igdb_rating_canonical` for external/community rating display.
-4. `ss_description` over IGDB summary only when the existing curated description is empty or the UI labels it as SS metadata.
+1. `display_cover_url`, derived from the selected platform's safe `ss_box_url`, over `primary_cover_url`.
+2. `ss_wheel_url`, derived from the selected platform's safe wheel asset, for card/detail logo art.
+3. `metadata_rating`, derived from the selected platform's `ss_rating` then IGDB fallback, for external/community rating display.
+4. Existing `description` remains the display text. SS synopsis may fill it only when empty; otherwise the raw synopsis stays in `ss_raw_json`.
 5. IGDB stays visible only as legacy/fallback during the transition.
 
 ### What can go wrong?
@@ -76,6 +76,7 @@ The UI should prefer SS fields when present:
 - Existing IGDB audit flags continuing to mark SS-enriched games as incomplete.
 - Duplicate/platform UI opening the wrong platform variant.
 - Storage copying becoming expensive or slow if video is copied too early.
+- Batch work exceeding ScreenScraper daily request/download limits if quota telemetry is ignored.
 
 ## Phase 0: Freeze and Safety
 
@@ -110,43 +111,45 @@ Minimum DB additions:
 
 ### `games`
 
-- `ss_game_id bigint`
 - `ss_title text`
-- `ss_description text`
-- `ss_rating numeric`
 - `ss_players text`
-- `ss_box_url text`
-- `ss_wheel_url text`
 - `ss_video_url text`
 - `ss_screenshot_url text`
 - `ss_fanart_url text`
 - `ss_raw_json jsonb`
 - `ss_media_json jsonb`
-- `ss_match_method text`
-- `ss_match_confidence integer`
-- `ss_needs_review boolean default false`
 - `ss_synced_at timestamptz`
 
-Important: `ss_*_url` columns must be public-safe URLs only. If the only URL available contains ScreenScraper credentials, keep it in private JSON and leave the public URL null.
+Important: `games.ss_video_url`, `games.ss_screenshot_url`, and `games.ss_fanart_url` must be public-safe URLs only. If the only URL available contains ScreenScraper credentials, keep it in private JSON and leave the public URL null.
 
 ### `game_platforms`
 
+- `ss_game_id bigint`
+- `ss_title text`
+- `ss_rating numeric`
 - `developer text`
 - `ss_rom_id bigint`
+- `ss_box_url text`
+- `ss_wheel_url text`
 - `ss_release_date date`
 - `ss_rom_regions text[]`
 - `ss_rom_languages text[]`
 - `ss_variant_flags jsonb`
 - `ss_rom_json jsonb`
+- `ss_match_method text`
+- `ss_match_confidence integer`
+- `ss_needs_review boolean default false`
 - `ra_supported boolean default false`
 - `ra_last_checked_at timestamptz`
+
+Important: `game_platforms.ss_box_url` and `game_platforms.ss_wheel_url` must contain only Supabase Storage or proxy-safe public URLs. Raw ScreenScraper URLs stay in JSONB only.
 
 ### Views
 
 Update `v_games_summary`:
 
-- Include SS-safe display fields:
-  - `ss_game_id`
+- Include SS-safe display fields derived from the selected primary/preferred platform:
+  - `primary_ss_game_id`
   - `ss_rating`
   - `ss_box_url`
   - `ss_wheel_url`
@@ -156,8 +159,11 @@ Update `v_games_summary`:
   - `metadata_provider`
   - `metadata_rating`
   - `metadata_match_confidence`
+  - `ra_supported`
 - Keep existing IGDB aliases during transition.
-- Platform JSON should include `developer`, `ra_supported`, and public-safe SS fields only.
+- Platform JSON should include `ss_game_id`, `ss_rating`, `ss_box_url`, `ss_wheel_url`, `developer`, `ra_supported`, and other public-safe SS fields only.
+- `ra_supported` should be a top-level aggregate on `v_games_summary`, preferably `BOOL_OR(game_platforms.ra_supported)`.
+- A physical `games.ra_supported` column is not required for the first migration unless indexing becomes necessary; the frontend can filter the top-level view aggregate.
 
 Update `v_games_full`:
 
@@ -166,7 +172,7 @@ Update `v_games_full`:
 
 Update audit views:
 
-- A game with `ss_game_id` should not be flagged as `no_external_id` just because IGDB is missing.
+- A game with any platform-level `ss_game_id` should not be flagged as `no_external_id` just because IGDB is missing.
 - Replace IGDB-specific labels with provider-neutral labels where practical:
   - `no_external_id` -> `no_metadata_match`
   - `no_igdb_rating` -> `no_external_rating`
@@ -222,6 +228,7 @@ Media policy:
 
 - Copy box-2D and wheel-hd to Storage immediately.
 - Do not expose raw SS media URLs in views.
+- Storage paths should include both game and platform IDs, for example `games/{game_id}/platforms/{platform_id}/ss/box-2d.png`.
 - Screenshot/fanart/video can be phase 2.5:
   - either copy to Storage,
   - or implement an auth/proxy endpoint,
@@ -238,7 +245,7 @@ Acceptance:
 
 Owner: Codex.
 
-The web changes should happen after Phase 1 views exist, but can be coded defensively with fallback fields.
+The web changes are sequenced after Claude lands `migration_v16` and the updated views. Codex can prepare defensive helpers earlier, but wheel/video/provider UI should wait for the view contract.
 
 Tasks:
 
@@ -302,6 +309,9 @@ Order:
 Batch rules:
 
 - Run small batches first: 10, 25, 50.
+- Read `ssuser.requeststoday`, `ssuser.maxrequestsperday`, download counters, and server load fields from every response.
+- Stop before quota exhaustion; default safety margin should be at least 10% of the daily request limit.
+- Store batch summary with calls attempted, calls succeeded, media copied, review-required count, and next resume cursor.
 - Stop on quota/rate errors.
 - Store summary logs.
 - Do not overwrite curated user fields unless empty.
@@ -338,18 +348,20 @@ metadata_rating
 metadata_match_confidence
 metadata_synced_at
 display_cover_url
+primary_ss_game_id
 ss_box_url
 ss_wheel_url
 ss_video_url
 ss_screenshot_url
 ss_fanart_url
+ra_supported
 platforms[].ra_supported
 platforms[].developer
 ```
 
 `display_cover_url` should be computed by DB/view as:
 
-1. safe `ss_box_url`
+1. safe selected-platform `ss_box_url`
 2. existing `primary_cover_url`
 3. primary platform `cover_url`
 4. null

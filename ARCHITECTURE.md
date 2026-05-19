@@ -79,6 +79,8 @@ Plan:
 
 Güvenlik kuralı: ScreenScraper source/media URL'leri credential içerebilir. Public view'lar sadece Supabase Storage veya proxy-safe URL döndürmelidir; raw SS JSON public client'a expose edilmez.
 
+ScreenScraper eşleşmesinin authoritative yeri `game_platforms` olacaktır: `ss_game_id`, `ss_rating`, `ss_box_url`, `ss_wheel_url`, ROM ve RA compatibility alanları platform/system varyantına aittir. `v_games_summary` grid için bunlardan seçilmiş/primary platform alias'ları üretir.
+
 ---
 
 ## Dosya Yapısı

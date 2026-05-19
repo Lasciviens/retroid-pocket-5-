@@ -59,6 +59,8 @@ ScreenScraper hedef provider'dır; IGDB geçiş süresince fallback/legacy olara
 - IGDB kolonlarını SS coverage doğrulanmadan drop etme.
 - ScreenScraper source/media URL'leri credential içerebilir; public HTML/JS/view alanlarına raw SS URL koyma.
 - Frontend doğrudan ScreenScraper API çağırmaz; sadece Supabase view, Storage veya auth/proxy URL okur.
+- Authoritative ScreenScraper match fields live on `game_platforms`, not `games`: `ss_game_id`, `ss_rating`, `ss_box_url`, `ss_wheel_url`.
+- `v_games_summary` may expose selected/primary platform aliases such as `primary_ss_game_id`, `metadata_rating`, `display_cover_url`, `ss_wheel_url`, and aggregate `ra_supported`.
 
 ---
 

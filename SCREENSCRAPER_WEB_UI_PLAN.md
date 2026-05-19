@@ -54,13 +54,14 @@ metadata_rating
 metadata_synced_at
 metadata_match_confidence
 display_cover_url
-ss_game_id
+primary_ss_game_id
 ss_box_url
 ss_wheel_url
 ss_video_url
 ss_screenshot_url
 ss_fanart_url
 ss_needs_review
+ra_supported
 series_id
 series_name
 genres
@@ -73,10 +74,13 @@ Everything above plus:
 
 ```txt
 ss_title
-ss_description
 ss_players
 storyline or existing description fallback
 screenshots / safe media arrays
+platforms[].ss_game_id
+platforms[].ss_rating
+platforms[].ss_box_url
+platforms[].ss_wheel_url
 platforms[].developer
 platforms[].ra_supported
 platforms[].ss_release_date
@@ -109,10 +113,10 @@ Add provider-neutral helpers before rendering:
 Fallback logic:
 
 ```txt
-provider = metadata_provider || (ssGameId ? 'screenscraper' : externalId ? 'igdb' : 'manual')
-rating = metadata_rating || ssRating || igdbRating || null
-cover = display_cover_url || ssBoxUrl || primary_cover_url || primary platform cover || null
-wheel = ss_wheel_url || null
+provider = metadata_provider || (primarySsGameId ? 'screenscraper' : externalId ? 'igdb' : 'manual')
+rating = metadata_rating || primary platform ssRating || igdbRating || null
+cover = display_cover_url || primary platform ssBoxUrl || primary_cover_url || primary platform cover || null
+wheel = ss_wheel_url || primary platform ssWheelUrl || null
 video = ss_video_url only if public-safe
 screenshot = ss_screenshot_url only if public-safe
 ```
@@ -140,7 +144,7 @@ metadata_provider
 metadata_rating
 metadata_match_confidence
 display_cover_url
-ss_game_id
+primary_ss_game_id
 ss_rating
 ss_box_url
 ss_wheel_url
@@ -159,7 +163,7 @@ The mapper should set both legacy and new properties:
 game.metadataProvider
 game.metadataRating
 game.metadataConfidence
-game.ssGameId
+game.primarySsGameId
 game.ssRating
 game.ssBoxUrl
 game.ssWheelUrl
@@ -275,8 +279,9 @@ Do not create duplicate `games` rows.
 
 File: `Retroid_Library_Dashboard.html`
 
-After Claude exposes `platforms[].ra_supported`:
+After Claude exposes top-level `ra_supported` and `platforms[].ra_supported`:
 
+- Add `RA supported` filter to Library using top-level `ra_supported`.
 - Add small `RA` badge on platform rows when supported.
 - In modal platform list, show `RA supported` beside ROM status.
 - Full achievement progress panel waits for `ra-sync` / RA game ID mapping.
